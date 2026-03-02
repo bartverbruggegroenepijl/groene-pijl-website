@@ -11,6 +11,15 @@ const config: Config = {
       colors: {
         background: "var(--background)",
         foreground: "var(--foreground)",
+        primary: "#00A651",
+        "primary-dark": "#0B3D2E",
+        "background-dark": "#111111",
+        "background-light": "#F5F5F5",
+      },
+      fontFamily: {
+        heading: ["Bebas Neue", "sans-serif"],
+        body: ["Inter", "sans-serif"],
+        sans: ["Inter", "sans-serif"],
       },
     },
   },
