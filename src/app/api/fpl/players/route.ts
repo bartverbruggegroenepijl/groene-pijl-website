@@ -10,6 +10,7 @@ interface FplApiPlayer {
   element_type: number;
   total_points: number;
   event_points: number;
+  now_cost: number;
 }
 
 interface FplApiTeam {
@@ -69,6 +70,7 @@ export async function GET() {
       position: POSITION_MAP[p.element_type] ?? 'FWD',
       totalPoints: p.total_points,
       eventPoints: p.event_points,
+      price: p.now_cost / 10,
       imageUrl: `https://resources.premierleague.com/premierleague/photos/players/110x140/p${p.code}.png`,
     }));
 

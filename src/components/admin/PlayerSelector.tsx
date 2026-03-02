@@ -17,6 +17,8 @@ interface PlayerSelectorProps {
   selected: FplPlayer | null;
   onSelect: (player: FplPlayer | null) => void;
   disabled?: boolean;
+  /** Override the position-based placeholder/empty text */
+  label?: string;
 }
 
 export default function PlayerSelector({
@@ -25,7 +27,9 @@ export default function PlayerSelector({
   selected,
   onSelect,
   disabled,
+  label,
 }: PlayerSelectorProps) {
+  const posLabel = label ?? POSITION_LABELS[position] ?? 'speler';
   const [search, setSearch] = useState('');
   const [isOpen, setIsOpen] = useState(false);
   const containerRef = useRef<HTMLDivElement>(null);
@@ -87,7 +91,7 @@ export default function PlayerSelector({
           value={search}
           onChange={(e) => { setSearch(e.target.value); setIsOpen(true); }}
           onFocus={() => setIsOpen(true)}
-          placeholder={`Zoek ${POSITION_LABELS[position]}...`}
+          placeholder={`Zoek ${posLabel}...`}
           disabled={disabled}
           className="w-full bg-[#111111] border border-white/10 text-white
                      placeholder-gray-600 rounded-lg pl-8 pr-3 py-2 text-sm
@@ -101,7 +105,7 @@ export default function PlayerSelector({
                        rounded-lg shadow-2xl max-h-52 overflow-y-auto">
           {filtered.length === 0 ? (
             <li className="px-3 py-2.5 text-gray-600 text-sm">
-              Geen {POSITION_LABELS[position]}s gevonden
+              Geen {posLabel}s gevonden
             </li>
           ) : (
             filtered.map((p) => (

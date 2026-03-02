@@ -4,6 +4,7 @@ import { useState, useEffect, useTransition } from 'react';
 import Link from 'next/link';
 import { ArrowLeft, Save, Loader2, Star, AlertCircle } from 'lucide-react';
 import PlayerSelector from '@/components/admin/PlayerSelector';
+import PlayerImageUpload from '@/components/admin/PlayerImageUpload';
 import type { FplPlayer, TeamOfTheWeek, TeamPlayer } from '@/types';
 
 // ─── Formaties ───────────────────────────────────────────────
@@ -41,6 +42,7 @@ interface SlotState {
   player: FplPlayer | null;
   points: string;
   isCaptain: boolean;
+  customImageUrl: string | null;
 }
 
 function buildSlots(formation: string, existing: SlotState[] = []): SlotState[] {
@@ -54,7 +56,7 @@ function buildSlots(formation: string, existing: SlotState[] = []): SlotState[] 
       slots.push(
         existingForPos[i]
           ? { ...existingForPos[i], index: i }
-          : { position: pos, index: i, player: null, points: '', isCaptain: false }
+          : { position: pos, index: i, player: null, points: '', isCaptain: false, customImageUrl: null }
       );
     }
   }
@@ -130,6 +132,7 @@ export default function TeamBuilder({
                 player: fplMatch,
                 points: dbP.points?.toString() ?? '',
                 isCaptain: dbP.is_captain,
+                customImageUrl: dbP.player_image_url ?? null,
               };
             })
           );
@@ -179,7 +182,7 @@ export default function TeamBuilder({
         position:         s.position,
         points:           parseInt(s.points, 10) || 0,
         is_captain:       s.isCaptain,
-        player_image_url: s.player!.imageUrl,
+        player_image_url: s.customImageUrl ?? s.player!.imageUrl,
       }));
 
     const formData = new FormData(e.currentTarget);
@@ -467,6 +470,17 @@ export default function TeamBuilder({
                           className={`w-4 h-4 transition-all ${slot.isCaptain ? 'fill-current' : ''}`}
                         />
                       </button>
+
+                      {/* Foto upload */}
+                      <div className="relative">
+                        <PlayerImageUpload
+                          value={slot.customImageUrl}
+                          onChange={(url) =>
+                            updateSlot(slot.position, slot.index, { customImageUrl: url })
+                          }
+                          playerName={slot.player?.name ?? `${slot.position}-${slot.index + 1}`}
+                        />
+                      </div>
                     </div>
                   ))}
                 </div>

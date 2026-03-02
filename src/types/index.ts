@@ -66,6 +66,7 @@ export interface FplPlayer {
   position: 'GK' | 'DEF' | 'MID' | 'FWD';
   totalPoints: number;
   eventPoints: number;
+  price: number;
   imageUrl: string;
 }
 
@@ -89,4 +90,48 @@ export interface TeamPlayer {
   points: number | null;
   is_captain: boolean;
   player_image_url: string | null;
+}
+
+// ─── Kooptips ─────────────────────────────────────────────────
+
+export interface BuyTip {
+  id: string;
+  gameweek: number | null;
+  season: string | null;
+  published: boolean;
+  created_at: string;
+}
+
+export interface BuyTipPlayer {
+  id: string;
+  buy_tip_id: string;
+  player_name: string | null;
+  player_club: string | null;
+  position: string | null;
+  price: number | null;
+  motivation: string | null;
+  fpl_player_id: number | null;
+  image_url: string | null;
+}
+
+// ─── Captain Keuze ────────────────────────────────────────────
+
+export interface CaptainPick {
+  id: string;
+  gameweek: number | null;
+  season: string | null;
+  published: boolean;
+  created_at: string;
+}
+
+export interface CaptainPickPlayer {
+  id: string;
+  captain_pick_id: string;
+  rank: number;
+  player_name: string | null;
+  player_club: string | null;
+  position: string | null;
+  motivation: string | null;
+  fpl_player_id: number | null;
+  image_url: string | null;
 }

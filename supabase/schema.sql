@@ -185,6 +185,167 @@ CREATE POLICY "Authenticated write team_players"
   WITH CHECK (true);
 
 -- ============================================================
+-- TABLE: buy_tips
+-- ============================================================
+
+CREATE TABLE IF NOT EXISTS buy_tips (
+  id         uuid        PRIMARY KEY DEFAULT gen_random_uuid(),
+  gameweek   integer,
+  season     text,
+  published  boolean     NOT NULL DEFAULT false,
+  created_at timestamptz NOT NULL DEFAULT now()
+);
+
+-- ============================================================
+-- TABLE: buy_tip_players
+-- ============================================================
+
+CREATE TABLE IF NOT EXISTS buy_tip_players (
+  id            uuid    PRIMARY KEY DEFAULT gen_random_uuid(),
+  buy_tip_id    uuid    NOT NULL REFERENCES buy_tips (id) ON DELETE CASCADE,
+  player_name   text,
+  player_club   text,
+  position      text,
+  price         numeric,
+  motivation    text,
+  fpl_player_id integer,
+  image_url     text
+);
+
+-- ============================================================
+-- TABLE: captain_picks
+-- ============================================================
+
+CREATE TABLE IF NOT EXISTS captain_picks (
+  id         uuid        PRIMARY KEY DEFAULT gen_random_uuid(),
+  gameweek   integer,
+  season     text,
+  published  boolean     NOT NULL DEFAULT false,
+  created_at timestamptz NOT NULL DEFAULT now()
+);
+
+-- ============================================================
+-- TABLE: captain_pick_players
+-- ============================================================
+
+CREATE TABLE IF NOT EXISTS captain_pick_players (
+  id               uuid    PRIMARY KEY DEFAULT gen_random_uuid(),
+  captain_pick_id  uuid    NOT NULL REFERENCES captain_picks (id) ON DELETE CASCADE,
+  rank             integer NOT NULL,
+  player_name      text,
+  player_club      text,
+  position         text,
+  motivation       text,
+  fpl_player_id    integer,
+  image_url        text
+);
+
+-- ============================================================
+-- RLS – buy_tips & buy_tip_players
+-- ============================================================
+
+ALTER TABLE buy_tips        ENABLE ROW LEVEL SECURITY;
+ALTER TABLE buy_tip_players ENABLE ROW LEVEL SECURITY;
+
+DROP POLICY IF EXISTS "Public read buy_tips" ON buy_tips;
+CREATE POLICY "Public read buy_tips"
+  ON buy_tips FOR SELECT
+  TO public
+  USING (true);
+
+DROP POLICY IF EXISTS "Authenticated write buy_tips" ON buy_tips;
+CREATE POLICY "Authenticated write buy_tips"
+  ON buy_tips FOR ALL
+  TO authenticated
+  USING (true)
+  WITH CHECK (true);
+
+DROP POLICY IF EXISTS "Public read buy_tip_players" ON buy_tip_players;
+CREATE POLICY "Public read buy_tip_players"
+  ON buy_tip_players FOR SELECT
+  TO public
+  USING (true);
+
+DROP POLICY IF EXISTS "Authenticated write buy_tip_players" ON buy_tip_players;
+CREATE POLICY "Authenticated write buy_tip_players"
+  ON buy_tip_players FOR ALL
+  TO authenticated
+  USING (true)
+  WITH CHECK (true);
+
+-- ============================================================
+-- RLS – captain_picks & captain_pick_players
+-- ============================================================
+
+ALTER TABLE captain_picks        ENABLE ROW LEVEL SECURITY;
+ALTER TABLE captain_pick_players ENABLE ROW LEVEL SECURITY;
+
+DROP POLICY IF EXISTS "Public read captain_picks" ON captain_picks;
+CREATE POLICY "Public read captain_picks"
+  ON captain_picks FOR SELECT
+  TO public
+  USING (true);
+
+DROP POLICY IF EXISTS "Authenticated write captain_picks" ON captain_picks;
+CREATE POLICY "Authenticated write captain_picks"
+  ON captain_picks FOR ALL
+  TO authenticated
+  USING (true)
+  WITH CHECK (true);
+
+DROP POLICY IF EXISTS "Public read captain_pick_players" ON captain_pick_players;
+CREATE POLICY "Public read captain_pick_players"
+  ON captain_pick_players FOR SELECT
+  TO public
+  USING (true);
+
+DROP POLICY IF EXISTS "Authenticated write captain_pick_players" ON captain_pick_players;
+CREATE POLICY "Authenticated write captain_pick_players"
+  ON captain_pick_players FOR ALL
+  TO authenticated
+  USING (true)
+  WITH CHECK (true);
+
+-- ============================================================
+-- STORAGE – player-images bucket
+-- Run these statements in the Supabase SQL editor.
+-- The bucket must be created as "public" via the dashboard
+-- or via the INSERT below.
+-- ============================================================
+
+INSERT INTO storage.buckets (id, name, public)
+  VALUES ('player-images', 'player-images', true)
+  ON CONFLICT (id) DO NOTHING;
+
+-- Public read
+DROP POLICY IF EXISTS "Public read player-images" ON storage.objects;
+CREATE POLICY "Public read player-images"
+  ON storage.objects FOR SELECT
+  TO public
+  USING (bucket_id = 'player-images');
+
+-- Authenticated upload
+DROP POLICY IF EXISTS "Authenticated upload player-images" ON storage.objects;
+CREATE POLICY "Authenticated upload player-images"
+  ON storage.objects FOR INSERT
+  TO authenticated
+  WITH CHECK (bucket_id = 'player-images');
+
+-- Authenticated update
+DROP POLICY IF EXISTS "Authenticated update player-images" ON storage.objects;
+CREATE POLICY "Authenticated update player-images"
+  ON storage.objects FOR UPDATE
+  TO authenticated
+  USING (bucket_id = 'player-images');
+
+-- Authenticated delete
+DROP POLICY IF EXISTS "Authenticated delete player-images" ON storage.objects;
+CREATE POLICY "Authenticated delete player-images"
+  ON storage.objects FOR DELETE
+  TO authenticated
+  USING (bucket_id = 'player-images');
+
+-- ============================================================
 -- SEED DATA – Managers / Hosts
 -- ============================================================
 
