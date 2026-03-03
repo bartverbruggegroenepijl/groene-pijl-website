@@ -64,6 +64,37 @@ export async function deleteCaptainPick(id: string): Promise<void> {
   revalidatePath('/admin/captain-keuze');
 }
 
+// ─── Update ──────────────────────────────────────────────────
+
+export async function updateCaptainPick(id: string, formData: FormData): Promise<void> {
+  const supabase = createClient();
+  const { gameweek, season, published, players } = parseCaptainPickFormData(formData);
+
+  const { error: pickError } = await supabase
+    .from('captain_picks')
+    .update({ gameweek, season, published })
+    .eq('id', id);
+
+  if (pickError) throw new Error(pickError.message);
+
+  const { error: deleteError } = await supabase
+    .from('captain_pick_players')
+    .delete()
+    .eq('captain_pick_id', id);
+
+  if (deleteError) throw new Error(deleteError.message);
+
+  if (players.length > 0) {
+    const rows = players.map((p) => ({ ...p, captain_pick_id: id }));
+    const { error } = await supabase.from('captain_pick_players').insert(rows);
+    if (error) throw new Error(error.message);
+  }
+
+  revalidatePath('/admin/captain-keuze');
+  revalidatePath(`/admin/captain-keuze/${id}/bewerken`);
+  redirect('/admin/captain-keuze');
+}
+
 // ─── Toggle publish ──────────────────────────────────────────
 
 export async function togglePublishCaptainPick(

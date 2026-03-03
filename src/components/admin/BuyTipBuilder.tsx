@@ -5,7 +5,7 @@ import Link from 'next/link';
 import { ArrowLeft, Save, Loader2, AlertCircle, TrendingUp } from 'lucide-react';
 import PlayerSelector from '@/components/admin/PlayerSelector';
 import PlayerImageUpload from '@/components/admin/PlayerImageUpload';
-import type { FplPlayer } from '@/types';
+import type { FplPlayer, BuyTip, BuyTipPlayer } from '@/types';
 
 // ─── Slot state ───────────────────────────────────────────────
 
@@ -29,18 +29,20 @@ function buildSlots(): SlotState[] {
 
 interface BuyTipBuilderProps {
   action: (formData: FormData) => Promise<void>;
-  mode: 'nieuw';
+  mode: 'nieuw' | 'bewerken';
+  existingTip?: BuyTip;
+  existingPlayers?: BuyTipPlayer[];
 }
 
 // ─── Component ────────────────────────────────────────────────
 
-export default function BuyTipBuilder({ action, mode }: BuyTipBuilderProps) {
+export default function BuyTipBuilder({ action, mode, existingTip, existingPlayers }: BuyTipBuilderProps) {
   const [fplPlayers, setFplPlayers]   = useState<FplPlayer[]>([]);
   const [fplLoading, setFplLoading]   = useState(true);
   const [fplError, setFplError]       = useState('');
-  const [gameweek, setGameweek]       = useState('');
-  const [season, setSeason]           = useState('2024-25');
-  const [published, setPublished]     = useState(false);
+  const [gameweek, setGameweek]       = useState(existingTip?.gameweek?.toString() ?? '');
+  const [season, setSeason]           = useState(existingTip?.season ?? '2024-25');
+  const [published, setPublished]     = useState(existingTip?.published ?? false);
   const [slots, setSlots]             = useState<SlotState[]>(buildSlots);
   const [formError, setFormError]     = useState('');
   const [isPending, startTransition]  = useTransition();
@@ -56,6 +58,46 @@ export default function BuyTipBuilder({ action, mode }: BuyTipBuilderProps) {
       .catch((err: Error) => setFplError(err.message))
       .finally(() => setFplLoading(false));
   }, []);
+
+  // Pre-populate slots from existing data (runs after FPL players load)
+  useEffect(() => {
+    if (fplLoading || !existingPlayers || existingPlayers.length === 0) return;
+
+    setSlots((prev) =>
+      prev.map((slot, i) => {
+        const p = existingPlayers[i];
+        if (!p) return slot;
+
+        const fplPlayer = p.fpl_player_id
+          ? (fplPlayers.find((fp) => fp.id === p.fpl_player_id) ?? null)
+          : null;
+
+        const player: FplPlayer | null = fplPlayer ?? (p.player_name
+          ? {
+              id: p.fpl_player_id ?? 0,
+              code: 0,
+              name: p.player_name ?? '',
+              fullName: p.player_name ?? '',
+              team: p.player_club ?? '',
+              teamId: 0,
+              position: (p.position as FplPlayer['position']) ?? 'FWD',
+              totalPoints: 0,
+              eventPoints: 0,
+              price: p.price ?? 0,
+              imageUrl: '',
+            }
+          : null);
+
+        return {
+          ...slot,
+          player,
+          motivation: p.motivation ?? '',
+          imageUrl: p.image_url ?? null,
+        };
+      })
+    );
+  // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [fplLoading, fplPlayers]);
 
   function updateSlot(index: number, updates: Partial<SlotState>) {
     setSlots((prev) =>

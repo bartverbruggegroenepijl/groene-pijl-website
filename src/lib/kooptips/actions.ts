@@ -64,6 +64,37 @@ export async function deleteBuyTip(id: string): Promise<void> {
   revalidatePath('/admin/kooptips');
 }
 
+// ─── Update ──────────────────────────────────────────────────
+
+export async function updateBuyTip(id: string, formData: FormData): Promise<void> {
+  const supabase = createClient();
+  const { gameweek, season, published, players } = parseBuyTipFormData(formData);
+
+  const { error: tipError } = await supabase
+    .from('buy_tips')
+    .update({ gameweek, season, published })
+    .eq('id', id);
+
+  if (tipError) throw new Error(tipError.message);
+
+  const { error: deleteError } = await supabase
+    .from('buy_tip_players')
+    .delete()
+    .eq('buy_tip_id', id);
+
+  if (deleteError) throw new Error(deleteError.message);
+
+  if (players.length > 0) {
+    const rows = players.map((p) => ({ ...p, buy_tip_id: id }));
+    const { error } = await supabase.from('buy_tip_players').insert(rows);
+    if (error) throw new Error(error.message);
+  }
+
+  revalidatePath('/admin/kooptips');
+  revalidatePath(`/admin/kooptips/${id}/bewerken`);
+  redirect('/admin/kooptips');
+}
+
 // ─── Toggle publish ──────────────────────────────────────────
 
 export async function togglePublishBuyTip(
