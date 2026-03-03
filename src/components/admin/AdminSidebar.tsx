@@ -14,6 +14,7 @@ import {
   LogOut,
   Shield,
   Medal,
+  Settings,
 } from 'lucide-react';
 
 const navItems = [
@@ -26,6 +27,7 @@ const navItems = [
   { href: '/admin/captain-keuze',      label: 'Captain Keuze',  icon: Star,            exact: false },
   { href: '/admin/managers',           label: 'Managers',       icon: Users,           exact: false },
   { href: '/admin/clubs',              label: 'Clubs',          icon: Shield,          exact: false },
+  { href: '/admin/instellingen',       label: 'Instellingen',   icon: Settings,        exact: false },
 ];
 
 interface AdminSidebarProps {

@@ -492,3 +492,60 @@ CREATE POLICY "Authenticated write player_of_the_week"
   TO authenticated
   USING (true)
   WITH CHECK (true);
+
+-- ============================================================
+-- TABLE: site_settings (key/value store for site configuration)
+-- ============================================================
+
+CREATE TABLE IF NOT EXISTS site_settings (
+  key        text        PRIMARY KEY,
+  value      text,
+  updated_at timestamptz NOT NULL DEFAULT now()
+);
+
+ALTER TABLE site_settings ENABLE ROW LEVEL SECURITY;
+
+DROP POLICY IF EXISTS "Public read site_settings" ON site_settings;
+CREATE POLICY "Public read site_settings"
+  ON site_settings FOR SELECT
+  TO public
+  USING (true);
+
+DROP POLICY IF EXISTS "Authenticated write site_settings" ON site_settings;
+CREATE POLICY "Authenticated write site_settings"
+  ON site_settings FOR ALL
+  TO authenticated
+  USING (true)
+  WITH CHECK (true);
+
+-- ============================================================
+-- STORAGE: site-assets bucket
+-- ============================================================
+
+INSERT INTO storage.buckets (id, name, public)
+  VALUES ('site-assets', 'site-assets', true)
+  ON CONFLICT (id) DO NOTHING;
+
+DROP POLICY IF EXISTS "Public read site-assets" ON storage.objects;
+CREATE POLICY "Public read site-assets"
+  ON storage.objects FOR SELECT
+  TO public
+  USING (bucket_id = 'site-assets');
+
+DROP POLICY IF EXISTS "Authenticated upload site-assets" ON storage.objects;
+CREATE POLICY "Authenticated upload site-assets"
+  ON storage.objects FOR INSERT
+  TO authenticated
+  WITH CHECK (bucket_id = 'site-assets');
+
+DROP POLICY IF EXISTS "Authenticated update site-assets" ON storage.objects;
+CREATE POLICY "Authenticated update site-assets"
+  ON storage.objects FOR UPDATE
+  TO authenticated
+  USING (bucket_id = 'site-assets');
+
+DROP POLICY IF EXISTS "Authenticated delete site-assets" ON storage.objects;
+CREATE POLICY "Authenticated delete site-assets"
+  ON storage.objects FOR DELETE
+  TO authenticated
+  USING (bucket_id = 'site-assets');

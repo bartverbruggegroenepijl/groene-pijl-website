@@ -239,6 +239,7 @@ export default async function HomePage() {
     teamRes,
     managersRes,
     playerOfWeekRes,
+    heroImageRes,
   ] = await Promise.all([
     supabase
       .from('episodes')
@@ -279,6 +280,11 @@ export default async function HomePage() {
       .eq('published', true)
       .order('created_at', { ascending: false })
       .limit(1),
+    supabase
+      .from('site_settings')
+      .select('value')
+      .eq('key', 'hero_image')
+      .maybeSingle(),
   ]);
 
   const episode       = (episodesRes.data?.[0] as Episode | undefined) ?? null;
@@ -287,6 +293,7 @@ export default async function HomePage() {
   const articles      = (articlesRes.data as Article[] | null) ?? [];
   const team          = (teamRes.data?.[0] as TeamOfTheWeek | undefined) ?? null;
   const playerOfWeek  = (playerOfWeekRes.data?.[0] as PlayerOfWeek | undefined) ?? null;
+  const heroImageUrl  = (heroImageRes.data as { value: string } | null)?.value ?? null;
 
   // Deduplicate managers by name
   const allManagers = (managersRes.data as Manager[] | null) ?? [];
@@ -303,11 +310,11 @@ export default async function HomePage() {
   return (
     <main className="text-white overflow-x-hidden">
 
-      {/* ── 1. HERO (dark navy) ──────────────────────────────────────── */}
-      <section className="relative min-h-screen flex items-center bg-navy">
-        <div className="absolute inset-0" style={{ background: 'linear-gradient(135deg, #0D0B2A 0%, #1A0A3B 100%)' }} />
-        <div className="absolute top-0 left-0 w-[700px] h-[700px] rounded-full blur-3xl -translate-x-1/3 -translate-y-1/3 pointer-events-none" style={{ background: 'radial-gradient(circle, rgba(0,250,97,0.07) 0%, transparent 70%)' }} />
-        <div className="absolute top-1/4 right-0 w-[500px] h-[500px] rounded-full blur-3xl translate-x-1/3 pointer-events-none" style={{ background: 'radial-gradient(circle, rgba(123,47,255,0.10) 0%, transparent 70%)' }} />
+      {/* ── 1. HERO ──────────────────────────────────────────────────── */}
+      <section className="relative min-h-screen flex items-center">
+        <div className="absolute inset-0" style={{ background: 'linear-gradient(135deg, #1a0533 0%, #0d1f3c 40%, #0a4a2a 100%)' }} />
+        <div className="absolute top-0 left-0 w-[700px] h-[700px] rounded-full blur-3xl -translate-x-1/3 -translate-y-1/3 pointer-events-none" style={{ background: 'radial-gradient(circle, rgba(0,250,97,0.12) 0%, transparent 70%)' }} />
+        <div className="absolute top-1/4 right-0 w-[600px] h-[600px] rounded-full blur-3xl translate-x-1/4 pointer-events-none" style={{ background: 'radial-gradient(circle, rgba(123,47,255,0.15) 0%, transparent 70%)' }} />
 
         <div className="relative z-10 max-w-8xl mx-auto px-4 sm:px-6 lg:px-8 w-full pt-24 pb-20">
           <div className="grid grid-cols-1 lg:grid-cols-2 gap-12 lg:gap-16 items-center">
@@ -316,9 +323,10 @@ export default async function HomePage() {
               <div className="inline-flex items-center gap-2 bg-primary/10 border border-primary/20 text-primary text-xs font-semibold px-4 py-2 rounded-full mb-6 uppercase tracking-widest">
                 🇳🇱 De enige Nederlandse FPL Podcast
               </div>
-              <h1 className="text-5xl sm:text-6xl lg:text-7xl font-bold leading-[1.05] mb-5">
-                <span className="text-white">DE GROENE PIJL</span>
-                <span className="block text-primary">PODCAST</span>
+              <h1 className="text-5xl sm:text-6xl lg:text-7xl font-bold leading-[1.05] mb-5" style={{ fontFamily: 'Montserrat, sans-serif' }}>
+                <span className="text-white">TAKE YOUR FPL</span>
+                <span className="block text-white">TEAM TO THE TOP</span>
+                <span className="block text-primary mt-1">PODCAST</span>
               </h1>
               <p className="text-lg text-white/60 leading-relaxed mb-8 max-w-lg">
                 Wekelijkse analyse, captainkeuzes en breaking teamnieuws.
@@ -353,8 +361,8 @@ export default async function HomePage() {
               <div className="relative">
                 <div className="absolute -inset-4 rounded-2xl opacity-20 blur-xl" style={{ background: 'linear-gradient(135deg, #00FA61 0%, #7B2FFF 100%)' }} />
                 <div className="relative w-72 h-72 sm:w-80 sm:h-80 lg:w-96 lg:h-96 rounded-2xl overflow-hidden border border-primary/20" style={{ boxShadow: '0 0 48px rgba(0,250,97,0.2)' }}>
-                  {episode?.image_url ? (
-                    <Image src={episode.image_url} alt="Podcast cover" fill className="object-cover" />
+                  {(heroImageUrl || episode?.image_url) ? (
+                    <Image src={heroImageUrl ?? episode!.image_url!} alt="Podcast cover" fill className="object-cover" />
                   ) : (
                     <div className="w-full h-full flex flex-col items-center justify-center gap-4" style={{ background: 'linear-gradient(135deg, #00FA61 0%, #7B2FFF 100%)' }}>
                       <Mic size={64} className="text-black/40" />
