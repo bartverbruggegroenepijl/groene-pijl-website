@@ -80,6 +80,20 @@ interface TeamOfTheWeek {
   team_players: TeamPlayer[];
 }
 
+interface PlayerOfWeek {
+  id: string;
+  gameweek: number | null;
+  player_name: string | null;
+  player_club: string | null;
+  position: string | null;
+  points: number | null;
+  goals: number | null;
+  assists: number | null;
+  bonus: number | null;
+  motivatie: string | null;
+  image_url: string | null;
+}
+
 interface Manager {
   id: string;
   name: string;
@@ -224,6 +238,7 @@ export default async function HomePage() {
     articlesRes,
     teamRes,
     managersRes,
+    playerOfWeekRes,
   ] = await Promise.all([
     supabase
       .from('episodes')
@@ -258,13 +273,20 @@ export default async function HomePage() {
       .from('managers')
       .select('id, name, role, bio, avatar_url, instagram_url')
       .order('created_at', { ascending: true }),
+    supabase
+      .from('player_of_the_week')
+      .select('id, gameweek, player_name, player_club, position, points, goals, assists, bonus, motivatie, image_url')
+      .eq('published', true)
+      .order('created_at', { ascending: false })
+      .limit(1),
   ]);
 
-  const episode  = (episodesRes.data?.[0] as Episode | undefined) ?? null;
-  const captain  = (captainRes.data?.[0] as CaptainPick | undefined) ?? null;
-  const kooptips = (kooptipsRes.data?.[0] as BuyTip | undefined) ?? null;
-  const articles = (articlesRes.data as Article[] | null) ?? [];
-  const team     = (teamRes.data?.[0] as TeamOfTheWeek | undefined) ?? null;
+  const episode       = (episodesRes.data?.[0] as Episode | undefined) ?? null;
+  const captain       = (captainRes.data?.[0] as CaptainPick | undefined) ?? null;
+  const kooptips      = (kooptipsRes.data?.[0] as BuyTip | undefined) ?? null;
+  const articles      = (articlesRes.data as Article[] | null) ?? [];
+  const team          = (teamRes.data?.[0] as TeamOfTheWeek | undefined) ?? null;
+  const playerOfWeek  = (playerOfWeekRes.data?.[0] as PlayerOfWeek | undefined) ?? null;
 
   // Deduplicate managers by name
   const allManagers = (managersRes.data as Manager[] | null) ?? [];
@@ -294,9 +316,9 @@ export default async function HomePage() {
               <div className="inline-flex items-center gap-2 bg-primary/10 border border-primary/20 text-primary text-xs font-semibold px-4 py-2 rounded-full mb-6 uppercase tracking-widest">
                 🇳🇱 De enige Nederlandse FPL Podcast
               </div>
-              <h1 className="text-5xl sm:text-6xl lg:text-7xl font-bold text-white leading-[1.05] mb-5">
-                TAKE YOUR FPL TEAM{' '}
-                <span className="text-gradient">TO THE TOP</span>
+              <h1 className="text-5xl sm:text-6xl lg:text-7xl font-bold leading-[1.05] mb-5">
+                <span className="text-white">DE GROENE PIJL</span>
+                <span className="block text-primary">PODCAST</span>
               </h1>
               <p className="text-lg text-white/60 leading-relaxed mb-8 max-w-lg">
                 Wekelijkse analyse, captainkeuzes en breaking teamnieuws.
@@ -534,6 +556,93 @@ export default async function HomePage() {
             </div>
           ) : (
             <EmptyPlaceholderDark message="Nog geen team van de week beschikbaar." />
+          )}
+        </div>
+      </section>
+
+      {/* ── 5b. SPELER VAN DE WEEK (white) ──────────────────────────── */}
+      <section id="speler-van-de-week" className="py-20 px-4 bg-white">
+        <div className="max-w-8xl mx-auto">
+          <SectionLabel>{playerOfWeek ? `Gameweek ${playerOfWeek.gameweek}` : 'Uitblinker'}</SectionLabel>
+          <SectionTitleLight>Speler van de Week</SectionTitleLight>
+
+          {playerOfWeek ? (
+            <div className="mt-10 grid grid-cols-1 lg:grid-cols-2 gap-8 items-center max-w-4xl mx-auto">
+              {/* Player photo */}
+              <div className="flex justify-center">
+                <div className="relative">
+                  <div className="w-56 h-56 sm:w-72 sm:h-72 rounded-2xl overflow-hidden bg-gray-100 shadow-xl">
+                    {playerOfWeek.image_url ? (
+                      <Image
+                        src={playerOfWeek.image_url}
+                        alt={playerOfWeek.player_name ?? ''}
+                        fill
+                        className="object-cover"
+                      />
+                    ) : (
+                      <div className="w-full h-full flex items-center justify-center" style={{ background: 'linear-gradient(135deg, rgba(0,250,97,0.15) 0%, rgba(123,47,255,0.15) 100%)' }}>
+                        <span className="text-7xl font-bold text-primary/30">
+                          {playerOfWeek.player_name?.charAt(0) ?? '?'}
+                        </span>
+                      </div>
+                    )}
+                  </div>
+                  {/* Position badge */}
+                  {playerOfWeek.position && (
+                    <span className="absolute -top-3 -right-3 bg-primary text-black text-xs font-bold px-3 py-1.5 rounded-full shadow">
+                      {playerOfWeek.position}
+                    </span>
+                  )}
+                </div>
+              </div>
+
+              {/* Info */}
+              <div>
+                <div className="mb-4">
+                  <h3 className="text-3xl sm:text-4xl font-bold text-gray-900 leading-tight">
+                    {playerOfWeek.player_name ?? '—'}
+                  </h3>
+                  {playerOfWeek.player_club && (
+                    <p className="text-gray-400 text-lg mt-1">{playerOfWeek.player_club}</p>
+                  )}
+                </div>
+
+                {/* Stats */}
+                <div className="grid grid-cols-2 sm:grid-cols-4 gap-3 mb-6">
+                  {[
+                    { label: 'Punten',   value: playerOfWeek.points,  highlight: true },
+                    { label: 'Goals',    value: playerOfWeek.goals,   highlight: false },
+                    { label: 'Assists',  value: playerOfWeek.assists, highlight: false },
+                    { label: 'Bonus',    value: playerOfWeek.bonus,   highlight: false },
+                  ].map(({ label, value, highlight }) => (
+                    <div
+                      key={label}
+                      className={`rounded-xl p-3 text-center ${
+                        highlight
+                          ? 'bg-primary text-black'
+                          : 'bg-gray-50 border border-gray-100 text-gray-700'
+                      }`}
+                    >
+                      <p className={`text-2xl font-bold ${highlight ? 'text-black' : 'text-gray-900'}`}>
+                        {value ?? 0}
+                      </p>
+                      <p className={`text-xs font-semibold mt-0.5 ${highlight ? 'text-black/70' : 'text-gray-400'} uppercase tracking-wide`}>
+                        {label}
+                      </p>
+                    </div>
+                  ))}
+                </div>
+
+                {/* Motivatie */}
+                {playerOfWeek.motivatie && (
+                  <blockquote className="border-l-4 border-primary pl-4 italic text-gray-500 text-sm leading-relaxed">
+                    &quot;{playerOfWeek.motivatie}&quot;
+                  </blockquote>
+                )}
+              </div>
+            </div>
+          ) : (
+            <EmptyPlaceholderLight message="Nog geen Speler van de Week beschikbaar." />
           )}
         </div>
       </section>

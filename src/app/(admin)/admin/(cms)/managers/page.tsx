@@ -1,6 +1,7 @@
 import { createClient } from '@/lib/supabase/server';
 import Link from 'next/link';
 import { Users, Pencil, Instagram, ExternalLink } from 'lucide-react';
+import DeleteManagerButton from '@/components/admin/DeleteManagerButton';
 import type { Manager } from '@/types';
 
 export default async function ManagersPage() {
@@ -159,14 +160,17 @@ function ManagerCard({ manager }: { manager: Manager }) {
             <span className="text-gray-700 text-xs">— geen Instagram</span>
           )}
 
-          <Link
-            href={`/admin/managers/${manager.id}/bewerken`}
-            className="flex items-center gap-1.5 text-xs font-medium text-gray-500
-                       hover:text-white transition-colors"
-          >
-            <Pencil className="w-3 h-3" />
-            Bewerken
-          </Link>
+          <div className="flex items-center gap-3">
+            <Link
+              href={`/admin/managers/${manager.id}/bewerken`}
+              className="flex items-center gap-1.5 text-xs font-medium text-gray-500
+                         hover:text-white transition-colors"
+            >
+              <Pencil className="w-3 h-3" />
+              Bewerken
+            </Link>
+            <DeleteManagerButton id={manager.id} name={manager.name} />
+          </div>
         </div>
       </div>
     </div>

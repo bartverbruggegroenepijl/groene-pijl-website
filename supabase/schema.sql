@@ -456,3 +456,39 @@ ALTER TABLE articles
 
 ALTER TABLE team_players
   ADD COLUMN IF NOT EXISTS player_club_id uuid REFERENCES clubs (id) ON DELETE SET NULL;
+
+-- ============================================================
+-- TABLE: player_of_the_week
+-- ============================================================
+
+CREATE TABLE IF NOT EXISTS player_of_the_week (
+  id          uuid        PRIMARY KEY DEFAULT gen_random_uuid(),
+  gameweek    integer,
+  season      text,
+  player_name text,
+  player_club text,
+  position    text        CHECK (position IN ('GK', 'DEF', 'MID', 'FWD')),
+  points      integer,
+  goals       integer,
+  assists     integer,
+  bonus       integer,
+  motivatie   text,
+  image_url   text,
+  published   boolean     NOT NULL DEFAULT false,
+  created_at  timestamptz NOT NULL DEFAULT now()
+);
+
+ALTER TABLE player_of_the_week ENABLE ROW LEVEL SECURITY;
+
+DROP POLICY IF EXISTS "Public read player_of_the_week" ON player_of_the_week;
+CREATE POLICY "Public read player_of_the_week"
+  ON player_of_the_week FOR SELECT
+  TO public
+  USING (true);
+
+DROP POLICY IF EXISTS "Authenticated write player_of_the_week" ON player_of_the_week;
+CREATE POLICY "Authenticated write player_of_the_week"
+  ON player_of_the_week FOR ALL
+  TO authenticated
+  USING (true)
+  WITH CHECK (true);

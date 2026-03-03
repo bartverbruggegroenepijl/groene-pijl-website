@@ -142,6 +142,25 @@ export interface BuyTipPlayer {
   image_url: string | null;
 }
 
+// ─── Speler van de Week ────────────────────────────────────────
+
+export interface PlayerOfWeek {
+  id: string;
+  gameweek: number | null;
+  season: string | null;
+  player_name: string | null;
+  player_club: string | null;
+  position: 'GK' | 'DEF' | 'MID' | 'FWD' | null;
+  points: number | null;
+  goals: number | null;
+  assists: number | null;
+  bonus: number | null;
+  motivatie: string | null;
+  image_url: string | null;
+  published: boolean;
+  created_at: string;
+}
+
 // ─── Captain Keuze ────────────────────────────────────────────
 
 export interface CaptainPick {

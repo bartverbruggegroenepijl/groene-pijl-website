@@ -16,10 +16,10 @@ interface NavbarProps {
 }
 
 const navLinks = [
-  { label: 'Afleveringen', href: '#afleveringen' },
-  { label: 'Artikelen', href: '#artikelen' },
-  { label: 'Stats', href: '#captain-pick' },
-  { label: 'Rankings', href: '#team' },
+  { label: 'Afleveringen',         href: '/afleveringen' },
+  { label: 'Artikelen',            href: '/artikelen' },
+  { label: 'Transfers & Captains', href: '/#captain-pick' },
+  { label: 'Rankings',             href: '/#team' },
 ];
 
 export default function Navbar({ managers = [] }: NavbarProps) {
@@ -72,13 +72,13 @@ export default function Navbar({ managers = [] }: NavbarProps) {
           {/* Desktop nav — center */}
           <nav className="hidden lg:flex items-center gap-1">
             {navLinks.map((link) => (
-              <a
+              <Link
                 key={link.href}
                 href={link.href}
                 className="px-4 py-2 text-sm font-medium text-white/70 hover:text-white rounded-lg hover:bg-white/5 transition-all duration-200"
               >
                 {link.label}
-              </a>
+              </Link>
             ))}
 
             {/* Managers dropdown */}
@@ -159,14 +159,14 @@ export default function Navbar({ managers = [] }: NavbarProps) {
         <div className="lg:hidden bg-navy border-t border-white/8">
           <nav className="flex flex-col px-4 py-4 gap-1">
             {navLinks.map((link) => (
-              <a
+              <Link
                 key={link.href}
                 href={link.href}
                 onClick={() => setMenuOpen(false)}
                 className="px-4 py-3 text-base font-medium text-white/80 hover:text-primary hover:bg-white/5 rounded-lg transition-colors"
               >
                 {link.label}
-              </a>
+              </Link>
             ))}
             <div className="border-t border-white/8 my-2" />
             <p className="px-4 text-xs font-semibold text-white/30 uppercase tracking-widest mb-1">Managers</p>

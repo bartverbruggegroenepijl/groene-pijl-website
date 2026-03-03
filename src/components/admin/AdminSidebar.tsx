@@ -13,17 +13,19 @@ import {
   Users,
   LogOut,
   Shield,
+  Medal,
 } from 'lucide-react';
 
 const navItems = [
-  { href: '/admin',                  label: 'Dashboard',     icon: LayoutDashboard, exact: true },
-  { href: '/admin/artikelen',        label: 'Artikelen',     icon: FileText,        exact: false },
-  { href: '/admin/afleveringen',     label: 'Afleveringen',  icon: Headphones,      exact: false },
-  { href: '/admin/team-van-de-week', label: 'Team vd Week',  icon: Trophy,          exact: false },
-  { href: '/admin/kooptips',         label: 'Kooptips',      icon: TrendingUp,      exact: false },
-  { href: '/admin/captain-keuze',    label: 'Captain Keuze', icon: Star,            exact: false },
-  { href: '/admin/managers',         label: 'Managers',      icon: Users,           exact: false },
-  { href: '/admin/clubs',            label: 'Clubs',         icon: Shield,          exact: false },
+  { href: '/admin',                    label: 'Dashboard',      icon: LayoutDashboard, exact: true },
+  { href: '/admin/artikelen',          label: 'Artikelen',      icon: FileText,        exact: false },
+  { href: '/admin/afleveringen',       label: 'Afleveringen',   icon: Headphones,      exact: false },
+  { href: '/admin/team-van-de-week',   label: 'Team vd Week',   icon: Trophy,          exact: false },
+  { href: '/admin/speler-van-de-week', label: 'Speler vd Week', icon: Medal,           exact: false },
+  { href: '/admin/kooptips',           label: 'Kooptips',       icon: TrendingUp,      exact: false },
+  { href: '/admin/captain-keuze',      label: 'Captain Keuze',  icon: Star,            exact: false },
+  { href: '/admin/managers',           label: 'Managers',       icon: Users,           exact: false },
+  { href: '/admin/clubs',              label: 'Clubs',          icon: Shield,          exact: false },
 ];
 
 interface AdminSidebarProps {
