@@ -38,6 +38,23 @@ export interface Manager {
   created_at: string;
 }
 
+export type ArticleCategory =
+  | 'Transfers'
+  | 'Captain'
+  | 'Wildcard'
+  | 'Differentials'
+  | 'GW Preview'
+  | 'GW Review';
+
+export const ARTICLE_CATEGORIES: ArticleCategory[] = [
+  'Transfers',
+  'Captain',
+  'Wildcard',
+  'Differentials',
+  'GW Preview',
+  'GW Review',
+];
+
 export interface Article {
   id: string;
   title: string;
@@ -45,6 +62,7 @@ export interface Article {
   excerpt: string | null;
   content: string | null;
   cover_image: string | null;
+  category: ArticleCategory | null;
   published: boolean;
   published_at: string | null;
   created_at: string;
@@ -52,6 +70,16 @@ export interface Article {
   author_id: string | null;
   // joined
   managers?: Pick<Manager, 'id' | 'name'> | null;
+}
+
+// ─── Clubs ────────────────────────────────────────────────────
+
+export interface Club {
+  id: string;
+  name: string;
+  short_name: string | null;
+  shirt_image_url: string | null;
+  created_at: string;
 }
 
 // ─── FPL API ─────────────────────────────────────────────────

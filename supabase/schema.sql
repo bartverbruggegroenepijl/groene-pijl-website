@@ -355,3 +355,104 @@ INSERT INTO managers (name, role) VALUES
   ('Tom',     'Host & Manager'),
   ('Kieran',  'Host & Manager')
 ON CONFLICT DO NOTHING;
+
+-- ============================================================
+-- TABLE: clubs (Premier League clubs with shirt images)
+-- ============================================================
+
+CREATE TABLE IF NOT EXISTS clubs (
+  id              uuid        PRIMARY KEY DEFAULT gen_random_uuid(),
+  name            text        NOT NULL,
+  short_name      text,
+  shirt_image_url text,
+  created_at      timestamptz NOT NULL DEFAULT now()
+);
+
+ALTER TABLE clubs ENABLE ROW LEVEL SECURITY;
+
+DROP POLICY IF EXISTS "Public read clubs" ON clubs;
+CREATE POLICY "Public read clubs"
+  ON clubs FOR SELECT
+  TO public
+  USING (true);
+
+DROP POLICY IF EXISTS "Authenticated write clubs" ON clubs;
+CREATE POLICY "Authenticated write clubs"
+  ON clubs FOR ALL
+  TO authenticated
+  USING (true)
+  WITH CHECK (true);
+
+-- ============================================================
+-- SEED DATA – Premier League 2024-25 Clubs
+-- ============================================================
+
+INSERT INTO clubs (name, short_name) VALUES
+  ('Arsenal',          'ARS'),
+  ('Aston Villa',      'AVL'),
+  ('Bournemouth',      'BOU'),
+  ('Brentford',        'BRE'),
+  ('Brighton',         'BHA'),
+  ('Chelsea',          'CHE'),
+  ('Crystal Palace',   'CRY'),
+  ('Everton',          'EVE'),
+  ('Fulham',           'FUL'),
+  ('Ipswich',          'IPS'),
+  ('Leicester',        'LEI'),
+  ('Liverpool',        'LIV'),
+  ('Man City',         'MCI'),
+  ('Man United',       'MUN'),
+  ('Newcastle',        'NEW'),
+  ('Nottm Forest',     'NFO'),
+  ('Southampton',      'SOU'),
+  ('Spurs',            'TOT'),
+  ('West Ham',         'WHU'),
+  ('Wolves',           'WOL')
+ON CONFLICT DO NOTHING;
+
+-- ============================================================
+-- STORAGE – club-shirts bucket
+-- ============================================================
+
+INSERT INTO storage.buckets (id, name, public)
+  VALUES ('club-shirts', 'club-shirts', true)
+  ON CONFLICT (id) DO NOTHING;
+
+DROP POLICY IF EXISTS "Public read club-shirts" ON storage.objects;
+CREATE POLICY "Public read club-shirts"
+  ON storage.objects FOR SELECT
+  TO public
+  USING (bucket_id = 'club-shirts');
+
+DROP POLICY IF EXISTS "Authenticated upload club-shirts" ON storage.objects;
+CREATE POLICY "Authenticated upload club-shirts"
+  ON storage.objects FOR INSERT
+  TO authenticated
+  WITH CHECK (bucket_id = 'club-shirts');
+
+DROP POLICY IF EXISTS "Authenticated update club-shirts" ON storage.objects;
+CREATE POLICY "Authenticated update club-shirts"
+  ON storage.objects FOR UPDATE
+  TO authenticated
+  USING (bucket_id = 'club-shirts');
+
+DROP POLICY IF EXISTS "Authenticated delete club-shirts" ON storage.objects;
+CREATE POLICY "Authenticated delete club-shirts"
+  ON storage.objects FOR DELETE
+  TO authenticated
+  USING (bucket_id = 'club-shirts');
+
+-- ============================================================
+-- ALTER articles – add category column
+-- ============================================================
+
+ALTER TABLE articles
+  ADD COLUMN IF NOT EXISTS category text
+  CHECK (category IN ('Transfers', 'Captain', 'Wildcard', 'Differentials', 'GW Preview', 'GW Review'));
+
+-- ============================================================
+-- ALTER team_players – add club reference (optional FK)
+-- ============================================================
+
+ALTER TABLE team_players
+  ADD COLUMN IF NOT EXISTS player_club_id uuid REFERENCES clubs (id) ON DELETE SET NULL;

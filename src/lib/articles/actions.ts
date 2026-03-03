@@ -18,6 +18,7 @@ export async function createArticle(formData: FormData) {
     content:     (formData.get('content') as string) || null,
     cover_image: (formData.get('cover_image') as string) || null,
     author_id:   (formData.get('author_id') as string) || null,
+    category:    (formData.get('category') as string) || null,
     published,
     published_at: published ? new Date().toISOString() : null,
   });
@@ -46,6 +47,7 @@ export async function updateArticle(id: string, formData: FormData) {
       content:     (formData.get('content') as string) || null,
       cover_image: (formData.get('cover_image') as string) || null,
       author_id:   (formData.get('author_id') as string) || null,
+      category:    (formData.get('category') as string) || null,
       published,
       published_at: published ? new Date().toISOString() : null,
     })

@@ -1,15 +1,22 @@
+import { createClient } from '@/lib/supabase/server';
 import Navbar from '@/components/public/Navbar';
 import Footer from '@/components/public/Footer';
 
-export default function PublicLayout({
+export default async function PublicLayout({
   children,
 }: {
   children: React.ReactNode;
 }) {
+  const supabase = createClient();
+  const { data: managers } = await supabase
+    .from('managers')
+    .select('id, name, avatar_url')
+    .order('created_at', { ascending: true });
+
   return (
     <>
-      <Navbar />
-      <div className="pt-16">{children}</div>
+      <Navbar managers={managers ?? []} />
+      {children}
       <Footer />
     </>
   );

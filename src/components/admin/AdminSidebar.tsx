@@ -12,6 +12,7 @@ import {
   Star,
   Users,
   LogOut,
+  Shield,
 } from 'lucide-react';
 
 const navItems = [
@@ -22,6 +23,7 @@ const navItems = [
   { href: '/admin/kooptips',         label: 'Kooptips',      icon: TrendingUp,      exact: false },
   { href: '/admin/captain-keuze',    label: 'Captain Keuze', icon: Star,            exact: false },
   { href: '/admin/managers',         label: 'Managers',      icon: Users,           exact: false },
+  { href: '/admin/clubs',            label: 'Clubs',         icon: Shield,          exact: false },
 ];
 
 interface AdminSidebarProps {

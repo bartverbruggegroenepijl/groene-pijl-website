@@ -1,14 +1,16 @@
 import type { Metadata } from "next";
+import "@fontsource/montserrat/400.css";
+import "@fontsource/montserrat/500.css";
+import "@fontsource/montserrat/600.css";
+import "@fontsource/montserrat/700.css";
 import "@fontsource/inter/400.css";
-import "@fontsource/inter/500.css";
 import "@fontsource/inter/600.css";
-import "@fontsource/inter/700.css";
 import "@fontsource/bebas-neue";
 import "./globals.css";
 
 export const metadata: Metadata = {
-  title: "De Groene Pijl",
-  description: "De Nederlandse Fantasy Premier League Podcast",
+  title: "De Groene Pijl — De Nederlandse FPL Podcast",
+  description: "Wekelijkse analyse, captain picks, kooptips en breaking FPL nieuws. De enige Nederlandse Fantasy Premier League podcast.",
 };
 
 export default function RootLayout({
@@ -18,7 +20,7 @@ export default function RootLayout({
 }>) {
   return (
     <html lang="nl">
-      <body className="antialiased font-body">
+      <body className="antialiased bg-background-dark text-white" style={{ fontFamily: 'Montserrat, sans-serif' }}>
         {children}
       </body>
     </html>

@@ -4,6 +4,7 @@ import { useEffect, useState, useTransition } from 'react';
 import Link from 'next/link';
 import { ArrowLeft, Save, Loader2 } from 'lucide-react';
 import type { Article, Manager } from '@/types';
+import { ARTICLE_CATEGORIES } from '@/types';
 
 // ─── Slug helper ─────────────────────────────────────────────
 
@@ -48,6 +49,7 @@ export default function ArticleForm({ managers, article, action, mode }: Article
   const [content, setContent]     = useState(article?.content ?? '');
   const [coverImage, setCoverImage] = useState(article?.cover_image ?? '');
   const [authorId, setAuthorId]   = useState(article?.author_id ?? '');
+  const [category, setCategory]   = useState(article?.category ?? '');
   const [published, setPublished] = useState(article?.published ?? false);
   const [error, setError]         = useState('');
 
@@ -241,6 +243,23 @@ export default function ArticleForm({ managers, article, action, mode }: Article
                 <option key={m.id} value={m.id}>
                   {m.name}
                 </option>
+              ))}
+            </select>
+          </div>
+
+          {/* Categorie */}
+          <div className="bg-[#1a1a1a] border border-white/8 rounded-xl p-5">
+            <label htmlFor="category" className={labelClass}>Categorie</label>
+            <select
+              id="category"
+              name="category"
+              value={category}
+              onChange={(e) => setCategory(e.target.value)}
+              className={inputClass + ' cursor-pointer'}
+            >
+              <option value="">— Geen categorie —</option>
+              {ARTICLE_CATEGORIES.map((cat) => (
+                <option key={cat} value={cat}>{cat}</option>
               ))}
             </select>
           </div>
