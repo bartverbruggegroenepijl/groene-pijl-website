@@ -106,9 +106,9 @@ function formatDate(iso: string): string {
 }
 
 const CAPTAIN_RANKS = [
-  { rank: 1, emoji: '🥇', label: '1e Keuze', borderColor: 'border-yellow-400', textColor: 'text-yellow-400', bgColor: 'bg-yellow-400/10' },
-  { rank: 2, emoji: '🥈', label: '2e Keuze', borderColor: 'border-gray-400',   textColor: 'text-gray-300',   bgColor: 'bg-gray-400/10'   },
-  { rank: 3, emoji: '🥉', label: '3e Keuze', borderColor: 'border-orange-500', textColor: 'text-orange-400', bgColor: 'bg-orange-500/10' },
+  { rank: 1, emoji: '🥇', label: '1e Keuze', borderColor: 'border-yellow-400', textColor: 'text-yellow-500', bgColor: 'bg-yellow-50' },
+  { rank: 2, emoji: '🥈', label: '2e Keuze', borderColor: 'border-gray-300',   textColor: 'text-gray-500',   bgColor: 'bg-gray-50'   },
+  { rank: 3, emoji: '🥉', label: '3e Keuze', borderColor: 'border-orange-400', textColor: 'text-orange-500', bgColor: 'bg-orange-50' },
 ];
 
 // ─── Sub-components ───────────────────────────────────────────────────────────
@@ -121,7 +121,7 @@ function SectionLabel({ children }: { children: React.ReactNode }) {
   );
 }
 
-function SectionTitle({ children }: { children: React.ReactNode }) {
+function SectionTitleDark({ children }: { children: React.ReactNode }) {
   return (
     <h2 className="text-3xl sm:text-4xl lg:text-5xl font-bold text-white leading-tight">
       {children}
@@ -129,7 +129,15 @@ function SectionTitle({ children }: { children: React.ReactNode }) {
   );
 }
 
-function EmptyPlaceholder({ message }: { message: string }) {
+function SectionTitleLight({ children }: { children: React.ReactNode }) {
+  return (
+    <h2 className="text-3xl sm:text-4xl lg:text-5xl font-bold text-gray-900 leading-tight">
+      {children}
+    </h2>
+  );
+}
+
+function EmptyPlaceholderDark({ message }: { message: string }) {
   return (
     <div className="mt-8 rounded-2xl border border-dashed border-white/10 py-16 text-center">
       <p className="text-white/30 text-sm">{message}</p>
@@ -137,7 +145,15 @@ function EmptyPlaceholder({ message }: { message: string }) {
   );
 }
 
-function PlayerBadge({ imageUrl, name, size = 56 }: { imageUrl: string | null; name: string | null; size?: number }) {
+function EmptyPlaceholderLight({ message }: { message: string }) {
+  return (
+    <div className="mt-8 rounded-2xl border border-dashed border-gray-200 py-16 text-center">
+      <p className="text-gray-400 text-sm">{message}</p>
+    </div>
+  );
+}
+
+function PlayerBadgeDark({ imageUrl, name, size = 56 }: { imageUrl: string | null; name: string | null; size?: number }) {
   if (imageUrl) {
     return (
       <div className="relative rounded-full overflow-hidden shrink-0" style={{ width: size, height: size }}>
@@ -155,11 +171,29 @@ function PlayerBadge({ imageUrl, name, size = 56 }: { imageUrl: string | null; n
   );
 }
 
+function PlayerBadgeLight({ imageUrl, name, size = 56 }: { imageUrl: string | null; name: string | null; size?: number }) {
+  if (imageUrl) {
+    return (
+      <div className="relative rounded-full overflow-hidden shrink-0" style={{ width: size, height: size }}>
+        <Image src={imageUrl} alt={name ?? ''} fill className="object-cover" />
+      </div>
+    );
+  }
+  return (
+    <div
+      className="rounded-full bg-gray-100 flex items-center justify-center shrink-0 text-primary font-bold"
+      style={{ width: size, height: size, fontSize: size * 0.4 }}
+    >
+      {name?.charAt(0) ?? '?'}
+    </div>
+  );
+}
+
 function PitchPlayer({ player }: { player: TeamPlayer }) {
   return (
     <div className="flex flex-col items-center gap-1 w-14 sm:w-16">
       <div className="relative">
-        <PlayerBadge imageUrl={player.player_image_url} name={player.player_name} size={48} />
+        <PlayerBadgeDark imageUrl={player.player_image_url} name={player.player_name} size={48} />
         {player.is_captain && (
           <span className="absolute -top-1 -right-1 w-5 h-5 bg-primary text-black text-[9px] font-black rounded-full flex items-center justify-center leading-none">
             C
@@ -231,7 +265,12 @@ export default async function HomePage() {
   const kooptips = (kooptipsRes.data?.[0] as BuyTip | undefined) ?? null;
   const articles = (articlesRes.data as Article[] | null) ?? [];
   const team     = (teamRes.data?.[0] as TeamOfTheWeek | undefined) ?? null;
-  const managers = (managersRes.data as Manager[] | null) ?? [];
+
+  // Deduplicate managers by name
+  const allManagers = (managersRes.data as Manager[] | null) ?? [];
+  const managers = allManagers.filter(
+    (m, idx, arr) => arr.findIndex((x) => x.name === m.name) === idx,
+  );
 
   const captainPlayers = [...(captain?.captain_pick_players ?? [])].sort((a, b) => a.rank - b.rank);
   const gk  = team?.team_players.filter((p) => p.position === 'GK')  ?? [];
@@ -240,14 +279,13 @@ export default async function HomePage() {
   const fwd = team?.team_players.filter((p) => p.position === 'FWD') ?? [];
 
   return (
-    <main className="bg-background-dark text-white overflow-x-hidden">
+    <main className="text-white overflow-x-hidden">
 
-      {/* ── 1. HERO ─────────────────────────────────────────────────── */}
-      <section className="relative min-h-screen flex items-center">
-        <div className="absolute inset-0 bg-background-dark" />
-        <div className="absolute inset-0 bg-gradient-hero opacity-80" />
+      {/* ── 1. HERO (dark navy) ──────────────────────────────────────── */}
+      <section className="relative min-h-screen flex items-center bg-navy">
+        <div className="absolute inset-0" style={{ background: 'linear-gradient(135deg, #0D0B2A 0%, #1A0A3B 100%)' }} />
         <div className="absolute top-0 left-0 w-[700px] h-[700px] rounded-full blur-3xl -translate-x-1/3 -translate-y-1/3 pointer-events-none" style={{ background: 'radial-gradient(circle, rgba(0,250,97,0.07) 0%, transparent 70%)' }} />
-        <div className="absolute top-1/4 right-0 w-[500px] h-[500px] rounded-full blur-3xl translate-x-1/3 pointer-events-none" style={{ background: 'radial-gradient(circle, rgba(123,47,255,0.08) 0%, transparent 70%)' }} />
+        <div className="absolute top-1/4 right-0 w-[500px] h-[500px] rounded-full blur-3xl translate-x-1/3 pointer-events-none" style={{ background: 'radial-gradient(circle, rgba(123,47,255,0.10) 0%, transparent 70%)' }} />
 
         <div className="relative z-10 max-w-8xl mx-auto px-4 sm:px-6 lg:px-8 w-full pt-24 pb-20">
           <div className="grid grid-cols-1 lg:grid-cols-2 gap-12 lg:gap-16 items-center">
@@ -315,7 +353,7 @@ export default async function HomePage() {
                   )}
                 </div>
                 {episode && (
-                  <div className="absolute -bottom-4 -right-4 bg-surface-2 border border-white/10 rounded-xl px-4 py-3 max-w-[200px]" style={{ boxShadow: '0 8px 32px rgba(0,0,0,0.6)' }}>
+                  <div className="absolute -bottom-4 -right-4 bg-navy-card border border-white/10 rounded-xl px-4 py-3 max-w-[200px]" style={{ boxShadow: '0 8px 32px rgba(0,0,0,0.6)' }}>
                     <p className="text-[10px] text-primary font-semibold uppercase tracking-wider mb-0.5">Nieuwste</p>
                     <p className="text-white text-xs font-semibold line-clamp-2 leading-tight">{episode.title}</p>
                   </div>
@@ -331,15 +369,15 @@ export default async function HomePage() {
         </div>
       </section>
 
-      {/* ── 2. LAATSTE AFLEVERING ──────────────────────────────────── */}
-      <section id="afleveringen" className="py-20 px-4 bg-surface-1">
+      {/* ── 2. LAATSTE AFLEVERING (white) ───────────────────────────── */}
+      <section id="afleveringen" className="py-20 px-4 bg-white">
         <div className="max-w-8xl mx-auto">
           <SectionLabel>Podcast</SectionLabel>
-          <SectionTitle>Laatste Aflevering</SectionTitle>
+          <SectionTitleLight>Laatste Aflevering</SectionTitleLight>
 
           {episode ? (
-            <div className="mt-10 grid grid-cols-1 lg:grid-cols-5 gap-0 bg-surface-2 border border-white/8 rounded-2xl overflow-hidden card-lift">
-              <div className="lg:col-span-2 relative min-h-[220px] bg-surface-3">
+            <div className="mt-10 grid grid-cols-1 lg:grid-cols-5 gap-0 bg-white shadow-xl border border-gray-100 rounded-2xl overflow-hidden card-lift">
+              <div className="lg:col-span-2 relative min-h-[220px] bg-gray-100">
                 {episode.image_url ? (
                   <Image src={episode.image_url} alt={episode.title} fill className="object-cover" />
                 ) : (
@@ -362,16 +400,16 @@ export default async function HomePage() {
                       <span className="w-1.5 h-1.5 bg-primary rounded-full animate-pulse" />
                       Nieuwste
                     </span>
-                    {episode.published_at && <span className="text-white/30 text-xs">{formatDate(episode.published_at)}</span>}
+                    {episode.published_at && <span className="text-gray-400 text-xs">{formatDate(episode.published_at)}</span>}
                     {episode.duration && (
-                      <span className="flex items-center gap-1 text-white/30 text-xs">
+                      <span className="flex items-center gap-1 text-gray-400 text-xs">
                         <Clock size={11} />{formatDuration(episode.duration)}
                       </span>
                     )}
                   </div>
-                  <h3 className="text-2xl sm:text-3xl font-bold text-white mb-3 leading-tight">{episode.title}</h3>
+                  <h3 className="text-2xl sm:text-3xl font-bold text-gray-900 mb-3 leading-tight">{episode.title}</h3>
                   {episode.description && (
-                    <p className="text-white/50 text-sm leading-relaxed line-clamp-3">{episode.description}</p>
+                    <p className="text-gray-500 text-sm leading-relaxed line-clamp-3">{episode.description}</p>
                   )}
                 </div>
                 <div className="flex flex-wrap gap-3">
@@ -380,89 +418,89 @@ export default async function HomePage() {
                       <ExternalLink size={14} />Luister op Spotify
                     </a>
                   )}
-                  <a href="#afleveringen" className="inline-flex items-center gap-2 border border-white/15 text-white/60 hover:text-white hover:border-white/30 text-sm font-medium px-5 py-2.5 rounded-xl transition-colors">
+                  <a href="#afleveringen" className="inline-flex items-center gap-2 border border-gray-200 text-gray-500 hover:text-gray-900 hover:border-gray-400 text-sm font-medium px-5 py-2.5 rounded-xl transition-colors">
                     Alle afleveringen <ArrowRight size={12} />
                   </a>
                 </div>
               </div>
             </div>
           ) : (
-            <EmptyPlaceholder message="Nog geen afleveringen beschikbaar." />
+            <EmptyPlaceholderLight message="Nog geen afleveringen beschikbaar." />
           )}
         </div>
       </section>
 
-      {/* ── 3. CAPTAIN PICK VAN DE WEEK ────────────────────────────── */}
-      <section id="captain-pick" className="py-20 px-4">
+      {/* ── 3. CAPTAIN PICK VAN DE WEEK (dark navy) ─────────────────── */}
+      <section id="captain-pick" className="py-20 px-4 bg-navy">
         <div className="max-w-8xl mx-auto">
           <SectionLabel>{captain ? `Gameweek ${captain.gameweek}` : 'Captain Pick'}</SectionLabel>
-          <SectionTitle>Captain Pick van de Week</SectionTitle>
+          <SectionTitleDark>Captain Pick van de Week</SectionTitleDark>
 
           {captainPlayers.length > 0 ? (
             <div className="mt-10 grid grid-cols-1 md:grid-cols-3 gap-5">
               {captainPlayers.slice(0, 3).map((p) => {
                 const cfg = CAPTAIN_RANKS.find((r) => r.rank === p.rank) ?? CAPTAIN_RANKS[2];
                 return (
-                  <div key={p.rank} className={`card-lift ${cfg.bgColor} border ${cfg.borderColor} rounded-2xl p-6 flex flex-col gap-4`}>
+                  <div key={p.rank} className={`card-lift bg-white border-2 ${cfg.borderColor} rounded-2xl p-6 flex flex-col gap-4`}>
                     <div className="flex items-center gap-2">
                       <span className="text-2xl">{cfg.emoji}</span>
                       <span className={`text-sm font-semibold ${cfg.textColor} uppercase tracking-wide`}>{cfg.label}</span>
                     </div>
                     <div className="flex items-center gap-4">
-                      <PlayerBadge imageUrl={p.image_url} name={p.player_name} size={64} />
+                      <PlayerBadgeLight imageUrl={p.image_url} name={p.player_name} size={64} />
                       <div>
-                        <p className="text-xl font-bold text-white leading-tight">{p.player_name ?? '—'}</p>
-                        <p className="text-sm text-white/50 mt-0.5">{p.player_club}{p.position && ` · ${p.position}`}</p>
+                        <p className="text-xl font-bold text-gray-900 leading-tight">{p.player_name ?? '—'}</p>
+                        <p className="text-sm text-gray-400 mt-0.5">{p.player_club}{p.position && ` · ${p.position}`}</p>
                       </div>
                     </div>
                     {p.motivation && (
-                      <p className="text-sm text-white/60 leading-relaxed border-t border-white/8 pt-4 italic">&quot;{p.motivation}&quot;</p>
+                      <p className="text-sm text-gray-500 leading-relaxed border-t border-gray-100 pt-4 italic">&quot;{p.motivation}&quot;</p>
                     )}
                   </div>
                 );
               })}
             </div>
           ) : (
-            <EmptyPlaceholder message="Nog geen captain pick beschikbaar voor deze gameweek." />
+            <EmptyPlaceholderDark message="Nog geen captain pick beschikbaar voor deze gameweek." />
           )}
         </div>
       </section>
 
-      {/* ── 4. KOOPTIPS VAN DE WEEK ────────────────────────────────── */}
-      <section id="kooptips" className="py-20 px-4 bg-surface-1">
+      {/* ── 4. KOOPTIPS VAN DE WEEK (white) ─────────────────────────── */}
+      <section id="kooptips" className="py-20 px-4 bg-white">
         <div className="max-w-8xl mx-auto">
           <SectionLabel>{kooptips ? `Gameweek ${kooptips.gameweek}` : 'Kooptips'}</SectionLabel>
-          <SectionTitle>Kooptips van de Week</SectionTitle>
+          <SectionTitleLight>Kooptips van de Week</SectionTitleLight>
 
           {kooptips && kooptips.buy_tip_players.length > 0 ? (
             <div className="mt-10 grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-5 gap-4">
               {kooptips.buy_tip_players.map((p, i) => (
-                <div key={i} className="card-lift bg-surface-2 border border-white/8 hover:border-primary/30 rounded-2xl p-4 flex flex-col items-center text-center gap-3 transition-colors">
-                  <PlayerBadge imageUrl={p.image_url} name={p.player_name} size={72} />
+                <div key={i} className="card-lift bg-white border border-gray-100 hover:border-primary/30 rounded-2xl p-4 flex flex-col items-center text-center gap-3 transition-colors shadow-sm hover:shadow-md">
+                  <PlayerBadgeLight imageUrl={p.image_url} name={p.player_name} size={72} />
                   <div>
-                    <p className="font-bold text-white text-sm leading-tight">{p.player_name ?? '—'}</p>
-                    <p className="text-xs text-white/40 mt-0.5">{p.player_club}{p.position && ` · ${p.position}`}</p>
+                    <p className="font-bold text-gray-900 text-sm leading-tight">{p.player_name ?? '—'}</p>
+                    <p className="text-xs text-gray-400 mt-0.5">{p.player_club}{p.position && ` · ${p.position}`}</p>
                   </div>
                   {p.price !== null && (
                     <span className="text-xs font-bold bg-primary text-black px-3 py-1 rounded-full">£{Number(p.price).toFixed(1)}m</span>
                   )}
                   {p.motivation && (
-                    <p className="text-xs text-white/50 italic leading-relaxed line-clamp-3">{p.motivation}</p>
+                    <p className="text-xs text-gray-500 italic leading-relaxed line-clamp-3">{p.motivation}</p>
                   )}
                 </div>
               ))}
             </div>
           ) : (
-            <EmptyPlaceholder message="Nog geen kooptips beschikbaar voor deze gameweek." />
+            <EmptyPlaceholderLight message="Nog geen kooptips beschikbaar voor deze gameweek." />
           )}
         </div>
       </section>
 
-      {/* ── 5. TEAM VAN DE WEEK ────────────────────────────────────── */}
-      <section id="team" className="py-20 px-4">
+      {/* ── 5. TEAM VAN DE WEEK (dark navy) ─────────────────────────── */}
+      <section id="team" className="py-20 px-4 bg-navy">
         <div className="max-w-8xl mx-auto">
           <SectionLabel>{team ? `Gameweek ${team.week_number}` : 'Team'}</SectionLabel>
-          <SectionTitle>Team van de Week</SectionTitle>
+          <SectionTitleDark>Team van de Week</SectionTitleDark>
 
           {team && team.team_players.length > 0 ? (
             <div className="mt-10 max-w-2xl mx-auto">
@@ -495,18 +533,18 @@ export default async function HomePage() {
               )}
             </div>
           ) : (
-            <EmptyPlaceholder message="Nog geen team van de week beschikbaar." />
+            <EmptyPlaceholderDark message="Nog geen team van de week beschikbaar." />
           )}
         </div>
       </section>
 
-      {/* ── 6. ARTIKELEN & ANALYSE ─────────────────────────────────── */}
-      <section id="artikelen" className="py-20 px-4 bg-surface-1">
+      {/* ── 6. ARTIKELEN & ANALYSE (white) ──────────────────────────── */}
+      <section id="artikelen" className="py-20 px-4 bg-white">
         <div className="max-w-8xl mx-auto">
           <div className="flex items-end justify-between mb-10">
             <div>
               <SectionLabel>Blog</SectionLabel>
-              <SectionTitle>Artikelen &amp; Analyse</SectionTitle>
+              <SectionTitleLight>Artikelen &amp; Analyse</SectionTitleLight>
             </div>
             <Link href="/artikelen" className="hidden sm:inline-flex items-center gap-1.5 text-primary hover:text-primary/80 text-sm font-semibold transition-colors">
               Alle artikelen <ArrowRight size={14} />
@@ -516,13 +554,13 @@ export default async function HomePage() {
           {articles.length > 0 ? (
             <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
               {articles.map((a) => (
-                <article key={a.id} className="card-lift bg-surface-2 border border-white/8 hover:border-primary/20 rounded-2xl overflow-hidden group transition-colors">
-                  <div className="relative h-44 bg-surface-3">
+                <article key={a.id} className="card-lift bg-white border border-gray-100 hover:border-primary/20 rounded-2xl overflow-hidden group transition-colors shadow-sm hover:shadow-lg">
+                  <div className="relative h-44 bg-gray-100">
                     {a.cover_image ? (
                       <Image src={a.cover_image} alt={a.title} fill className="object-cover group-hover:scale-105 transition-transform duration-300" />
                     ) : (
-                      <div className="absolute inset-0 flex items-center justify-center" style={{ background: 'linear-gradient(135deg, rgba(0,250,97,0.08) 0%, rgba(123,47,255,0.12) 100%)' }}>
-                        <span className="font-bold text-5xl text-primary/20">GP</span>
+                      <div className="absolute inset-0 flex items-center justify-center" style={{ background: 'linear-gradient(135deg, rgba(0,250,97,0.12) 0%, rgba(123,47,255,0.16) 100%)' }}>
+                        <span className="font-bold text-5xl text-primary/30">GP</span>
                       </div>
                     )}
                     {a.category && (
@@ -530,12 +568,12 @@ export default async function HomePage() {
                     )}
                   </div>
                   <div className="p-5">
-                    <div className="flex items-center gap-2 text-xs text-white/30 mb-2">
+                    <div className="flex items-center gap-2 text-xs text-gray-400 mb-2">
                       {a.managers?.name && <span>{a.managers.name}</span>}
                       {a.published_at && <><span>·</span><span>{formatDate(a.published_at)}</span></>}
                     </div>
-                    <h3 className="font-bold text-lg text-white mb-2 leading-snug group-hover:text-primary transition-colors line-clamp-2">{a.title}</h3>
-                    {a.excerpt && <p className="text-sm text-white/50 leading-relaxed line-clamp-2 mb-4">{a.excerpt}</p>}
+                    <h3 className="font-bold text-lg text-gray-900 mb-2 leading-snug group-hover:text-primary transition-colors line-clamp-2">{a.title}</h3>
+                    {a.excerpt && <p className="text-sm text-gray-500 leading-relaxed line-clamp-2 mb-4">{a.excerpt}</p>}
                     <Link href={`/artikelen/${a.slug}`} className="inline-flex items-center gap-1 text-primary text-sm font-semibold hover:underline">
                       Lees meer <ArrowRight size={12} />
                     </Link>
@@ -544,7 +582,7 @@ export default async function HomePage() {
               ))}
             </div>
           ) : (
-            <EmptyPlaceholder message="Nog geen artikelen gepubliceerd." />
+            <EmptyPlaceholderLight message="Nog geen artikelen gepubliceerd." />
           )}
 
           {articles.length > 0 && (
@@ -557,22 +595,22 @@ export default async function HomePage() {
         </div>
       </section>
 
-      {/* ── 7. DE MANAGERS ─────────────────────────────────────────── */}
-      <section id="managers" className="py-20 px-4">
+      {/* ── 7. DE MANAGERS (dark navy) ───────────────────────────────── */}
+      <section id="managers" className="py-20 px-4 bg-navy">
         <div className="max-w-8xl mx-auto">
           <SectionLabel>Het Team</SectionLabel>
-          <SectionTitle>De Managers</SectionTitle>
+          <SectionTitleDark>De Managers</SectionTitleDark>
 
           {managers.length > 0 ? (
             <div className="mt-10 grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6">
               {managers.map((m) => (
-                <Link key={m.id} href={`/managers/${m.id}`} className="card-lift bg-surface-2 border border-white/8 hover:border-primary/30 rounded-2xl p-6 flex flex-col items-center text-center gap-3 transition-colors group">
+                <Link key={m.id} href={`/managers/${m.id}`} className="card-lift bg-navy-card border border-white/8 hover:border-primary/30 rounded-2xl p-6 flex flex-col items-center text-center gap-3 transition-colors group">
                   {m.avatar_url ? (
                     <div className="relative w-20 h-20 rounded-full overflow-hidden ring-2 ring-white/10 group-hover:ring-primary/40 transition-all duration-300">
                       <Image src={m.avatar_url} alt={m.name} fill className="object-cover" />
                     </div>
                   ) : (
-                    <div className="w-20 h-20 rounded-full bg-surface-3 ring-2 ring-white/10 group-hover:ring-primary/40 flex items-center justify-center transition-all duration-300">
+                    <div className="w-20 h-20 rounded-full bg-white/5 ring-2 ring-white/10 group-hover:ring-primary/40 flex items-center justify-center transition-all duration-300">
                       <span className="text-3xl font-bold text-primary">{m.name.charAt(0)}</span>
                     </div>
                   )}
@@ -590,13 +628,13 @@ export default async function HomePage() {
               ))}
             </div>
           ) : (
-            <EmptyPlaceholder message="Managers worden binnenkort toegevoegd." />
+            <EmptyPlaceholderDark message="Managers worden binnenkort toegevoegd." />
           )}
         </div>
       </section>
 
-      {/* ── MINI-LEAGUE CTA ─────────────────────────────────────────── */}
-      <section className="py-20 px-4 bg-surface-1">
+      {/* ── MINI-LEAGUE CTA (gradient) ───────────────────────────────── */}
+      <section className="py-20 px-4 bg-navy">
         <div className="max-w-8xl mx-auto">
           <div className="relative rounded-3xl overflow-hidden">
             <div className="absolute inset-0" style={{ background: 'linear-gradient(135deg, #00FA61 0%, #7B2FFF 100%)' }} />

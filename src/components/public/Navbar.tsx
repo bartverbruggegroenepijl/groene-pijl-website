@@ -49,7 +49,7 @@ export default function Navbar({ managers = [] }: NavbarProps) {
     <header
       className={`fixed top-0 left-0 right-0 z-50 transition-all duration-300 ${
         scrolled || menuOpen
-          ? 'bg-background-dark/98 backdrop-blur-md border-b border-white/8 shadow-lg'
+          ? 'bg-navy/98 backdrop-blur-md border-b border-white/8 shadow-lg'
           : 'bg-transparent'
       }`}
     >
@@ -95,7 +95,7 @@ export default function Navbar({ managers = [] }: NavbarProps) {
               </button>
 
               {managersOpen && (
-                <div className="absolute top-full left-1/2 -translate-x-1/2 mt-2 bg-surface-2 border border-white/10 rounded-xl shadow-card-hover py-2 min-w-[200px] z-50">
+                <div className="absolute top-full left-1/2 -translate-x-1/2 mt-2 bg-navy-card border border-white/10 rounded-xl shadow-card-hover py-2 min-w-[200px] z-50">
                   {managers.length > 0 ? (
                     managers.map((m) => (
                       <Link
@@ -156,7 +156,7 @@ export default function Navbar({ managers = [] }: NavbarProps) {
 
       {/* Mobile overlay menu */}
       {menuOpen && (
-        <div className="lg:hidden bg-background-dark border-t border-white/8">
+        <div className="lg:hidden bg-navy border-t border-white/8">
           <nav className="flex flex-col px-4 py-4 gap-1">
             {navLinks.map((link) => (
               <a

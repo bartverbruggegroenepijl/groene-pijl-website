@@ -22,6 +22,11 @@ const config: Config = {
         "surface-1": "#141414",
         "surface-2": "#1C1C1C",
         "surface-3": "#242424",
+
+        // Deep navy (public site)
+        navy: "#0D0B2A",
+        "navy-deep": "#1A0A3B",
+        "navy-card": "#13113A",
       },
       fontFamily: {
         sans: ["Montserrat", "sans-serif"],

@@ -2,7 +2,7 @@ import { Instagram, Mic } from 'lucide-react';
 
 export default function Footer() {
   return (
-    <footer className="bg-surface-1 border-t border-white/8 text-white/70">
+    <footer className="bg-navy border-t border-white/8 text-white/70">
       <div className="max-w-8xl mx-auto px-4 sm:px-6 lg:px-8 py-14">
         <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-10 mb-10">
 
