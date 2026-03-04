@@ -49,7 +49,7 @@ export default function CaptainPickBuilder({ action, mode, existingPick, existin
   const [fplLoading, setFplLoading]   = useState(true);
   const [fplError, setFplError]       = useState('');
   const [gameweek, setGameweek]       = useState(existingPick?.gameweek?.toString() ?? '');
-  const [season, setSeason]           = useState(existingPick?.season ?? '2024-25');
+  const [season, setSeason]           = useState(existingPick?.season ?? '2025-26');
   const [published, setPublished]     = useState(existingPick?.published ?? false);
   const [slots, setSlots]             = useState<SlotState[]>(buildSlots);
   const [formError, setFormError]     = useState('');
@@ -240,7 +240,7 @@ export default function CaptainPickBuilder({ action, mode, existingPick, existin
               type="text"
               value={season}
               onChange={(e) => setSeason(e.target.value)}
-              placeholder="2024-25"
+              placeholder="2025-26"
               className="w-full bg-[#111111] border border-white/10 text-white
                          placeholder-gray-600 rounded-lg px-4 py-2.5 text-sm
                          focus:outline-none focus:ring-2 focus:ring-[#00A651]

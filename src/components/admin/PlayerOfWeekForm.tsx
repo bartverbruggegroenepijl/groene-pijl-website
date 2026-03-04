@@ -30,7 +30,7 @@ export default function PlayerOfWeekForm({ action }: PlayerOfWeekFormProps) {
   const [fplError, setFplError]      = useState('');
 
   const [gameweek,    setGameweek]   = useState('');
-  const [season,      setSeason]     = useState('2024-25');
+  const [season,      setSeason]     = useState('2025-26');
   const [player,      setPlayer]     = useState<FplPlayer | null>(null);
   const [playerName,  setPlayerName] = useState('');
   const [playerClub,  setPlayerClub] = useState('');
@@ -306,7 +306,7 @@ export default function PlayerOfWeekForm({ action }: PlayerOfWeekFormProps) {
                 type="text"
                 value={season}
                 onChange={(e) => setSeason(e.target.value)}
-                placeholder="2024-25"
+                placeholder="2025-26"
                 className={inputClass}
               />
             </div>

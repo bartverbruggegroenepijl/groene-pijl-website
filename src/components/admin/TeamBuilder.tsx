@@ -86,7 +86,7 @@ export default function TeamBuilder({
   const [fplLoading, setFplLoading]   = useState(true);
   const [fplError, setFplError]       = useState('');
   const [weekNumber, setWeekNumber]   = useState(existingTeam?.week_number?.toString() ?? '');
-  const [season, setSeason]           = useState(existingTeam?.season ?? '2024-25');
+  const [season, setSeason]           = useState(existingTeam?.season ?? '2025-26');
   const [formation, setFormation]     = useState(defaultFormation);
   const [published, setPublished]     = useState(existingTeam?.published ?? false);
   const [slots, setSlots]             = useState<SlotState[]>(() => buildSlots(defaultFormation));
@@ -286,7 +286,7 @@ export default function TeamBuilder({
               type="text"
               value={season}
               onChange={(e) => setSeason(e.target.value)}
-              placeholder="2024-25"
+              placeholder="2025-26"
               className="w-full bg-[#111111] border border-white/10 text-white
                          placeholder-gray-600 rounded-lg px-4 py-2.5 text-sm
                          focus:outline-none focus:ring-2 focus:ring-[#00A651]

@@ -13,6 +13,7 @@ import {
 import StandingsTable from '@/components/public/StandingsTable';
 import { fetchLeagueStandings } from '@/lib/fpl/league';
 import type { LeagueApiResponse } from '@/lib/fpl/league';
+import { fetchGameweekInfo } from '@/lib/fpl/events';
 
 // ─── Types ────────────────────────────────────────────────────────────────────
 
@@ -368,6 +369,7 @@ export default async function HomePage() {
   // ── FPL mini-league: call FPL API directly (no self-referential HTTP) ────────
   // Self-referential fetches (server → own /api/... route) fail on Vercel during SSR.
   const leagueData: LeagueApiResponse | null = await fetchLeagueStandings();
+  const gwInfo = await fetchGameweekInfo();
 
   return (
     <main className="text-white overflow-x-hidden" style={{ background: '#0D0B2A' }}>
@@ -407,15 +409,15 @@ export default async function HomePage() {
             {/* ── Left: text + CTA ── */}
             <div>
               <div className="inline-flex items-center gap-2 bg-white/10 border border-white/20 text-white text-xs font-semibold px-4 py-2 rounded-full mb-6 uppercase tracking-widest backdrop-blur-sm">
-                🇳🇱 De enige Nederlandse FPL Podcast
+                De enige Nederlandse FPL Podcast
               </div>
 
               <h1
                 className="text-5xl sm:text-6xl lg:text-7xl font-bold leading-[1.0] mb-4"
                 style={{ fontFamily: 'Montserrat, sans-serif' }}
               >
-                <span className="text-white">TAKE YOUR FPL</span>
-                <span className="block text-white">TEAM TO THE TOP</span>
+                <span className="text-white">DE PLEK VOOR NEDERLANDSE</span>
+                <span className="block text-white">FPL MANAGERS</span>
               </h1>
               <p
                 className="text-xl sm:text-2xl font-semibold mb-5"
@@ -459,7 +461,7 @@ export default async function HomePage() {
               {/* Stats row */}
               <div className="flex gap-8 mt-10 pt-8 border-t border-white/10">
                 <div>
-                  <p className="text-2xl font-bold" style={{ color: '#00FA61' }}>GW</p>
+                  <p className="text-2xl font-bold" style={{ color: '#00FA61' }}>GW{gwInfo.currentGW ?? ''}</p>
                   <p className="text-xs text-white/40 mt-0.5">Elke week nieuw</p>
                 </div>
                 <div>

@@ -41,7 +41,7 @@ export default function BuyTipBuilder({ action, mode, existingTip, existingPlaye
   const [fplLoading, setFplLoading]   = useState(true);
   const [fplError, setFplError]       = useState('');
   const [gameweek, setGameweek]       = useState(existingTip?.gameweek?.toString() ?? '');
-  const [season, setSeason]           = useState(existingTip?.season ?? '2024-25');
+  const [season, setSeason]           = useState(existingTip?.season ?? '2025-26');
   const [published, setPublished]     = useState(existingTip?.published ?? false);
   const [slots, setSlots]             = useState<SlotState[]>(buildSlots);
   const [formError, setFormError]     = useState('');
@@ -229,7 +229,7 @@ export default function BuyTipBuilder({ action, mode, existingTip, existingPlaye
               type="text"
               value={season}
               onChange={(e) => setSeason(e.target.value)}
-              placeholder="2024-25"
+              placeholder="2025-26"
               className="w-full bg-[#111111] border border-white/10 text-white
                          placeholder-gray-600 rounded-lg px-4 py-2.5 text-sm
                          focus:outline-none focus:ring-2 focus:ring-[#00A651]

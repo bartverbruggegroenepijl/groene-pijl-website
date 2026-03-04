@@ -5,6 +5,7 @@ import Link from 'next/link';
 import Image from 'next/image';
 import { Menu, X, ChevronDown } from 'lucide-react';
 import Logo from '@/components/ui/Logo';
+import DeadlineCountdown from '@/components/ui/DeadlineCountdown';
 
 interface Manager {
   id: string;
@@ -127,26 +128,22 @@ export default function Navbar({ managers = [] }: NavbarProps) {
             </div>
           </nav>
 
-          {/* Right side */}
+          {/* Right side — deadline countdown */}
           <div className="hidden lg:flex items-center gap-3">
-            <a
-              href="https://fantasy.premierleague.com/leagues/auto-join/t5mggi"
-              target="_blank"
-              rel="noopener noreferrer"
-              className="btn-glow inline-flex items-center gap-2 bg-primary text-black font-semibold text-sm px-5 py-2.5 rounded-lg transition-all duration-300 hover:bg-primary/90"
-            >
-              Join Mini-League
-            </a>
+            <DeadlineCountdown />
           </div>
 
-          {/* Mobile hamburger */}
-          <button
-            onClick={() => setMenuOpen(!menuOpen)}
-            className="lg:hidden text-white/80 hover:text-primary transition-colors p-1"
-            aria-label="Menu"
-          >
-            {menuOpen ? <X size={24} /> : <Menu size={24} />}
-          </button>
+          {/* Mobile: compact countdown + hamburger */}
+          <div className="lg:hidden flex items-center gap-3">
+            <DeadlineCountdown />
+            <button
+              onClick={() => setMenuOpen(!menuOpen)}
+              className="text-white/80 hover:text-primary transition-colors p-1"
+              aria-label="Menu"
+            >
+              {menuOpen ? <X size={24} /> : <Menu size={24} />}
+            </button>
+          </div>
         </div>
       </div>
 
