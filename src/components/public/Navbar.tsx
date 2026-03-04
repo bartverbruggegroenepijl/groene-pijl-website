@@ -17,10 +17,11 @@ interface NavbarProps {
 }
 
 const navLinks = [
-  { label: 'Afleveringen',         href: '/afleveringen' },
-  { label: 'Artikelen',            href: '/artikelen' },
-  { label: 'Transfers & Captains', href: '/#captain-pick' },
-  { label: 'Rankings',             href: '/rankings' },
+  { label: 'Afleveringen',         href: '/afleveringen'   },
+  { label: 'Artikelen',            href: '/artikelen'      },
+  { label: 'Transfers & Captains', href: '/#captain-pick'  },
+  { label: 'Rankings',             href: '/rankings'       },
+  { label: 'Spelersnieuws',        href: '/spelersnieuws'  },
 ];
 
 export default function Navbar({ managers = [] }: NavbarProps) {
