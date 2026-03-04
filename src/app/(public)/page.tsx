@@ -314,28 +314,18 @@ export default async function HomePage() {
       {/* ── 1. HERO ──────────────────────────────────────────────────── */}
       <section className="relative min-h-screen flex items-center overflow-hidden">
 
-        {/* Brand gradient: donkerblauw #1F0E84 → paars → magenta #C821C3 */}
+        {/* Brand gradient: groen #00FA61 → donkerblauw #1F0E84 → magenta #C821C3 */}
         <div
           className="absolute inset-0"
           style={{
-            background: 'linear-gradient(135deg, #1F0E84 0%, #3D1472 45%, #C821C3 100%)',
+            background: 'linear-gradient(135deg, #00FA61 0%, #1F0E84 50%, #C821C3 100%)',
           }}
         />
 
-        {/* Green glow blob — top-right accent */}
+        {/* Subtle dark overlay center to improve text readability */}
         <div
-          className="absolute top-0 right-0 w-[500px] h-[500px] rounded-full blur-3xl translate-x-1/3 -translate-y-1/3 pointer-events-none"
-          style={{ background: 'radial-gradient(circle, rgba(0,250,97,0.18) 0%, transparent 65%)' }}
-        />
-        {/* Deep-blue blob — left side depth */}
-        <div
-          className="absolute top-1/2 left-0 w-[600px] h-[600px] rounded-full blur-3xl -translate-x-1/3 -translate-y-1/2 pointer-events-none"
-          style={{ background: 'radial-gradient(circle, rgba(31,14,132,0.9) 0%, transparent 70%)' }}
-        />
-        {/* Magenta bloom — bottom-right */}
-        <div
-          className="absolute bottom-0 right-1/4 w-[400px] h-[400px] rounded-full blur-3xl pointer-events-none"
-          style={{ background: 'radial-gradient(circle, rgba(200,33,195,0.25) 0%, transparent 65%)' }}
+          className="absolute inset-0 pointer-events-none"
+          style={{ background: 'radial-gradient(ellipse at 40% 50%, rgba(13,10,42,0.55) 0%, transparent 70%)' }}
         />
 
         {/* Diagonal white SVG divider — creates the clean angled cut into the white section below */}
@@ -428,80 +418,39 @@ export default async function HomePage() {
               </div>
             </div>
 
-            {/* ── Right: podcast cover card ── */}
+            {/* ── Right: hero image only ── */}
             <div className="flex justify-center lg:justify-end pb-8 lg:pb-0">
               <div className="relative">
                 {/* Outer glow ring */}
                 <div
-                  className="absolute -inset-6 rounded-2xl blur-2xl opacity-40 pointer-events-none"
-                  style={{ background: 'radial-gradient(circle, #00FA61 0%, rgba(0,250,97,0.3) 50%, transparent 80%)' }}
+                  className="absolute -inset-6 rounded-2xl blur-2xl opacity-50 pointer-events-none"
+                  style={{ background: 'radial-gradient(circle, rgba(200,33,195,0.4) 0%, rgba(0,250,97,0.2) 60%, transparent 80%)' }}
                 />
 
-                {/* Cover image */}
+                {/* Hero image — only from site_settings; gradient placeholder if absent */}
                 <div
-                  className="relative w-64 h-64 sm:w-80 sm:h-80 lg:w-[360px] lg:h-[360px] rounded-2xl overflow-hidden"
+                  className="relative w-64 h-64 sm:w-80 sm:h-80 lg:w-[380px] lg:h-[380px] rounded-2xl overflow-hidden"
                   style={{
-                    border: '2px solid rgba(0,250,97,0.4)',
-                    boxShadow: '0 0 0 1px rgba(0,250,97,0.15), 0 0 60px rgba(0,250,97,0.25), 0 24px 64px rgba(0,0,0,0.5)',
+                    border: '2px solid rgba(200,33,195,0.5)',
+                    boxShadow: '0 0 0 1px rgba(200,33,195,0.15), 0 0 60px rgba(200,33,195,0.2), 0 24px 64px rgba(0,0,0,0.5)',
                   }}
                 >
-                  {(heroImageUrl || episode?.image_url) ? (
+                  {heroImageUrl ? (
                     <Image
-                      src={heroImageUrl ?? episode!.image_url!}
-                      alt="Podcast cover"
+                      src={heroImageUrl}
+                      alt="De Groene Pijl"
                       fill
                       className="object-cover"
+                      priority
                     />
                   ) : (
+                    /* Gradient placeholder — no text or links */
                     <div
-                      className="w-full h-full flex flex-col items-center justify-center gap-4"
-                      style={{ background: 'linear-gradient(135deg, #2D1B69 0%, #00FA61 100%)' }}
-                    >
-                      <Mic size={64} className="text-black/40" />
-                      <span className="font-bold text-black/60 text-xl tracking-wide">DE GROENE PIJL</span>
-                    </div>
-                  )}
-
-                  {/* Spotify play overlay */}
-                  {episode?.spotify_url && (
-                    <a
-                      href={episode.spotify_url}
-                      target="_blank"
-                      rel="noopener noreferrer"
-                      className="absolute inset-0 flex items-center justify-center bg-transparent hover:bg-black/20 transition-colors group"
-                    >
-                      <div
-                        className="w-16 h-16 rounded-full bg-primary flex items-center justify-center group-hover:scale-110 transition-transform duration-300"
-                        style={{ boxShadow: '0 0 32px rgba(0,250,97,0.6)' }}
-                      >
-                        <Play size={28} className="text-black ml-1" fill="black" />
-                      </div>
-                    </a>
+                      className="w-full h-full"
+                      style={{ background: 'linear-gradient(135deg, #00FA61 0%, #1F0E84 50%, #C821C3 100%)' }}
+                    />
                   )}
                 </div>
-
-                {/* Episode info card */}
-                {episode && (
-                  <div
-                    className="absolute -bottom-5 -right-5 rounded-xl px-4 py-3 max-w-[210px]"
-                    style={{
-                      background: 'rgba(13,10,42,0.95)',
-                      border: '1px solid rgba(0,250,97,0.2)',
-                      boxShadow: '0 8px 32px rgba(0,0,0,0.7)',
-                      backdropFilter: 'blur(12px)',
-                    }}
-                  >
-                    <p className="text-[10px] font-semibold uppercase tracking-wider mb-0.5" style={{ color: '#00FA61' }}>
-                      Nieuwste aflevering
-                    </p>
-                    <p className="text-white text-xs font-semibold line-clamp-2 leading-tight">
-                      {episode.title}
-                    </p>
-                    {episode.published_at && (
-                      <p className="text-white/30 text-[10px] mt-1">{formatDate(episode.published_at)}</p>
-                    )}
-                  </div>
-                )}
               </div>
             </div>
 

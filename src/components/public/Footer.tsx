@@ -3,7 +3,14 @@ import Logo from '@/components/ui/Logo';
 
 export default function Footer() {
   return (
-    <footer className="bg-navy text-white/70" style={{ borderTop: '2px solid rgba(0,250,97,0.22)' }}>
+    <footer
+      className="text-white/70"
+      style={{
+        background: '#150A6E',
+        borderTop: '2px solid rgba(200,33,195,0.4)',
+        boxShadow: '0 -4px 40px rgba(200,33,195,0.12)',
+      }}
+    >
       <div className="max-w-8xl mx-auto px-4 sm:px-6 lg:px-8 py-14">
         <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-10 mb-10">
 
@@ -61,7 +68,10 @@ export default function Footer() {
                   href="https://www.instagram.com/groenepijlpodcast"
                   target="_blank"
                   rel="noopener noreferrer"
-                  className="flex items-center gap-2 hover:text-primary transition-colors"
+                  className="flex items-center gap-2 transition-colors"
+                  style={{ color: 'rgba(200,33,195,0.7)' }}
+                  onMouseEnter={(e) => (e.currentTarget.style.color = '#C821C3')}
+                  onMouseLeave={(e) => (e.currentTarget.style.color = 'rgba(200,33,195,0.7)')}
                 >
                   <Instagram size={14} /> @groenepijlpodcast
                 </a>
@@ -78,8 +88,11 @@ export default function Footer() {
           </div>
         </div>
 
-        <div className="border-t border-white/8 pt-6 flex flex-col sm:flex-row items-center justify-between gap-3">
-          <p className="text-xs text-white/30">
+        <div
+          className="pt-6 flex flex-col sm:flex-row items-center justify-between gap-3"
+          style={{ borderTop: '1px solid rgba(255,255,255,0.07)' }}
+        >
+          <p className="text-xs" style={{ color: 'rgba(255,255,255,0.25)' }}>
             © {new Date().getFullYear()} De Groene Pijl — De Nederlandse FPL Podcast
           </p>
           <div className="flex items-center gap-4">
@@ -87,14 +100,18 @@ export default function Footer() {
               href="https://www.instagram.com/groenepijlpodcast"
               target="_blank"
               rel="noopener noreferrer"
-              className="text-white/30 hover:text-primary transition-colors"
+              className="transition-colors"
+              style={{ color: 'rgba(200,33,195,0.5)' }}
+              onMouseEnter={(e) => (e.currentTarget.style.color = '#C821C3')}
+              onMouseLeave={(e) => (e.currentTarget.style.color = 'rgba(200,33,195,0.5)')}
               aria-label="Instagram"
             >
               <Instagram size={16} />
             </a>
             <a
               href="#afleveringen"
-              className="text-white/30 hover:text-primary transition-colors"
+              className="hover:text-primary transition-colors"
+              style={{ color: 'rgba(0,250,97,0.4)' }}
               aria-label="Podcast"
             >
               <Mic size={16} />

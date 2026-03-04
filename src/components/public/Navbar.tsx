@@ -47,12 +47,15 @@ export default function Navbar({ managers = [] }: NavbarProps) {
 
   return (
     <header
-      className={`fixed top-0 left-0 right-0 z-50 transition-all duration-300 ${
-        scrolled || menuOpen
-          ? 'bg-navy/98 backdrop-blur-md shadow-lg'
-          : 'bg-transparent'
+      className={`fixed top-0 left-0 right-0 z-50 transition-all duration-300 backdrop-blur-md ${
+        scrolled || menuOpen ? 'shadow-lg' : ''
       }`}
-      style={scrolled || menuOpen ? { borderBottom: '1px solid rgba(0,250,97,0.2)' } : undefined}
+      style={{
+        background: '#1F0E84',
+        borderBottom: scrolled || menuOpen
+          ? '1px solid rgba(0,250,97,0.25)'
+          : '1px solid rgba(255,255,255,0.06)',
+      }}
     >
       <div className="max-w-8xl mx-auto px-4 sm:px-6 lg:px-8">
         <div className="flex items-center justify-between h-16 lg:h-18">
@@ -147,7 +150,7 @@ export default function Navbar({ managers = [] }: NavbarProps) {
 
       {/* Mobile overlay menu */}
       {menuOpen && (
-        <div className="lg:hidden bg-navy border-t border-white/8">
+        <div className="lg:hidden" style={{ background: '#1F0E84', borderTop: '1px solid rgba(0,250,97,0.15)' }}>
           <nav className="flex flex-col px-4 py-4 gap-1">
             {navLinks.map((link) => (
               <Link
