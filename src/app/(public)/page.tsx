@@ -10,6 +10,8 @@ import {
   ArrowRight,
   Play,
 } from 'lucide-react';
+import StandingsTable from '@/components/public/StandingsTable';
+import type { LeagueApiResponse } from '@/app/api/fpl/league/route';
 
 // ─── Types ────────────────────────────────────────────────────────────────────
 
@@ -307,6 +309,20 @@ export default async function HomePage() {
   const def = team?.team_players.filter((p) => p.position === 'DEF') ?? [];
   const mid = team?.team_players.filter((p) => p.position === 'MID') ?? [];
   const fwd = team?.team_players.filter((p) => p.position === 'FWD') ?? [];
+
+  // Fetch league standings — non-blocking, falls back to null on error
+  let leagueData: LeagueApiResponse | null = null;
+  try {
+    const baseUrl =
+      process.env.NEXT_PUBLIC_BASE_URL ||
+      (process.env.VERCEL_URL ? `https://${process.env.VERCEL_URL}` : 'http://localhost:3000');
+    const leagueRes = await fetch(`${baseUrl}/api/fpl/league`, {
+      next: { revalidate: 1800 },
+    });
+    if (leagueRes.ok) leagueData = await leagueRes.json();
+  } catch {
+    // FPL API unreachable — skip the section silently
+  }
 
   return (
     <main className="text-white overflow-x-hidden" style={{ background: '#0D0B2A' }}>
@@ -808,6 +824,62 @@ export default async function HomePage() {
           )}
         </div>
       </section>
+
+      {/* ── 8. RANKINGS PREVIEW (dark navy) ──────────────────────────── */}
+      {leagueData && (
+        <section
+          id="rankings"
+          className="py-20 px-4"
+          style={{ background: '#1F0E84', borderTop: '2px solid rgba(200,33,195,0.18)' }}
+        >
+          <div className="max-w-8xl mx-auto">
+            {/* Header */}
+            <div className="flex items-end justify-between mb-8">
+              <div>
+                <span className="inline-block text-xs font-semibold text-primary uppercase tracking-widest mb-2">
+                  Mini-League
+                </span>
+                <h2
+                  className="text-3xl sm:text-4xl lg:text-5xl font-bold text-white leading-tight border-l-4 pl-4"
+                  style={{ borderColor: '#00FA61' }}
+                >
+                  MINI-LEAGUE STAND
+                </h2>
+                <p className="text-white/40 text-sm mt-1 pl-4">
+                  {leagueData.league?.name ?? 'De Groene Pijl competitie'}
+                </p>
+              </div>
+              <Link
+                href="/rankings"
+                className="hidden sm:inline-flex items-center gap-1.5 text-sm font-semibold transition-colors"
+                style={{ color: '#00FA61' }}
+              >
+                Volledige stand <ArrowRight size={14} />
+              </Link>
+            </div>
+
+            {/* Top 10 preview */}
+            <div className="max-w-3xl">
+              <StandingsTable
+                initialData={leagueData}
+                limit={10}
+                compact
+              />
+            </div>
+
+            {/* Mobile "all" link */}
+            <div className="text-center mt-6 sm:hidden">
+              <Link
+                href="/rankings"
+                className="inline-flex items-center gap-1.5 text-sm font-semibold"
+                style={{ color: '#00FA61' }}
+              >
+                Bekijk volledige stand <ArrowRight size={14} />
+              </Link>
+            </div>
+          </div>
+        </section>
+      )}
 
       {/* ── MINI-LEAGUE CTA (gradient) ───────────────────────────────── */}
       <section className="py-20 px-4 bg-navy">
