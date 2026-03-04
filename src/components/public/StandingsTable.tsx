@@ -2,7 +2,7 @@
 
 import { useState, useEffect, useCallback } from 'react';
 import { ArrowUp, ArrowDown, Minus, RefreshCw } from 'lucide-react';
-import type { LeagueApiResponse } from '@/app/api/fpl/league/route';
+import type { LeagueApiResponse } from '@/lib/fpl/league';
 
 // ─── Config ───────────────────────────────────────────────────────────────────
 

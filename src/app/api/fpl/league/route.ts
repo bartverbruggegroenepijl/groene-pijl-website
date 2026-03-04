@@ -1,33 +1,8 @@
 import { NextResponse } from 'next/server';
+import type { LeagueApiResponse } from '@/lib/fpl/league';
 
-// ─── Types ────────────────────────────────────────────────────────────────────
-
-export interface LeagueEntry {
-  id: number;
-  event_total: number;   // GW points this round
-  player_name: string;   // FPL manager name (first + last)
-  rank: number;          // current rank
-  last_rank: number;     // rank last gameweek (0 = new entry)
-  rank_sort: number;
-  total: number;         // total points
-  entry: number;         // FPL team id
-  entry_name: string;    // FPL team name
-}
-
-export interface LeagueApiResponse {
-  league: {
-    id: number;
-    name: string;
-    created: string;
-    closed: boolean;
-    admin_entry: number | null;
-  };
-  standings: {
-    has_next: boolean;
-    page: number;
-    results: LeagueEntry[];
-  };
-}
+// Re-export types for backward compat (client components may import from here)
+export type { LeagueApiResponse, LeagueEntry } from '@/lib/fpl/league';
 
 // ─── Config ───────────────────────────────────────────────────────────────────
 

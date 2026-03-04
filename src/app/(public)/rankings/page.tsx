@@ -2,37 +2,17 @@ import { Metadata } from 'next';
 import Link from 'next/link';
 import { ArrowLeft, Trophy } from 'lucide-react';
 import StandingsTable from '@/components/public/StandingsTable';
-import type { LeagueApiResponse } from '@/app/api/fpl/league/route';
+import { fetchLeagueStandings } from '@/lib/fpl/league';
 
 export const metadata: Metadata = {
   title: 'Mini-League Stand | De Groene Pijl',
   description: 'Bekijk de actuele stand van de De Groene Pijl FPL Mini-League.',
 };
 
-async function fetchStandings(): Promise<{ data: LeagueApiResponse | null; error: string | null }> {
-  try {
-    const baseUrl =
-      process.env.NEXT_PUBLIC_BASE_URL ||
-      (process.env.VERCEL_URL ? `https://${process.env.VERCEL_URL}` : 'http://localhost:3000');
-
-    const res = await fetch(`${baseUrl}/api/fpl/league`, {
-      next: { revalidate: 1800 },
-    });
-
-    if (!res.ok) {
-      const body = await res.json().catch(() => ({}));
-      return { data: null, error: body.error ?? 'Stand tijdelijk niet beschikbaar.' };
-    }
-
-    const data: LeagueApiResponse = await res.json();
-    return { data, error: null };
-  } catch {
-    return { data: null, error: 'Stand tijdelijk niet beschikbaar.' };
-  }
-}
-
 export default async function RankingsPage() {
-  const { data, error } = await fetchStandings();
+  // Call FPL API directly — no self-referential HTTP fetch to own /api/... route
+  const data = await fetchLeagueStandings();
+  const error = data ? null : (process.env.FPL_LEAGUE_ID ? 'Stand tijdelijk niet beschikbaar.' : null);
 
   return (
     <main

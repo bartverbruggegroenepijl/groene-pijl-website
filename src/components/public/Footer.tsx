@@ -1,3 +1,5 @@
+'use client';
+
 import { Instagram, Mic } from 'lucide-react';
 import Logo from '@/components/ui/Logo';
 

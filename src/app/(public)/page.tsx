@@ -11,7 +11,8 @@ import {
   Play,
 } from 'lucide-react';
 import StandingsTable from '@/components/public/StandingsTable';
-import type { LeagueApiResponse } from '@/app/api/fpl/league/route';
+import { fetchLeagueStandings } from '@/lib/fpl/league';
+import type { LeagueApiResponse } from '@/lib/fpl/league';
 
 // ─── Types ────────────────────────────────────────────────────────────────────
 
@@ -234,69 +235,107 @@ function PitchPlayer({ player }: { player: TeamPlayer }) {
 export default async function HomePage() {
   const supabase = createClient();
 
-  const [
-    episodesRes,
-    captainRes,
-    kooptipsRes,
-    articlesRes,
-    teamRes,
-    managersRes,
-    playerOfWeekRes,
-    heroImageRes,
-  ] = await Promise.all([
-    supabase
-      .from('episodes')
-      .select('id, title, description, duration, published_at, spotify_url, image_url')
-      .order('published_at', { ascending: false })
-      .limit(1),
-    supabase
-      .from('captain_picks')
-      .select('id, gameweek, captain_pick_players(rank, player_name, player_club, position, motivation, image_url)')
-      .eq('published', true)
-      .order('created_at', { ascending: false })
-      .limit(1),
-    supabase
-      .from('buy_tips')
-      .select('id, gameweek, buy_tip_players(player_name, player_club, position, price, motivation, image_url)')
-      .eq('published', true)
-      .order('created_at', { ascending: false })
-      .limit(1),
-    supabase
-      .from('articles')
-      .select('id, title, slug, excerpt, cover_image, published_at, category, managers(name)')
-      .eq('published', true)
-      .order('published_at', { ascending: false })
-      .limit(3),
-    supabase
-      .from('team_of_the_week')
-      .select('id, week_number, formation, team_players(player_name, player_club, position, points, is_captain, player_image_url)')
-      .eq('published', true)
-      .order('created_at', { ascending: false })
-      .limit(1),
-    supabase
-      .from('managers')
-      .select('id, name, role, bio, avatar_url, instagram_url')
-      .order('created_at', { ascending: true }),
-    supabase
-      .from('player_of_the_week')
-      .select('id, gameweek, player_name, player_club, position, points, goals, assists, bonus, motivatie, image_url')
-      .eq('published', true)
-      .order('created_at', { ascending: false })
-      .limit(1),
-    supabase
-      .from('site_settings')
-      .select('value')
-      .eq('key', 'hero_image')
-      .maybeSingle(),
-  ]);
+  // ── Supabase queries: each wrapped individually so one failure doesn't crash the page ──
 
-  const episode       = (episodesRes.data?.[0] as Episode | undefined) ?? null;
-  const captain       = (captainRes.data?.[0] as CaptainPick | undefined) ?? null;
-  const kooptips      = (kooptipsRes.data?.[0] as BuyTip | undefined) ?? null;
-  const articles      = (articlesRes.data as Article[] | null) ?? [];
-  const team          = (teamRes.data?.[0] as TeamOfTheWeek | undefined) ?? null;
-  const playerOfWeek  = (playerOfWeekRes.data?.[0] as PlayerOfWeek | undefined) ?? null;
-  const heroImageUrl  = (heroImageRes.data as { value: string } | null)?.value ?? null;
+  const fallback = { data: null, error: null };
+
+  const episodesRes = await (async () => {
+    try {
+      return await supabase
+        .from('episodes')
+        .select('id, title, description, duration, published_at, spotify_url, image_url')
+        .order('published_at', { ascending: false })
+        .limit(1);
+    } catch { return fallback; }
+  })();
+
+  const captainRes = await (async () => {
+    try {
+      return await supabase
+        .from('captain_picks')
+        .select('id, gameweek, captain_pick_players(rank, player_name, player_club, position, motivation, image_url)')
+        .eq('published', true)
+        .order('created_at', { ascending: false })
+        .limit(1);
+    } catch { return fallback; }
+  })();
+
+  const kooptipsRes = await (async () => {
+    try {
+      return await supabase
+        .from('buy_tips')
+        .select('id, gameweek, buy_tip_players(player_name, player_club, position, price, motivation, image_url)')
+        .eq('published', true)
+        .order('created_at', { ascending: false })
+        .limit(1);
+    } catch { return fallback; }
+  })();
+
+  const articlesRes = await (async () => {
+    try {
+      return await supabase
+        .from('articles')
+        .select('id, title, slug, excerpt, cover_image, published_at, category, managers(name)')
+        .eq('published', true)
+        .order('published_at', { ascending: false })
+        .limit(3);
+    } catch { return fallback; }
+  })();
+
+  const teamRes = await (async () => {
+    try {
+      return await supabase
+        .from('team_of_the_week')
+        .select('id, week_number, formation, team_players(player_name, player_club, position, points, is_captain, player_image_url)')
+        .eq('published', true)
+        .order('created_at', { ascending: false })
+        .limit(1);
+    } catch { return fallback; }
+  })();
+
+  const managersRes = await (async () => {
+    try {
+      return await supabase
+        .from('managers')
+        .select('id, name, role, bio, avatar_url, instagram_url')
+        .order('created_at', { ascending: true });
+    } catch { return fallback; }
+  })();
+
+  const playerOfWeekRes = await (async () => {
+    try {
+      return await supabase
+        .from('player_of_the_week')
+        .select('id, gameweek, player_name, player_club, position, points, goals, assists, bonus, motivatie, image_url')
+        .eq('published', true)
+        .order('created_at', { ascending: false })
+        .limit(1);
+    } catch { return fallback; }
+  })();
+
+  // site_settings may not exist in all environments — silent fallback
+  const heroImageRes = await (async () => {
+    try {
+      return await supabase
+        .from('site_settings')
+        .select('value')
+        .eq('key', 'hero_image')
+        .maybeSingle();
+    } catch { return fallback; }
+  })();
+
+  // ── Safely extract data with fallbacks ───────────────────────────────────────
+
+  const episode      = (episodesRes.data?.[0] as Episode | undefined) ?? null;
+  const captain      = (captainRes.data?.[0] as CaptainPick | undefined) ?? null;
+  const kooptips     = (kooptipsRes.data?.[0] as BuyTip | undefined) ?? null;
+  const articles     = (articlesRes.data as Article[] | null) ?? [];
+  const team         = (teamRes.data?.[0] as TeamOfTheWeek | undefined) ?? null;
+  const playerOfWeek = (playerOfWeekRes.data?.[0] as PlayerOfWeek | undefined) ?? null;
+
+  // hero image: heroImageRes.data can be null (no row) or { value: string }
+  const heroImageData = heroImageRes.data as { value?: string } | null;
+  const heroImageUrl  = heroImageData?.value ?? null;
 
   // Deduplicate managers by name
   const allManagers = (managersRes.data as Manager[] | null) ?? [];
@@ -305,24 +344,14 @@ export default async function HomePage() {
   );
 
   const captainPlayers = [...(captain?.captain_pick_players ?? [])].sort((a, b) => a.rank - b.rank);
-  const gk  = team?.team_players.filter((p) => p.position === 'GK')  ?? [];
-  const def = team?.team_players.filter((p) => p.position === 'DEF') ?? [];
-  const mid = team?.team_players.filter((p) => p.position === 'MID') ?? [];
-  const fwd = team?.team_players.filter((p) => p.position === 'FWD') ?? [];
+  const gk  = team?.team_players?.filter((p) => p.position === 'GK')  ?? [];
+  const def = team?.team_players?.filter((p) => p.position === 'DEF') ?? [];
+  const mid = team?.team_players?.filter((p) => p.position === 'MID') ?? [];
+  const fwd = team?.team_players?.filter((p) => p.position === 'FWD') ?? [];
 
-  // Fetch league standings — non-blocking, falls back to null on error
-  let leagueData: LeagueApiResponse | null = null;
-  try {
-    const baseUrl =
-      process.env.NEXT_PUBLIC_BASE_URL ||
-      (process.env.VERCEL_URL ? `https://${process.env.VERCEL_URL}` : 'http://localhost:3000');
-    const leagueRes = await fetch(`${baseUrl}/api/fpl/league`, {
-      next: { revalidate: 1800 },
-    });
-    if (leagueRes.ok) leagueData = await leagueRes.json();
-  } catch {
-    // FPL API unreachable — skip the section silently
-  }
+  // ── FPL mini-league: call FPL API directly (no self-referential HTTP) ────────
+  // Self-referential fetches (server → own /api/... route) fail on Vercel during SSR.
+  const leagueData: LeagueApiResponse | null = await fetchLeagueStandings();
 
   return (
     <main className="text-white overflow-x-hidden" style={{ background: '#0D0B2A' }}>
