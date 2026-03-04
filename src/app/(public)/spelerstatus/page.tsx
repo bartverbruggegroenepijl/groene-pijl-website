@@ -57,13 +57,13 @@ function timeAgo(dateStr: string | null): string {
 
 // ─── Page ─────────────────────────────────────────────────────────────────────
 
-export default function SpelersnieuwsPage() {
+export default function SpelerstatusPage() {
   const [players,     setPlayers]     = useState<PlayerNewsItem[]>([]);
   const [loading,     setLoading]     = useState(true);
   const [filter,      setFilter]      = useState<FilterStatus>('all');
   const [lastUpdated, setLastUpdated] = useState<Date | null>(null);
 
-  const fetchNews = useCallback(async () => {
+  const fetchStatus = useCallback(async () => {
     setLoading(true);
     try {
       const res = await fetch('/api/fpl/player-news', { cache: 'no-store' });
@@ -79,24 +79,24 @@ export default function SpelersnieuwsPage() {
   }, []);
 
   useEffect(() => {
-    fetchNews();
-    const iv = setInterval(fetchNews, 10 * 60_000);
+    fetchStatus();
+    const iv = setInterval(fetchStatus, 10 * 60_000);
     return () => clearInterval(iv);
-  }, [fetchNews]);
+  }, [fetchStatus]);
 
   const filtered = filter === 'all'
     ? players
     : players.filter((p) => p.status === filter);
 
   return (
-    <main className="min-h-screen text-white" style={{ background: '#0D0B2A' }}>
+    <main className="min-h-screen text-white" style={{ background: '#1F0E84' }}>
 
       {/* ── Header ── */}
       <div
         className="pt-24 pb-8 px-4"
-        style={{ borderBottom: '1px solid rgba(0,250,97,0.15)' }}
+        style={{ borderBottom: '1px solid rgba(0,250,97,0.2)' }}
       >
-        <div className="max-w-5xl mx-auto">
+        <div className="max-w-6xl mx-auto">
           <Link
             href="/"
             className="inline-flex items-center gap-2 text-white/35 hover:text-white/65 text-sm mb-6 transition-colors"
@@ -119,7 +119,7 @@ export default function SpelersnieuwsPage() {
                 className="text-4xl sm:text-5xl font-bold text-white leading-tight"
                 style={{ fontFamily: 'Montserrat, sans-serif' }}
               >
-                Spelersnieuws
+                Spelerstatus
               </h1>
               <p className="text-white/40 text-sm mt-2">
                 {loading ? 'Laden...' : `${players.length} spelers met statusupdate`}
@@ -128,9 +128,9 @@ export default function SpelersnieuwsPage() {
             </div>
 
             <button
-              onClick={fetchNews}
+              onClick={fetchStatus}
               disabled={loading}
-              className="flex items-center gap-2 border border-white/15 hover:border-primary/50 text-white/50 hover:text-primary px-4 py-2 rounded-lg text-sm font-medium transition-all disabled:opacity-40"
+              className="flex items-center gap-2 border border-white/20 hover:border-primary/60 text-white/50 hover:text-primary px-4 py-2 rounded-lg text-sm font-medium transition-all disabled:opacity-40"
             >
               <RefreshCw size={14} className={loading ? 'animate-spin' : ''} />
               Vernieuwen
@@ -150,16 +150,16 @@ export default function SpelersnieuwsPage() {
                   onClick={() => setFilter(f.status)}
                   className="flex items-center gap-1.5 px-3 py-1.5 rounded-full text-xs font-semibold transition-all duration-200"
                   style={{
-                    background: active ? '#00FA61' : 'rgba(255,255,255,0.06)',
-                    color:      active ? '#000000' : 'rgba(255,255,255,0.6)',
-                    border:     active ? '1px solid #00FA61' : '1px solid rgba(255,255,255,0.1)',
+                    background: active ? '#00FA61' : 'rgba(255,255,255,0.08)',
+                    color:      active ? '#000000' : 'rgba(255,255,255,0.65)',
+                    border:     active ? '1px solid #00FA61' : '1px solid rgba(255,255,255,0.12)',
                   }}
                 >
                   {f.emoji} {f.label}
                   <span
                     className="px-1.5 py-0.5 rounded-full text-[9px] font-bold"
                     style={{
-                      background: active ? 'rgba(0,0,0,0.2)' : 'rgba(255,255,255,0.1)',
+                      background: active ? 'rgba(0,0,0,0.2)' : 'rgba(255,255,255,0.12)',
                       color:      active ? '#000' : 'rgba(255,255,255,0.45)',
                     }}
                   >
@@ -173,14 +173,14 @@ export default function SpelersnieuwsPage() {
       </div>
 
       {/* ── Grid ── */}
-      <div className="max-w-5xl mx-auto px-4 py-10">
+      <div className="max-w-6xl mx-auto px-4 py-10">
         {loading ? (
           <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
             {Array.from({ length: 9 }).map((_, i) => (
               <div
                 key={i}
                 className="animate-pulse rounded-xl h-40"
-                style={{ background: 'rgba(255,255,255,0.04)' }}
+                style={{ background: 'rgba(255,255,255,0.05)' }}
               />
             ))}
           </div>
@@ -197,7 +197,7 @@ export default function SpelersnieuwsPage() {
                   key={p.id}
                   className="rounded-xl p-5 flex flex-col gap-3 transition-all hover:scale-[1.01]"
                   style={{
-                    background: cfg.bg,
+                    background: 'rgba(255,255,255,0.05)',
                     border:     `1px solid ${cfg.border}`,
                   }}
                 >
@@ -213,7 +213,7 @@ export default function SpelersnieuwsPage() {
                     </div>
                     <span
                       className="text-xs font-bold px-2.5 py-1 rounded-full shrink-0"
-                      style={{ color: cfg.color, background: 'rgba(0,0,0,0.25)' }}
+                      style={{ color: cfg.color, background: cfg.bg, border: `1px solid ${cfg.border}` }}
                     >
                       {cfg.emoji} {cfg.label}
                     </span>
@@ -227,7 +227,7 @@ export default function SpelersnieuwsPage() {
                   {/* Footer */}
                   <div
                     className="flex items-center justify-between pt-3"
-                    style={{ borderTop: '1px solid rgba(255,255,255,0.07)' }}
+                    style={{ borderTop: '1px solid rgba(255,255,255,0.08)' }}
                   >
                     {p.chanceOfPlaying !== null ? (
                       <span
@@ -247,7 +247,7 @@ export default function SpelersnieuwsPage() {
                     ) : (
                       <span />
                     )}
-                    <span className="text-white/25 text-xs">
+                    <span className="text-white/30 text-xs">
                       {timeAgo(p.newsAdded)}
                     </span>
                   </div>

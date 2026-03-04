@@ -21,7 +21,7 @@ const navLinks = [
   { label: 'Artikelen',            href: '/artikelen'      },
   { label: 'Transfers & Captains', href: '/#captain-pick'  },
   { label: 'Rankings',             href: '/rankings'       },
-  { label: 'Spelersnieuws',        href: '/spelersnieuws'  },
+  { label: 'Spelerstatus',          href: '/spelerstatus'   },
 ];
 
 export default function Navbar({ managers = [] }: NavbarProps) {
