@@ -311,91 +311,192 @@ export default async function HomePage() {
     <main className="text-white overflow-x-hidden">
 
       {/* ── 1. HERO ──────────────────────────────────────────────────── */}
-      <section className="relative min-h-screen flex items-center">
-        <div className="absolute inset-0" style={{ background: 'linear-gradient(135deg, #1a0533 0%, #0d1f3c 40%, #0a4a2a 100%)' }} />
-        <div className="absolute top-0 left-0 w-[700px] h-[700px] rounded-full blur-3xl -translate-x-1/3 -translate-y-1/3 pointer-events-none" style={{ background: 'radial-gradient(circle, rgba(0,250,97,0.12) 0%, transparent 70%)' }} />
-        <div className="absolute top-1/4 right-0 w-[600px] h-[600px] rounded-full blur-3xl translate-x-1/4 pointer-events-none" style={{ background: 'radial-gradient(circle, rgba(123,47,255,0.15) 0%, transparent 70%)' }} />
+      {/* Outer wrapper adds extra space so the clip-path doesn't eat into content */}
+      <section
+        className="relative flex items-center"
+        style={{
+          /* Diagonal clip: full-height left → cut at ~88% on right */
+          clipPath: 'polygon(0 0, 100% 0, 100% 88%, 0 100%)',
+          paddingBottom: '10vw', /* compensates for the diagonal cut */
+          minHeight: 'calc(100vh + 8vw)',
+        }}
+      >
+        {/* ── Diagonal background: purple-left → green-right ── */}
+        <div
+          className="absolute inset-0"
+          style={{
+            background: 'linear-gradient(135deg, #1a0533 0%, #2D1B69 35%, #0d4a2a 65%, #00FA61 100%)',
+          }}
+        />
 
-        <div className="relative z-10 max-w-8xl mx-auto px-4 sm:px-6 lg:px-8 w-full pt-24 pb-20">
+        {/* Decorative glow blobs */}
+        <div
+          className="absolute top-0 left-0 w-[600px] h-[600px] rounded-full blur-3xl -translate-x-1/3 -translate-y-1/4 pointer-events-none"
+          style={{ background: 'radial-gradient(circle, rgba(45,27,105,0.8) 0%, transparent 65%)' }}
+        />
+        <div
+          className="absolute bottom-0 right-0 w-[700px] h-[700px] rounded-full blur-3xl translate-x-1/4 translate-y-1/4 pointer-events-none"
+          style={{ background: 'radial-gradient(circle, rgba(0,250,97,0.35) 0%, transparent 60%)' }}
+        />
+        <div
+          className="absolute top-1/3 right-1/4 w-[400px] h-[400px] rounded-full blur-3xl pointer-events-none"
+          style={{ background: 'radial-gradient(circle, rgba(0,180,60,0.2) 0%, transparent 70%)' }}
+        />
+
+        <div className="relative z-10 max-w-8xl mx-auto px-4 sm:px-6 lg:px-8 w-full pt-24 pb-16">
           <div className="grid grid-cols-1 lg:grid-cols-2 gap-12 lg:gap-16 items-center">
-            {/* Left */}
+
+            {/* ── Left: text + CTA ── */}
             <div>
-              <div className="inline-flex items-center gap-2 bg-primary/10 border border-primary/20 text-primary text-xs font-semibold px-4 py-2 rounded-full mb-6 uppercase tracking-widest">
+              <div className="inline-flex items-center gap-2 bg-white/10 border border-white/20 text-white text-xs font-semibold px-4 py-2 rounded-full mb-6 uppercase tracking-widest backdrop-blur-sm">
                 🇳🇱 De enige Nederlandse FPL Podcast
               </div>
-              <h1 className="text-5xl sm:text-6xl lg:text-7xl font-bold leading-[1.05] mb-5" style={{ fontFamily: 'Montserrat, sans-serif' }}>
-                <span className="text-white">TAKE YOUR FPL</span>
-                <span className="block text-white">TEAM TO THE TOP</span>
-                <span className="block text-primary mt-1">PODCAST</span>
+
+              <h1
+                className="text-5xl sm:text-6xl lg:text-7xl font-bold leading-[1.05] mb-5"
+                style={{ fontFamily: 'Montserrat, sans-serif' }}
+              >
+                <span className="text-white drop-shadow-lg">DE GROENE PIJL</span>
+                <span
+                  className="block mt-1"
+                  style={{
+                    color: '#00FA61',
+                    textShadow: '0 0 32px rgba(0,250,97,0.6), 0 0 8px rgba(0,250,97,0.4)',
+                  }}
+                >
+                  PODCAST
+                </span>
               </h1>
-              <p className="text-lg text-white/60 leading-relaxed mb-8 max-w-lg">
+
+              <p className="text-base sm:text-lg text-white/70 leading-relaxed mb-8 max-w-lg">
                 Wekelijkse analyse, captainkeuzes en breaking teamnieuws.
                 Luister elke gameweek en verbeter je FPL-team!
               </p>
+
+              {/* CTA buttons */}
               <div className="flex flex-col sm:flex-row gap-3">
                 <a
-                  href={episode?.spotify_url ?? '#afleveringen'}
+                  href={episode?.spotify_url ?? '/afleveringen'}
                   target={episode?.spotify_url ? '_blank' : undefined}
                   rel="noopener noreferrer"
-                  className="btn-glow inline-flex items-center justify-center gap-2 bg-primary text-black font-semibold px-7 py-3.5 rounded-xl transition-all duration-300 hover:bg-primary/90 text-sm"
+                  className="inline-flex items-center justify-center gap-2 font-semibold px-7 py-3.5 rounded-full text-sm transition-all duration-300 text-black"
+                  style={{
+                    background: '#00FA61',
+                    boxShadow: '0 0 24px rgba(0,250,97,0.5), 0 4px 16px rgba(0,0,0,0.3)',
+                  }}
                 >
                   <Mic size={16} />
-                  Luister nieuwste aflevering →
+                  Luister nieuwste aflevering
                 </a>
                 <a
                   href="#captain-pick"
-                  className="inline-flex items-center justify-center gap-2 border border-white/20 text-white hover:border-primary hover:text-primary font-semibold px-7 py-3.5 rounded-xl transition-all duration-300 text-sm"
+                  className="inline-flex items-center justify-center gap-2 border border-white/30 text-white hover:border-primary hover:text-primary font-semibold px-7 py-3.5 rounded-full transition-all duration-300 text-sm backdrop-blur-sm"
                 >
                   Bekijk captain advies
                 </a>
               </div>
-              <div className="flex gap-8 mt-10 pt-8 border-t border-white/8">
-                <div><p className="text-2xl font-bold text-primary">GW</p><p className="text-xs text-white/40 mt-0.5">Elke week nieuw</p></div>
-                <div><p className="text-2xl font-bold text-primary">4</p><p className="text-xs text-white/40 mt-0.5">Managers</p></div>
-                <div><p className="text-2xl font-bold text-primary">🎙️</p><p className="text-xs text-white/40 mt-0.5">Spotify Podcast</p></div>
+
+              {/* Stats row */}
+              <div className="flex gap-8 mt-10 pt-8 border-t border-white/10">
+                <div>
+                  <p className="text-2xl font-bold" style={{ color: '#00FA61' }}>GW</p>
+                  <p className="text-xs text-white/40 mt-0.5">Elke week nieuw</p>
+                </div>
+                <div>
+                  <p className="text-2xl font-bold" style={{ color: '#00FA61' }}>4</p>
+                  <p className="text-xs text-white/40 mt-0.5">Managers</p>
+                </div>
+                <div>
+                  <p className="text-2xl font-bold" style={{ color: '#00FA61' }}>🎙️</p>
+                  <p className="text-xs text-white/40 mt-0.5">Spotify Podcast</p>
+                </div>
+              </div>
+
+              {/* Scroll hint */}
+              <div className="flex items-center gap-2 mt-8 text-white/25 text-xs">
+                <ChevronDown size={14} className="animate-bounce" />
+                <span>Scroll</span>
               </div>
             </div>
 
-            {/* Right: podcast cover */}
-            <div className="flex justify-center lg:justify-end">
+            {/* ── Right: podcast cover card ── */}
+            <div className="flex justify-center lg:justify-end pb-8 lg:pb-0">
               <div className="relative">
-                <div className="absolute -inset-4 rounded-2xl opacity-20 blur-xl" style={{ background: 'linear-gradient(135deg, #00FA61 0%, #7B2FFF 100%)' }} />
-                <div className="relative w-72 h-72 sm:w-80 sm:h-80 lg:w-96 lg:h-96 rounded-2xl overflow-hidden border border-primary/20" style={{ boxShadow: '0 0 48px rgba(0,250,97,0.2)' }}>
+                {/* Outer glow ring */}
+                <div
+                  className="absolute -inset-6 rounded-2xl blur-2xl opacity-40 pointer-events-none"
+                  style={{ background: 'radial-gradient(circle, #00FA61 0%, rgba(0,250,97,0.3) 50%, transparent 80%)' }}
+                />
+
+                {/* Cover image */}
+                <div
+                  className="relative w-64 h-64 sm:w-80 sm:h-80 lg:w-[360px] lg:h-[360px] rounded-2xl overflow-hidden"
+                  style={{
+                    border: '2px solid rgba(0,250,97,0.4)',
+                    boxShadow: '0 0 0 1px rgba(0,250,97,0.15), 0 0 60px rgba(0,250,97,0.25), 0 24px 64px rgba(0,0,0,0.5)',
+                  }}
+                >
                   {(heroImageUrl || episode?.image_url) ? (
-                    <Image src={heroImageUrl ?? episode!.image_url!} alt="Podcast cover" fill className="object-cover" />
+                    <Image
+                      src={heroImageUrl ?? episode!.image_url!}
+                      alt="Podcast cover"
+                      fill
+                      className="object-cover"
+                    />
                   ) : (
-                    <div className="w-full h-full flex flex-col items-center justify-center gap-4" style={{ background: 'linear-gradient(135deg, #00FA61 0%, #7B2FFF 100%)' }}>
+                    <div
+                      className="w-full h-full flex flex-col items-center justify-center gap-4"
+                      style={{ background: 'linear-gradient(135deg, #2D1B69 0%, #00FA61 100%)' }}
+                    >
                       <Mic size={64} className="text-black/40" />
                       <span className="font-bold text-black/60 text-xl tracking-wide">DE GROENE PIJL</span>
                     </div>
                   )}
+
+                  {/* Spotify play overlay */}
                   {episode?.spotify_url && (
                     <a
                       href={episode.spotify_url}
                       target="_blank"
                       rel="noopener noreferrer"
-                      className="absolute inset-0 flex items-center justify-center bg-black/40 hover:bg-black/20 transition-colors group"
+                      className="absolute inset-0 flex items-center justify-center bg-black/30 hover:bg-black/10 transition-colors group"
                     >
-                      <div className="w-16 h-16 rounded-full bg-primary flex items-center justify-center group-hover:scale-110 transition-transform duration-300" style={{ boxShadow: '0 0 24px rgba(0,250,97,0.5)' }}>
+                      <div
+                        className="w-16 h-16 rounded-full bg-primary flex items-center justify-center group-hover:scale-110 transition-transform duration-300"
+                        style={{ boxShadow: '0 0 32px rgba(0,250,97,0.6)' }}
+                      >
                         <Play size={28} className="text-black ml-1" fill="black" />
                       </div>
                     </a>
                   )}
                 </div>
+
+                {/* Episode info card */}
                 {episode && (
-                  <div className="absolute -bottom-4 -right-4 bg-navy-card border border-white/10 rounded-xl px-4 py-3 max-w-[200px]" style={{ boxShadow: '0 8px 32px rgba(0,0,0,0.6)' }}>
-                    <p className="text-[10px] text-primary font-semibold uppercase tracking-wider mb-0.5">Nieuwste</p>
-                    <p className="text-white text-xs font-semibold line-clamp-2 leading-tight">{episode.title}</p>
+                  <div
+                    className="absolute -bottom-5 -right-5 rounded-xl px-4 py-3 max-w-[210px]"
+                    style={{
+                      background: 'rgba(13,10,42,0.95)',
+                      border: '1px solid rgba(0,250,97,0.2)',
+                      boxShadow: '0 8px 32px rgba(0,0,0,0.7)',
+                      backdropFilter: 'blur(12px)',
+                    }}
+                  >
+                    <p className="text-[10px] font-semibold uppercase tracking-wider mb-0.5" style={{ color: '#00FA61' }}>
+                      Nieuwste aflevering
+                    </p>
+                    <p className="text-white text-xs font-semibold line-clamp-2 leading-tight">
+                      {episode.title}
+                    </p>
+                    {episode.published_at && (
+                      <p className="text-white/30 text-[10px] mt-1">{formatDate(episode.published_at)}</p>
+                    )}
                   </div>
                 )}
               </div>
             </div>
-          </div>
-        </div>
 
-        <div className="absolute bottom-8 left-1/2 -translate-x-1/2 flex flex-col items-center gap-1 text-white/20 text-xs animate-bounce">
-          <span>Scroll</span>
-          <ChevronDown size={16} />
+          </div>
         </div>
       </section>
 
