@@ -167,11 +167,11 @@ function EmptyPlaceholderLight({ message }: { message: string }) {
   );
 }
 
-function PlayerBadgeDark({ imageUrl, name, size = 56 }: { imageUrl: string | null; name: string | null; size?: number }) {
+function PlayerBadgeDark({ imageUrl, name, size = 56, objectPosition = 'center' }: { imageUrl: string | null; name: string | null; size?: number; objectPosition?: string }) {
   if (imageUrl) {
     return (
       <div className="relative rounded-full overflow-hidden shrink-0" style={{ width: size, height: size }}>
-        <Image src={imageUrl} alt={name ?? ''} fill className="object-cover" />
+        <Image src={imageUrl} alt={name ?? ''} fill className="object-cover" style={{ objectPosition }} />
       </div>
     );
   }
@@ -185,11 +185,11 @@ function PlayerBadgeDark({ imageUrl, name, size = 56 }: { imageUrl: string | nul
   );
 }
 
-function PlayerBadgeLight({ imageUrl, name, size = 56 }: { imageUrl: string | null; name: string | null; size?: number }) {
+function PlayerBadgeLight({ imageUrl, name, size = 56, objectPosition = 'center' }: { imageUrl: string | null; name: string | null; size?: number; objectPosition?: string }) {
   if (imageUrl) {
     return (
       <div className="relative rounded-full overflow-hidden shrink-0" style={{ width: size, height: size }}>
-        <Image src={imageUrl} alt={name ?? ''} fill className="object-cover" />
+        <Image src={imageUrl} alt={name ?? ''} fill className="object-cover" style={{ objectPosition }} />
       </div>
     );
   }
@@ -308,40 +308,46 @@ export default async function HomePage() {
   const fwd = team?.team_players.filter((p) => p.position === 'FWD') ?? [];
 
   return (
-    <main className="text-white overflow-x-hidden">
+    <main className="text-white overflow-x-hidden" style={{ background: '#0D0B2A' }}>
 
       {/* ── 1. HERO ──────────────────────────────────────────────────── */}
-      {/* Outer wrapper adds extra space so the clip-path doesn't eat into content */}
-      <section
-        className="relative flex items-center"
-        style={{
-          /* Diagonal clip: full-height left → cut at ~88% on right */
-          clipPath: 'polygon(0 0, 100% 0, 100% 88%, 0 100%)',
-          paddingBottom: '10vw', /* compensates for the diagonal cut */
-          minHeight: 'calc(100vh + 8vw)',
-        }}
-      >
-        {/* ── Diagonal background: purple-left → green-right ── */}
+      <section className="relative min-h-screen flex items-center overflow-hidden">
+
+        {/* Brand gradient: donkerblauw #1F0E84 → paars → magenta #C821C3 */}
         <div
           className="absolute inset-0"
           style={{
-            background: 'linear-gradient(135deg, #1a0533 0%, #2D1B69 35%, #0d4a2a 65%, #00FA61 100%)',
+            background: 'linear-gradient(135deg, #1F0E84 0%, #3D1472 45%, #C821C3 100%)',
           }}
         />
 
-        {/* Decorative glow blobs */}
+        {/* Green glow blob — top-right accent */}
         <div
-          className="absolute top-0 left-0 w-[600px] h-[600px] rounded-full blur-3xl -translate-x-1/3 -translate-y-1/4 pointer-events-none"
-          style={{ background: 'radial-gradient(circle, rgba(45,27,105,0.8) 0%, transparent 65%)' }}
+          className="absolute top-0 right-0 w-[500px] h-[500px] rounded-full blur-3xl translate-x-1/3 -translate-y-1/3 pointer-events-none"
+          style={{ background: 'radial-gradient(circle, rgba(0,250,97,0.18) 0%, transparent 65%)' }}
         />
+        {/* Deep-blue blob — left side depth */}
         <div
-          className="absolute bottom-0 right-0 w-[700px] h-[700px] rounded-full blur-3xl translate-x-1/4 translate-y-1/4 pointer-events-none"
-          style={{ background: 'radial-gradient(circle, rgba(0,250,97,0.35) 0%, transparent 60%)' }}
+          className="absolute top-1/2 left-0 w-[600px] h-[600px] rounded-full blur-3xl -translate-x-1/3 -translate-y-1/2 pointer-events-none"
+          style={{ background: 'radial-gradient(circle, rgba(31,14,132,0.9) 0%, transparent 70%)' }}
         />
+        {/* Magenta bloom — bottom-right */}
         <div
-          className="absolute top-1/3 right-1/4 w-[400px] h-[400px] rounded-full blur-3xl pointer-events-none"
-          style={{ background: 'radial-gradient(circle, rgba(0,180,60,0.2) 0%, transparent 70%)' }}
+          className="absolute bottom-0 right-1/4 w-[400px] h-[400px] rounded-full blur-3xl pointer-events-none"
+          style={{ background: 'radial-gradient(circle, rgba(200,33,195,0.25) 0%, transparent 65%)' }}
         />
+
+        {/* Diagonal white SVG divider — creates the clean angled cut into the white section below */}
+        <div className="absolute bottom-0 left-0 right-0 pointer-events-none">
+          <svg
+            viewBox="0 0 1440 90"
+            preserveAspectRatio="none"
+            style={{ display: 'block', width: '100%', height: '90px' }}
+            fill="white"
+          >
+            <polygon points="0,90 1440,0 1440,90" />
+          </svg>
+        </div>
 
         <div className="relative z-10 max-w-8xl mx-auto px-4 sm:px-6 lg:px-8 w-full pt-24 pb-16">
           <div className="grid grid-cols-1 lg:grid-cols-2 gap-12 lg:gap-16 items-center">
@@ -353,22 +359,24 @@ export default async function HomePage() {
               </div>
 
               <h1
-                className="text-5xl sm:text-6xl lg:text-7xl font-bold leading-[1.05] mb-5"
+                className="text-5xl sm:text-6xl lg:text-7xl font-bold leading-[1.0] mb-4"
                 style={{ fontFamily: 'Montserrat, sans-serif' }}
               >
-                <span className="text-white drop-shadow-lg">DE GROENE PIJL</span>
-                <span
-                  className="block mt-1"
-                  style={{
-                    color: '#00FA61',
-                    textShadow: '0 0 32px rgba(0,250,97,0.6), 0 0 8px rgba(0,250,97,0.4)',
-                  }}
-                >
-                  PODCAST
-                </span>
+                <span className="text-white">TAKE YOUR FPL</span>
+                <span className="block text-white">TEAM TO THE TOP</span>
               </h1>
+              <p
+                className="text-xl sm:text-2xl font-semibold mb-5"
+                style={{
+                  fontFamily: 'Montserrat, sans-serif',
+                  color: '#00FA61',
+                  textShadow: '0 0 24px rgba(0,250,97,0.7)',
+                }}
+              >
+                Fantasy Premier League podcast
+              </p>
 
-              <p className="text-base sm:text-lg text-white/70 leading-relaxed mb-8 max-w-lg">
+              <p className="text-base text-white/70 leading-relaxed mb-8 max-w-md">
                 Wekelijkse analyse, captainkeuzes en breaking teamnieuws.
                 Luister elke gameweek en verbeter je FPL-team!
               </p>
@@ -459,7 +467,7 @@ export default async function HomePage() {
                       href={episode.spotify_url}
                       target="_blank"
                       rel="noopener noreferrer"
-                      className="absolute inset-0 flex items-center justify-center bg-black/30 hover:bg-black/10 transition-colors group"
+                      className="absolute inset-0 flex items-center justify-center bg-transparent hover:bg-black/20 transition-colors group"
                     >
                       <div
                         className="w-16 h-16 rounded-full bg-primary flex items-center justify-center group-hover:scale-110 transition-transform duration-300"
@@ -578,7 +586,7 @@ export default async function HomePage() {
                       <span className={`text-sm font-semibold ${cfg.textColor} uppercase tracking-wide`}>{cfg.label}</span>
                     </div>
                     <div className="flex items-center gap-4">
-                      <PlayerBadgeLight imageUrl={p.image_url} name={p.player_name} size={64} />
+                      <PlayerBadgeLight imageUrl={p.image_url} name={p.player_name} size={120} objectPosition="top" />
                       <div>
                         <p className="text-xl font-bold text-gray-900 leading-tight">{p.player_name ?? '—'}</p>
                         <p className="text-sm text-gray-400 mt-0.5">{p.player_club}{p.position && ` · ${p.position}`}</p>
@@ -607,7 +615,7 @@ export default async function HomePage() {
             <div className="mt-10 grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-5 gap-4">
               {kooptips.buy_tip_players.map((p, i) => (
                 <div key={i} className="card-lift bg-white border border-gray-100 hover:border-primary/30 rounded-2xl p-4 flex flex-col items-center text-center gap-3 transition-colors shadow-sm hover:shadow-md">
-                  <PlayerBadgeLight imageUrl={p.image_url} name={p.player_name} size={72} />
+                  <PlayerBadgeLight imageUrl={p.image_url} name={p.player_name} size={120} objectPosition="top" />
                   <div>
                     <p className="font-bold text-gray-900 text-sm leading-tight">{p.player_name ?? '—'}</p>
                     <p className="text-xs text-gray-400 mt-0.5">{p.player_club}{p.position && ` · ${p.position}`}</p>
