@@ -237,7 +237,7 @@ function PitchPlayer({ player }: { player: TeamPlayer }) {
       <span className="text-[10px] sm:text-xs text-white font-semibold text-center leading-tight truncate w-full">
         {player.player_name ?? '—'}
       </span>
-      {player.points !== null && (
+      {player.points !== null && player.points > 0 && (
         <span className="text-[9px] bg-primary text-black font-bold px-1.5 py-0.5 rounded">
           {player.points}
         </span>
