@@ -200,7 +200,7 @@ function PlayerBadgeDark({ imageUrl, name, size = 56, objectPosition = 'center' 
 function PlayerBadgeLight({ imageUrl, name, size = 56, objectPosition = 'center' }: { imageUrl: string | null; name: string | null; size?: number; objectPosition?: string }) {
   if (imageUrl) {
     return (
-      <div className="rounded-full overflow-hidden shrink-0" style={{ width: size, height: size, border: '3px solid red' }}>
+      <div className="rounded-full overflow-hidden shrink-0" style={{ width: size, height: size }}>
         {/* eslint-disable-next-line @next/next/no-img-element */}
         <img
           src={imageUrl}
@@ -358,11 +358,6 @@ export default async function HomePage() {
   const managers = allManagers.filter(
     (m, idx, arr) => arr.findIndex((x) => x.name === m.name) === idx,
   );
-
-  // ── Debug logging (server-side — visible in Vercel function logs) ────────────
-  console.log('[DEBUG] kooptips raw:', JSON.stringify(kooptips, null, 2));
-  console.log('[DEBUG] captain raw:', JSON.stringify(captain, null, 2));
-  console.log('[DEBUG] playerOfWeek raw:', JSON.stringify(playerOfWeek, null, 2));
 
   const captainPlayers = [...(captain?.captain_pick_players ?? [])].sort((a, b) => a.rank - b.rank);
   const gk  = team?.team_players?.filter((p) => p.position === 'GK')  ?? [];
