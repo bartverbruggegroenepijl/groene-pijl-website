@@ -327,7 +327,8 @@ export default function BuyTipBuilder({ action, mode, existingTip, existingPlaye
                     onSelect={(player) =>
                       updateSlot(slot.index, {
                         player,
-                        imageUrl: slot.imageUrl,
+                        // Auto-fill FPL photo; preserve manual upload if already set
+                        imageUrl: slot.imageUrl ?? (player?.imageUrl || null),
                       })
                     }
                   />

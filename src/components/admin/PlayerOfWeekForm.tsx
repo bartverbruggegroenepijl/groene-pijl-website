@@ -63,6 +63,8 @@ export default function PlayerOfWeekForm({ action }: PlayerOfWeekFormProps) {
       setPlayerName(player.name);
       setPlayerClub(player.team);
       setPosition(player.position);
+      // Auto-fill FPL photo URL — user can still override with manual upload
+      setImageUrl((prev) => prev ?? (player.imageUrl || null));
     }
   }, [player]);
 

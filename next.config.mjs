@@ -14,6 +14,12 @@ const nextConfig = {
         hostname: 'd3t3ozftmdmh3i.cloudfront.net',
         pathname: '/**',
       },
+      // Premier League resources CDN (FPL player photos)
+      {
+        protocol: 'https',
+        hostname: 'resources.premierleague.com',
+        pathname: '/premierleague/photos/**',
+      },
       // Anchor / Spotify podcast cover images
       {
         protocol: 'https',

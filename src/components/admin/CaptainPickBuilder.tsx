@@ -338,7 +338,13 @@ export default function CaptainPickBuilder({ action, mode, existingPick, existin
                     label="speler"
                     players={fplPlayers}
                     selected={slot.player}
-                    onSelect={(player) => updateSlot(rank, { player })}
+                    onSelect={(player) =>
+                      updateSlot(rank, {
+                        player,
+                        // Auto-fill FPL photo; preserve manual upload if already set
+                        imageUrl: slot.imageUrl ?? (player?.imageUrl || null),
+                      })
+                    }
                   />
 
                   {/* Positie badge */}

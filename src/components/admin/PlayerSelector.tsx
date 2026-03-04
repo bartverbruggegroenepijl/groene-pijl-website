@@ -11,6 +11,37 @@ const POSITION_LABELS: Record<string, string> = {
   FWD: 'aanvaller',
 };
 
+// ── Small circular FPL photo with fallback to initials ────────────────────────
+function PlayerPhoto({ imageUrl, name, size = 28 }: { imageUrl: string; name: string; size?: number }) {
+  const [errored, setErrored] = useState(false);
+
+  if (!imageUrl || errored) {
+    return (
+      <div
+        className="rounded-full bg-white/8 flex items-center justify-center flex-shrink-0 text-gray-400 font-bold"
+        style={{ width: size, height: size, fontSize: size * 0.38 }}
+      >
+        {name.charAt(0).toUpperCase()}
+      </div>
+    );
+  }
+
+  return (
+    // eslint-disable-next-line @next/next/no-img-element
+    <img
+      src={imageUrl}
+      alt={name}
+      width={size}
+      height={size}
+      onError={() => setErrored(true)}
+      className="rounded-full object-cover flex-shrink-0"
+      style={{ width: size, height: size, objectFit: 'cover', objectPosition: 'top center' }}
+    />
+  );
+}
+
+// ── Props ─────────────────────────────────────────────────────────────────────
+
 interface PlayerSelectorProps {
   position: 'GK' | 'DEF' | 'MID' | 'FWD';
   players: FplPlayer[];
@@ -62,6 +93,9 @@ export default function PlayerSelector({
     return (
       <div className="flex items-center gap-2 flex-1 bg-[#111111] border border-white/15
                       rounded-lg px-3 py-2 min-w-0">
+        {/* FPL foto thumbnail */}
+        <PlayerPhoto imageUrl={selected.imageUrl} name={selected.name} size={28} />
+
         <div className="flex-1 min-w-0">
           <p className="text-white text-sm font-medium truncate">{selected.name}</p>
           <p className="text-gray-500 text-xs">{selected.team}</p>
@@ -116,10 +150,13 @@ export default function PlayerSelector({
                   setSearch('');
                   setIsOpen(false);
                 }}
-                className="flex items-center justify-between px-3 py-2 text-sm
+                className="flex items-center gap-2.5 px-3 py-2 text-sm
                            hover:bg-white/8 cursor-pointer transition-colors"
               >
-                <div className="min-w-0">
+                {/* Kleine foto naast naam in de dropdown */}
+                <PlayerPhoto imageUrl={p.imageUrl} name={p.name} size={24} />
+
+                <div className="min-w-0 flex-1">
                   <span className="text-white font-medium">{p.name}</span>
                   <span className="text-gray-500 ml-2 text-xs">{p.team}</span>
                 </div>
