@@ -4,6 +4,7 @@ import { useState, useEffect, useRef } from 'react';
 import Link from 'next/link';
 import Image from 'next/image';
 import { Menu, X, ChevronDown } from 'lucide-react';
+import Logo from '@/components/ui/Logo';
 
 interface Manager {
   id: string;
@@ -19,7 +20,6 @@ const navLinks = [
   { label: 'Afleveringen',         href: '/afleveringen' },
   { label: 'Artikelen',            href: '/artikelen' },
   { label: 'Transfers & Captains', href: '/#captain-pick' },
-  { label: 'Rankings',             href: '/#team' },
 ];
 
 export default function Navbar({ managers = [] }: NavbarProps) {
@@ -49,42 +49,16 @@ export default function Navbar({ managers = [] }: NavbarProps) {
     <header
       className={`fixed top-0 left-0 right-0 z-50 transition-all duration-300 ${
         scrolled || menuOpen
-          ? 'bg-navy/98 backdrop-blur-md border-b border-white/8 shadow-lg'
+          ? 'bg-navy/98 backdrop-blur-md shadow-lg'
           : 'bg-transparent'
       }`}
+      style={scrolled || menuOpen ? { borderBottom: '1px solid rgba(0,250,97,0.2)' } : undefined}
     >
       <div className="max-w-8xl mx-auto px-4 sm:px-6 lg:px-8">
         <div className="flex items-center justify-between h-16 lg:h-18">
 
           {/* Logo */}
-          <Link href="/" className="flex items-center gap-2.5 shrink-0 group">
-            {/* Brand icon: green triangle up + pink arrow down */}
-            <svg
-              viewBox="0 0 36 44"
-              fill="none"
-              className="w-8 h-10 flex-shrink-0 transition-all duration-300"
-              style={{ filter: 'drop-shadow(0 0 6px rgba(0,250,97,0.5))' }}
-            >
-              {/* Green upward triangle */}
-              <polygon
-                points="18,3 32,26 4,26"
-                fill="#00FA61"
-                style={{ filter: 'drop-shadow(0 0 4px rgba(0,250,97,0.8))' }}
-              />
-              {/* Pink/magenta downward arrow */}
-              <polygon
-                points="11,29 25,29 18,41"
-                fill="#C821C3"
-                style={{ filter: 'drop-shadow(0 0 4px rgba(200,33,195,0.8))' }}
-              />
-            </svg>
-            <span
-              className="font-bold text-base tracking-wide hidden sm:block text-white"
-              style={{ fontFamily: 'Montserrat, sans-serif' }}
-            >
-              DE GROENE PIJL
-            </span>
-          </Link>
+          <Logo size="md" />
 
           {/* Desktop nav — center */}
           <nav className="hidden lg:flex items-center gap-1">
@@ -92,7 +66,7 @@ export default function Navbar({ managers = [] }: NavbarProps) {
               <Link
                 key={link.href}
                 href={link.href}
-                className="px-4 py-2 text-sm font-medium text-white/70 hover:text-white rounded-lg hover:bg-white/5 transition-all duration-200"
+                className="px-4 py-2 text-sm font-medium text-white/70 hover:text-primary rounded-lg hover:bg-primary/8 transition-all duration-200"
               >
                 {link.label}
               </Link>
@@ -102,7 +76,7 @@ export default function Navbar({ managers = [] }: NavbarProps) {
             <div className="relative" ref={dropdownRef}>
               <button
                 onClick={() => setManagersOpen(!managersOpen)}
-                className="flex items-center gap-1.5 px-4 py-2 text-sm font-medium text-white/70 hover:text-white rounded-lg hover:bg-white/5 transition-all duration-200"
+                className="flex items-center gap-1.5 px-4 py-2 text-sm font-medium text-white/70 hover:text-primary rounded-lg hover:bg-primary/8 transition-all duration-200"
               >
                 Managers
                 <ChevronDown
@@ -186,7 +160,7 @@ export default function Navbar({ managers = [] }: NavbarProps) {
               </Link>
             ))}
             <div className="border-t border-white/8 my-2" />
-            <p className="px-4 text-xs font-semibold text-white/30 uppercase tracking-widest mb-1">Managers</p>
+            <p className="px-4 text-xs font-semibold uppercase tracking-widest mb-1" style={{ color: '#00FA61' }}>Managers</p>
             {managers.map((m) => (
               <Link
                 key={m.id}

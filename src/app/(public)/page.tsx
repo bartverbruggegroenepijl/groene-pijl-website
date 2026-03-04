@@ -137,7 +137,8 @@ function SectionLabel({ children }: { children: React.ReactNode }) {
 
 function SectionTitleDark({ children }: { children: React.ReactNode }) {
   return (
-    <h2 className="text-3xl sm:text-4xl lg:text-5xl font-bold text-white leading-tight">
+    <h2 className="text-3xl sm:text-4xl lg:text-5xl font-bold text-white leading-tight border-l-4 border-primary pl-4"
+        style={{ borderColor: '#00FA61' }}>
       {children}
     </h2>
   );
@@ -570,7 +571,7 @@ export default async function HomePage() {
       </section>
 
       {/* ── 3. CAPTAIN PICK VAN DE WEEK (dark navy) ─────────────────── */}
-      <section id="captain-pick" className="py-20 px-4 bg-navy">
+      <section id="captain-pick" className="py-20 px-4 bg-navy" style={{ borderTop: '2px solid rgba(0,250,97,0.18)' }}>
         <div className="max-w-8xl mx-auto">
           <SectionLabel>{captain ? `Gameweek ${captain.gameweek}` : 'Captain Pick'}</SectionLabel>
           <SectionTitleDark>Captain Pick van de Week</SectionTitleDark>
@@ -636,7 +637,7 @@ export default async function HomePage() {
       </section>
 
       {/* ── 5. TEAM VAN DE WEEK (dark navy) ─────────────────────────── */}
-      <section id="team" className="py-20 px-4 bg-navy">
+      <section id="team" className="py-20 px-4 bg-navy" style={{ borderTop: '2px solid rgba(0,250,97,0.18)' }}>
         <div className="max-w-8xl mx-auto">
           <SectionLabel>{team ? `Gameweek ${team.week_number}` : 'Team'}</SectionLabel>
           <SectionTitleDark>Team van de Week</SectionTitleDark>
@@ -822,7 +823,7 @@ export default async function HomePage() {
       </section>
 
       {/* ── 7. DE MANAGERS (dark navy) ───────────────────────────────── */}
-      <section id="managers" className="py-20 px-4 bg-navy">
+      <section id="managers" className="py-20 px-4 bg-navy" style={{ borderTop: '2px solid rgba(0,250,97,0.18)' }}>
         <div className="max-w-8xl mx-auto">
           <SectionLabel>Het Team</SectionLabel>
           <SectionTitleDark>De Managers</SectionTitleDark>
@@ -830,7 +831,7 @@ export default async function HomePage() {
           {managers.length > 0 ? (
             <div className="mt-10 grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6">
               {managers.map((m) => (
-                <Link key={m.id} href={`/managers/${m.id}`} className="card-lift bg-navy-card border border-white/8 hover:border-primary/30 rounded-2xl p-6 flex flex-col items-center text-center gap-3 transition-colors group">
+                <Link key={m.id} href={`/managers/${m.id}`} className="card-lift bg-navy-card border border-white/8 hover:border-primary/50 hover:shadow-[0_0_28px_rgba(0,250,97,0.12)] rounded-2xl p-6 flex flex-col items-center text-center gap-3 transition-all duration-300 group">
                   {m.avatar_url ? (
                     <div className="relative w-20 h-20 rounded-full overflow-hidden ring-2 ring-white/10 group-hover:ring-primary/40 transition-all duration-300">
                       <Image src={m.avatar_url} alt={m.name} fill className="object-cover" />
