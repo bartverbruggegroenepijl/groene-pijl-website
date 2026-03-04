@@ -431,8 +431,8 @@ export default async function HomePage() {
               </p>
 
               <p className="text-base text-white/70 leading-relaxed mb-8 max-w-md">
-                Wekelijkse analyse, captainkeuzes en breaking teamnieuws.
-                Luister elke gameweek en verbeter je FPL-team!
+                Wekelijkse analyse, captainkeuzes en discussies om
+                jouw FPL-team aan een groene pijl te helpen.
               </p>
 
               {/* CTA buttons */}
@@ -462,7 +462,7 @@ export default async function HomePage() {
               <div className="flex gap-8 mt-10 pt-8 border-t border-white/10">
                 <div>
                   <p className="text-2xl font-bold" style={{ color: '#00FA61' }}>GW{gwInfo.currentGW ?? ''}</p>
-                  <p className="text-xs text-white/40 mt-0.5">Elke week nieuw</p>
+                  <p className="text-xs text-white/40 mt-0.5">Elke week content</p>
                 </div>
                 <div>
                   <p className="text-2xl font-bold" style={{ color: '#00FA61' }}>4</p>

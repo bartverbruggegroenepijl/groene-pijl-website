@@ -67,40 +67,55 @@ export default function DeadlineCountdown() {
   const warn   = timeLeft.totalMs < 86_400_000;     // < 24 h → orange
   const color  = urgent ? '#ef4444' : warn ? '#f97316' : 'rgba(255,255,255,0.85)';
 
-  // Desktop string: include days when ≥ 1 day
-  const desktopParts: string[] = [];
-  if (timeLeft.days > 0)          desktopParts.push(`${timeLeft.days}d`);
-  desktopParts.push(`${timeLeft.hours}u`);
-  desktopParts.push(`${timeLeft.minutes}m`);
-  if (urgent)                     desktopParts.push(`${timeLeft.seconds}s`);
+  // Shared countdown string for both mobile and desktop
+  const allParts: string[] = [];
+  if (timeLeft.days > 0) allParts.push(`${timeLeft.days}d`);
+  allParts.push(`${timeLeft.hours}u`);
+  allParts.push(`${timeLeft.minutes}m`);
+  if (urgent) allParts.push(`${timeLeft.seconds}s`);
+
+  // Border / glow colour tracks urgency
+  const borderColor = urgent
+    ? 'rgba(239,68,68,0.6)'
+    : warn
+    ? 'rgba(249,115,22,0.6)'
+    : 'rgba(0,250,97,0.5)';
+  const glowColor = urgent
+    ? 'rgba(239,68,68,0.25)'
+    : warn
+    ? 'rgba(249,115,22,0.25)'
+    : 'rgba(0,250,97,0.25)';
 
   return (
     <div
       className="flex items-center gap-1.5 select-none"
       title={`GW${info.nextGW} deadline: ${new Date(info.nextDeadline!).toLocaleString('nl-NL')}`}
+      style={{
+        border:           `1.5px solid ${borderColor}`,
+        borderRadius:     '8px',
+        padding:          '5px 10px',
+        background:       urgent
+          ? 'rgba(239,68,68,0.08)'
+          : warn
+          ? 'rgba(249,115,22,0.08)'
+          : 'rgba(0,250,97,0.08)',
+        boxShadow:        `0 0 8px ${glowColor}`,
+      }}
     >
-      <Timer size={13} style={{ color, flexShrink: 0 }} />
+      <Timer size={12} style={{ color, flexShrink: 0 }} />
 
-      {/* GW label — desktop */}
-      <span className="hidden sm:inline text-[11px] font-medium text-white/45">
+      {/* GW label */}
+      <span className="text-[10px] font-medium text-white/45">
         GW{info.nextGW}
       </span>
-      <span className="hidden sm:inline text-white/20 text-[11px]">·</span>
+      <span className="text-white/20 text-[10px]">·</span>
 
-      {/* Full countdown — desktop */}
+      {/* Countdown — same string on all screen sizes */}
       <span
-        className="hidden sm:inline text-xs font-bold tabular-nums"
+        className="text-xs font-bold tabular-nums"
         style={{ color }}
       >
-        {desktopParts.join(' ')}
-      </span>
-
-      {/* Compact — mobile (hours + minutes only) */}
-      <span
-        className="sm:hidden text-xs font-bold tabular-nums"
-        style={{ color }}
-      >
-        {timeLeft.hours}u {timeLeft.minutes}m
+        {allParts.join(' ')}
       </span>
     </div>
   );
