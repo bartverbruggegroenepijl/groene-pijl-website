@@ -3,6 +3,7 @@ import { NextResponse } from 'next/server';
 interface FplApiPlayer {
   id: number;
   code: number;
+  photo: string;      // e.g. "80201.jpg" — empty string means no photo available
   first_name: string;
   second_name: string;
   web_name: string;
@@ -60,19 +61,27 @@ export async function GET() {
     });
 
     // Map players to our format
-    const players = (data.elements as FplApiPlayer[]).map((p) => ({
-      id: p.id,
-      code: p.code,
-      name: p.web_name,
-      fullName: `${p.first_name} ${p.second_name}`,
-      team: teamMap[p.team] ?? '',
-      teamId: p.team,
-      position: POSITION_MAP[p.element_type] ?? 'FWD',
-      totalPoints: p.total_points,
-      eventPoints: p.event_points,
-      price: p.now_cost / 10,
-      imageUrl: `https://resources.premierleague.com/premierleague/photos/players/110x140/p${p.code}.png`,
-    }));
+    const players = (data.elements as FplApiPlayer[]).map((p) => {
+      // Only build a photo URL when the FPL API confirms a photo exists.
+      // The `photo` field is e.g. "80201.jpg"; empty string means no photo.
+      const imageUrl = p.photo
+        ? `https://resources.premierleague.com/premierleague/photos/players/110x140/p${p.code}.png`
+        : null;
+
+      return {
+        id: p.id,
+        code: p.code,
+        name: p.web_name,
+        fullName: `${p.first_name} ${p.second_name}`,
+        team: teamMap[p.team] ?? '',
+        teamId: p.team,
+        position: POSITION_MAP[p.element_type] ?? 'FWD',
+        totalPoints: p.total_points,
+        eventPoints: p.event_points,
+        price: p.now_cost / 10,
+        imageUrl,
+      };
+    });
 
     return NextResponse.json(
       { players },

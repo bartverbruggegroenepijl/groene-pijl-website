@@ -12,7 +12,7 @@ const POSITION_LABELS: Record<string, string> = {
 };
 
 // ── Small circular FPL photo with fallback to initials ────────────────────────
-function PlayerPhoto({ imageUrl, name, size = 28 }: { imageUrl: string; name: string; size?: number }) {
+function PlayerPhoto({ imageUrl, name, size = 28 }: { imageUrl: string | null; name: string; size?: number }) {
   const [errored, setErrored] = useState(false);
 
   if (!imageUrl || errored) {

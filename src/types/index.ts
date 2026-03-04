@@ -95,7 +95,8 @@ export interface FplPlayer {
   totalPoints: number;
   eventPoints: number;
   price: number;
-  imageUrl: string;
+  /** FPL photo URL — null when the player has no photo in the FPL API */
+  imageUrl: string | null;
 }
 
 // ─── Team van de Week ─────────────────────────────────────────

@@ -174,8 +174,16 @@ function EmptyPlaceholderLight({ message }: { message: string }) {
 function PlayerBadgeDark({ imageUrl, name, size = 56, objectPosition = 'center' }: { imageUrl: string | null; name: string | null; size?: number; objectPosition?: string }) {
   if (imageUrl) {
     return (
-      <div className="relative rounded-full overflow-hidden shrink-0" style={{ width: size, height: size }}>
-        <Image src={imageUrl} alt={name ?? ''} fill className="object-cover" style={{ objectPosition }} />
+      <div className="rounded-full overflow-hidden shrink-0" style={{ width: size, height: size }}>
+        {/* eslint-disable-next-line @next/next/no-img-element */}
+        <img
+          src={imageUrl}
+          alt={name ?? ''}
+          width={size}
+          height={size}
+          className="w-full h-full object-cover"
+          style={{ objectPosition }}
+        />
       </div>
     );
   }
@@ -192,8 +200,16 @@ function PlayerBadgeDark({ imageUrl, name, size = 56, objectPosition = 'center' 
 function PlayerBadgeLight({ imageUrl, name, size = 56, objectPosition = 'center' }: { imageUrl: string | null; name: string | null; size?: number; objectPosition?: string }) {
   if (imageUrl) {
     return (
-      <div className="relative rounded-full overflow-hidden shrink-0" style={{ width: size, height: size }}>
-        <Image src={imageUrl} alt={name ?? ''} fill className="object-cover" style={{ objectPosition }} />
+      <div className="rounded-full overflow-hidden shrink-0" style={{ width: size, height: size }}>
+        {/* eslint-disable-next-line @next/next/no-img-element */}
+        <img
+          src={imageUrl}
+          alt={name ?? ''}
+          width={size}
+          height={size}
+          className="w-full h-full object-cover"
+          style={{ objectPosition }}
+        />
       </div>
     );
   }
@@ -211,7 +227,7 @@ function PitchPlayer({ player }: { player: TeamPlayer }) {
   return (
     <div className="flex flex-col items-center gap-1 w-14 sm:w-16">
       <div className="relative">
-        <PlayerBadgeDark imageUrl={player.player_image_url} name={player.player_name} size={48} />
+        <PlayerBadgeDark imageUrl={player.player_image_url ?? null} name={player.player_name} size={48} />
         {player.is_captain && (
           <span className="absolute -top-1 -right-1 w-5 h-5 bg-primary text-black text-[9px] font-black rounded-full flex items-center justify-center leading-none">
             C
@@ -685,11 +701,12 @@ export default async function HomePage() {
                 <div className="relative">
                   <div className="w-56 h-56 sm:w-72 sm:h-72 rounded-2xl overflow-hidden bg-gray-100 shadow-xl">
                     {playerOfWeek.image_url ? (
-                      <Image
+                      /* eslint-disable-next-line @next/next/no-img-element */
+                      <img
                         src={playerOfWeek.image_url}
                         alt={playerOfWeek.player_name ?? ''}
-                        fill
-                        className="object-cover"
+                        className="w-full h-full object-cover"
+                        style={{ objectPosition: 'top center' }}
                       />
                     ) : (
                       <div className="w-full h-full flex items-center justify-center" style={{ background: 'linear-gradient(135deg, rgba(0,250,97,0.15) 0%, rgba(123,47,255,0.15) 100%)' }}>
