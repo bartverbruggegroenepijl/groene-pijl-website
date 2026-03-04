@@ -62,11 +62,16 @@ export default function PlayerImageUpload({
   async function handleRemove() {
     if (!value) return;
     setError('');
-    try {
-      const supabase = createClient();
-      await deletePlayerImage(supabase, value);
-    } catch {
-      // Ignore delete errors — the URL is already unlinked from the form
+    // Only delete from Supabase Storage when the URL is actually a Supabase URL.
+    // FPL CDN URLs (resources.premierleague.com) are external and must not be deleted.
+    const isSupabaseUrl = value.includes('.supabase.co');
+    if (isSupabaseUrl) {
+      try {
+        const supabase = createClient();
+        await deletePlayerImage(supabase, value);
+      } catch {
+        // Ignore delete errors — the URL is already unlinked from the form
+      }
     }
     onChange(null);
   }
