@@ -375,58 +375,43 @@ export default async function HomePage() {
     <main className="text-white overflow-x-hidden" style={{ background: '#0D0B2A' }}>
 
       {/* ── 1. HERO ──────────────────────────────────────────────────── */}
-      <section className="relative min-h-screen flex items-center overflow-hidden">
+      <section className="relative flex items-center overflow-hidden" style={{ minHeight: 'calc(100vh - 60px)', background: '#1F0E84' }}>
 
-        {/* Achtergrond: paars #1F0E84 → donkerpaars → donkerblauw */}
-        <div
-          className="absolute inset-0"
-          style={{
-            background: 'linear-gradient(135deg, #1F0E84 0%, #2D1B69 50%, #0d1f3c 100%)',
-          }}
-        />
-
-        {/* Decoratieve logo-driehoek — groot, subtiel op achtergrond */}
+        {/* Decoratieve groene driehoek — groot, subtiel achtergrond ornament */}
         <div
           className="absolute pointer-events-none"
-          style={{ right: '-2%', top: '50%', transform: 'translateY(-50%)', width: '55%', aspectRatio: '40/56', opacity: 0.12, zIndex: 0 }}
+          style={{ right: '-60px', top: '50%', transform: 'translateY(-50%)', width: '600px', height: '600px', opacity: 0.08, zIndex: 0 }}
         >
-          <svg viewBox="0 0 40 56" fill="none" xmlns="http://www.w3.org/2000/svg" style={{ width: '100%', height: '100%' }}>
+          <svg viewBox="0 0 600 600" fill="none" xmlns="http://www.w3.org/2000/svg" style={{ width: '100%', height: '100%' }}>
             <polygon
-              points="20,2 38,26 2,26"
+              points="300,10 590,590 10,590"
               fill="none"
               stroke="#00FA61"
-              strokeWidth="0.8"
-              strokeLinejoin="round"
-            />
-            <polygon
-              points="3,32 37,32 20,54"
-              fill="none"
-              stroke="#00FA61"
-              strokeWidth="0.8"
+              strokeWidth="3"
               strokeLinejoin="round"
             />
           </svg>
         </div>
 
-        {/* Hero spelersafbeelding — absolute, volledige hoogte, rechterkant, geen border of card */}
+        {/* Hero spelersafbeelding — absolute, top: 0, 65% breedte, object-cover */}
         <div
-          className="absolute right-0 bottom-0 h-full pointer-events-none"
-          style={{ width: '55%' }}
+          className="absolute right-0 top-0 h-full pointer-events-none"
+          style={{ width: '65%' }}
         >
           {/* eslint-disable-next-line @next/next/no-img-element */}
           <img
             src={heroImageUrl ?? '/hero-players.jpg'}
             alt="FPL spelers"
-            className="h-full w-full object-contain"
-            style={{ objectPosition: 'bottom right' }}
+            className="h-full w-full object-cover"
+            style={{ objectPosition: 'left center' }}
           />
         </div>
 
-        {/* Gradient overlay — links ondoorzichtig, rechts transparant */}
+        {/* Gradient overlay — links volledig #1F0E84, rechts transparant */}
         <div
           className="absolute inset-0 pointer-events-none"
           style={{
-            background: 'linear-gradient(to right, #1F0E84 25%, rgba(31,14,132,0.85) 40%, rgba(31,14,132,0.3) 60%, transparent 75%)',
+            background: 'linear-gradient(to right, #1F0E84 0%, #1F0E84 20%, rgba(31,14,132,0.95) 30%, rgba(31,14,132,0.7) 45%, rgba(31,14,132,0.2) 60%, transparent 75%)',
             zIndex: 1,
           }}
         />
