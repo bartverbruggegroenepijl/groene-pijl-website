@@ -377,22 +377,39 @@ export default async function HomePage() {
       {/* ── 1. HERO ──────────────────────────────────────────────────── */}
       <section className="relative min-h-screen flex items-center overflow-hidden">
 
-        {/* Brand gradient: groen #00FA61 → donkerblauw #1F0E84 → magenta #C821C3 */}
+        {/* Achtergrond: donkerblauw → paars → donkergroen */}
         <div
           className="absolute inset-0"
           style={{
-            background: 'linear-gradient(135deg, #00FA61 0%, #1F0E84 50%, #C821C3 100%)',
+            background: 'linear-gradient(135deg, #0D0B2A 0%, #1F0E84 45%, #1A3A2A 100%)',
           }}
         />
 
-        {/* Subtle dark overlay center to improve text readability */}
+        {/* Hero spelersafbeelding — absolute, volledige hoogte, rechterkant, geen border of card */}
+        <div
+          className="absolute right-0 bottom-0 h-full pointer-events-none"
+          style={{ width: '60%' }}
+        >
+          {/* eslint-disable-next-line @next/next/no-img-element */}
+          <img
+            src={heroImageUrl ?? '/hero-players.jpg'}
+            alt="FPL spelers"
+            className="h-full w-full object-cover"
+            style={{ objectPosition: 'center bottom' }}
+          />
+        </div>
+
+        {/* Gradient overlay — links ondoorzichtig #1F0E84, rechts transparant */}
         <div
           className="absolute inset-0 pointer-events-none"
-          style={{ background: 'radial-gradient(ellipse at 40% 50%, rgba(13,10,42,0.55) 0%, transparent 70%)' }}
+          style={{
+            background: 'linear-gradient(to right, #1F0E84 30%, rgba(31,14,132,0.7) 50%, transparent 70%)',
+            zIndex: 1,
+          }}
         />
 
-        {/* Diagonal white SVG divider — creates the clean angled cut into the white section below */}
-        <div className="absolute bottom-0 left-0 right-0 pointer-events-none">
+        {/* Diagonal white SVG divider */}
+        <div className="absolute bottom-0 left-0 right-0 pointer-events-none" style={{ zIndex: 2 }}>
           <svg
             viewBox="0 0 1440 90"
             preserveAspectRatio="none"
@@ -403,118 +420,80 @@ export default async function HomePage() {
           </svg>
         </div>
 
-        <div className="relative z-10 max-w-8xl mx-auto px-4 sm:px-6 lg:px-8 w-full pt-24 pb-16">
-          <div className="grid grid-cols-1 lg:grid-cols-2 gap-12 lg:gap-16 items-center">
+        <div className="relative max-w-8xl mx-auto px-4 sm:px-6 lg:px-8 w-full pt-24 pb-16" style={{ zIndex: 3 }}>
+          <div className="max-w-xl">
 
-            {/* ── Left: text + CTA ── */}
-            <div>
-              <div className="inline-flex items-center gap-2 bg-white/10 border border-white/20 text-white text-xs font-semibold px-4 py-2 rounded-full mb-6 uppercase tracking-widest backdrop-blur-sm">
-                De enige Nederlandse FPL Podcast
-              </div>
+            <div className="inline-flex items-center gap-2 bg-white/10 border border-white/20 text-white text-xs font-semibold px-4 py-2 rounded-full mb-6 uppercase tracking-widest backdrop-blur-sm">
+              De enige Nederlandse FPL Podcast
+            </div>
 
-              <h1
-                className="text-5xl sm:text-6xl lg:text-7xl font-bold leading-[1.0] mb-4"
-                style={{ fontFamily: 'Montserrat, sans-serif' }}
-              >
-                <span className="text-white">DE PLEK VOOR NEDERLANDSE</span>
-                <span className="block text-white">FPL MANAGERS</span>
-              </h1>
-              <p
-                className="text-xl sm:text-2xl font-semibold mb-5"
+            <h1
+              className="text-5xl sm:text-6xl lg:text-7xl font-bold leading-[1.0] mb-4"
+              style={{ fontFamily: 'Montserrat, sans-serif' }}
+            >
+              <span className="text-white">DE PLEK VOOR NEDERLANDSE</span>
+              <span className="block text-white">FPL MANAGERS</span>
+            </h1>
+
+            <p
+              className="text-xl sm:text-2xl font-semibold mb-5"
+              style={{
+                fontFamily: 'Montserrat, sans-serif',
+                color: '#00FA61',
+                textShadow: '0 0 24px rgba(0,250,97,0.7)',
+              }}
+            >
+              Fantasy Premier League podcast
+            </p>
+
+            <p className="text-base text-white/70 leading-relaxed mb-8 max-w-md">
+              Wekelijkse analyse, captainkeuzes en discussies om
+              jouw FPL-team aan een groene pijl te helpen.
+            </p>
+
+            {/* CTA buttons */}
+            <div className="flex flex-col sm:flex-row gap-3">
+              <a
+                href={episode?.spotify_url ?? '/afleveringen'}
+                target={episode?.spotify_url ? '_blank' : undefined}
+                rel="noopener noreferrer"
+                className="inline-flex items-center justify-center gap-2 font-semibold px-7 py-3.5 rounded-full text-sm transition-all duration-300 text-black"
                 style={{
-                  fontFamily: 'Montserrat, sans-serif',
-                  color: '#00FA61',
-                  textShadow: '0 0 24px rgba(0,250,97,0.7)',
+                  background: '#00FA61',
+                  boxShadow: '0 0 24px rgba(0,250,97,0.5), 0 4px 16px rgba(0,0,0,0.3)',
                 }}
               >
-                Fantasy Premier League podcast
-              </p>
+                <Mic size={16} />
+                Luister nieuwste aflevering
+              </a>
+              <a
+                href="#captain-pick"
+                className="inline-flex items-center justify-center gap-2 border border-white/30 text-white hover:border-primary hover:text-primary font-semibold px-7 py-3.5 rounded-full transition-all duration-300 text-sm backdrop-blur-sm"
+              >
+                Bekijk captain advies
+              </a>
+            </div>
 
-              <p className="text-base text-white/70 leading-relaxed mb-8 max-w-md">
-                Wekelijkse analyse, captainkeuzes en discussies om
-                jouw FPL-team aan een groene pijl te helpen.
-              </p>
-
-              {/* CTA buttons */}
-              <div className="flex flex-col sm:flex-row gap-3">
-                <a
-                  href={episode?.spotify_url ?? '/afleveringen'}
-                  target={episode?.spotify_url ? '_blank' : undefined}
-                  rel="noopener noreferrer"
-                  className="inline-flex items-center justify-center gap-2 font-semibold px-7 py-3.5 rounded-full text-sm transition-all duration-300 text-black"
-                  style={{
-                    background: '#00FA61',
-                    boxShadow: '0 0 24px rgba(0,250,97,0.5), 0 4px 16px rgba(0,0,0,0.3)',
-                  }}
-                >
-                  <Mic size={16} />
-                  Luister nieuwste aflevering
-                </a>
-                <a
-                  href="#captain-pick"
-                  className="inline-flex items-center justify-center gap-2 border border-white/30 text-white hover:border-primary hover:text-primary font-semibold px-7 py-3.5 rounded-full transition-all duration-300 text-sm backdrop-blur-sm"
-                >
-                  Bekijk captain advies
-                </a>
+            {/* Stats row */}
+            <div className="flex gap-8 mt-10 pt-8 border-t border-white/10">
+              <div>
+                <p className="text-2xl font-bold" style={{ color: '#00FA61' }}>GW{gwInfo.currentGW ?? ''}</p>
+                <p className="text-xs text-white/40 mt-0.5">Elke week content</p>
               </div>
-
-              {/* Stats row */}
-              <div className="flex gap-8 mt-10 pt-8 border-t border-white/10">
-                <div>
-                  <p className="text-2xl font-bold" style={{ color: '#00FA61' }}>GW{gwInfo.currentGW ?? ''}</p>
-                  <p className="text-xs text-white/40 mt-0.5">Elke week content</p>
-                </div>
-                <div>
-                  <p className="text-2xl font-bold" style={{ color: '#00FA61' }}>4</p>
-                  <p className="text-xs text-white/40 mt-0.5">Managers</p>
-                </div>
-                <div>
-                  <p className="text-2xl font-bold" style={{ color: '#00FA61' }}>🎙️</p>
-                  <p className="text-xs text-white/40 mt-0.5">Spotify Podcast</p>
-                </div>
+              <div>
+                <p className="text-2xl font-bold" style={{ color: '#00FA61' }}>4</p>
+                <p className="text-xs text-white/40 mt-0.5">Managers</p>
               </div>
-
-              {/* Scroll hint */}
-              <div className="flex items-center gap-2 mt-8 text-white/25 text-xs">
-                <ChevronDown size={14} className="animate-bounce" />
-                <span>Scroll</span>
+              <div>
+                <p className="text-2xl font-bold" style={{ color: '#00FA61' }}>🎙️</p>
+                <p className="text-xs text-white/40 mt-0.5">Spotify Podcast</p>
               </div>
             </div>
 
-            {/* ── Right: hero image only ── */}
-            <div className="flex justify-center lg:justify-end pb-8 lg:pb-0">
-              <div className="relative">
-                {/* Outer glow ring */}
-                <div
-                  className="absolute -inset-6 rounded-2xl blur-2xl opacity-50 pointer-events-none"
-                  style={{ background: 'radial-gradient(circle, rgba(200,33,195,0.4) 0%, rgba(0,250,97,0.2) 60%, transparent 80%)' }}
-                />
-
-                {/* Hero image — only from site_settings; gradient placeholder if absent */}
-                <div
-                  className="relative w-64 h-64 sm:w-80 sm:h-80 lg:w-[380px] lg:h-[380px] rounded-2xl overflow-hidden"
-                  style={{
-                    border: '2px solid rgba(200,33,195,0.5)',
-                    boxShadow: '0 0 0 1px rgba(200,33,195,0.15), 0 0 60px rgba(200,33,195,0.2), 0 24px 64px rgba(0,0,0,0.5)',
-                  }}
-                >
-                  {heroImageUrl ? (
-                    <Image
-                      src={heroImageUrl}
-                      alt="De Groene Pijl"
-                      fill
-                      className="object-cover"
-                      priority
-                    />
-                  ) : (
-                    /* Gradient placeholder — no text or links */
-                    <div
-                      className="w-full h-full"
-                      style={{ background: 'linear-gradient(135deg, #00FA61 0%, #1F0E84 50%, #C821C3 100%)' }}
-                    />
-                  )}
-                </div>
-              </div>
+            {/* Scroll hint */}
+            <div className="flex items-center gap-2 mt-8 text-white/25 text-xs">
+              <ChevronDown size={14} className="animate-bounce" />
+              <span>Scroll</span>
             </div>
 
           </div>
