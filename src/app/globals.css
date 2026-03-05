@@ -92,3 +92,18 @@ body {
     text-wrap: balance;
   }
 }
+
+/* Hero section — mobiel responsive */
+@media (max-width: 768px) {
+  .hero-h1 {
+    font-size: 36px !important;
+    max-width: 100% !important;
+  }
+  .hero-container {
+    padding: 80px 20px 40px !important;
+  }
+  .hero-image-wrapper {
+    width: 100% !important;
+    opacity: 0.3 !important;
+  }
+}

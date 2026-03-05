@@ -5,7 +5,6 @@ import {
   Mic,
   Clock,
   ExternalLink,
-  ChevronDown,
   Instagram,
   ArrowRight,
   Play,
@@ -375,55 +374,224 @@ export default async function HomePage() {
     <main className="text-white overflow-x-hidden" style={{ background: '#0D0B2A' }}>
 
       {/* ── 1. HERO ──────────────────────────────────────────────────── */}
-      <section
-        className="relative flex items-center overflow-hidden"
-        style={{
-          minHeight: 'calc(100vh - 60px)',
-          background: 'linear-gradient(135deg, #1F0E84 0%, #2D1B69 40%, #0d3d2a 70%, #0a4a1a 100%)',
-        }}
-      >
+      <section style={{
+        position: 'relative',
+        minHeight: '100vh',
+        overflow: 'hidden',
+        background: 'linear-gradient(135deg, #1F0E84 0%, #2D1B69 35%, #1a0a3b 60%, #0d1a3a 100%)',
+        display: 'flex',
+        alignItems: 'center',
+      }}>
 
-        {/* Decoratieve groene driehoek — groot, subtiel achtergrond ornament */}
-        <div
-          className="absolute pointer-events-none"
-          style={{ right: '-60px', top: '50%', transform: 'translateY(-50%)', width: '600px', height: '600px', opacity: 0.08, zIndex: 0 }}
-        >
-          <svg viewBox="0 0 600 600" fill="none" xmlns="http://www.w3.org/2000/svg" style={{ width: '100%', height: '100%' }}>
-            <polygon
-              points="300,10 590,590 10,590"
-              fill="none"
-              stroke="#00FA61"
-              strokeWidth="3"
-              strokeLinejoin="round"
-            />
-          </svg>
-        </div>
+        {/* LAAG 2: Groene/magenta gloed rechts */}
+        <div style={{
+          position: 'absolute',
+          top: 0, right: 0, bottom: 0,
+          width: '70%',
+          background: 'radial-gradient(ellipse at 80% 50%, rgba(0,250,97,0.15) 0%, rgba(200,33,195,0.1) 50%, transparent 70%)',
+          pointerEvents: 'none',
+          zIndex: 1,
+        }} />
 
-        {/* Hero spelersafbeelding — contain, rechts uitgelijnd, bottom */}
-        <div
-          className="absolute right-0 bottom-0 h-full pointer-events-none"
-          style={{ width: '58%' }}
-        >
+        {/* LAAG 3: Grote decoratieve logo-driehoeken achtergrond */}
+        <svg style={{
+          position: 'absolute',
+          right: '-100px',
+          top: '50%',
+          transform: 'translateY(-50%)',
+          width: '500px',
+          height: '500px',
+          opacity: 0.06,
+          zIndex: 1,
+          pointerEvents: 'none',
+        }} viewBox="0 0 200 200">
+          <polygon points="100,10 190,170 10,170" fill="none" stroke="#00FA61" strokeWidth="3"/>
+          <polygon points="100,190 190,30 10,30" fill="none" stroke="#C821C3" strokeWidth="3"/>
+        </svg>
+
+        {/* LAAG 4: Spelersafbeelding rechts */}
+        <div className="hero-image-wrapper" style={{
+          position: 'absolute',
+          right: 0,
+          bottom: 0,
+          width: '60%',
+          height: '100%',
+          zIndex: 2,
+        }}>
           {/* eslint-disable-next-line @next/next/no-img-element */}
           <img
             src={heroImageUrl ?? '/hero-players.jpg'}
             alt="FPL spelers"
-            className="h-full w-full object-contain"
-            style={{ objectPosition: 'right bottom' }}
+            style={{
+              position: 'absolute',
+              bottom: 0,
+              right: 0,
+              height: '95%',
+              width: '100%',
+              objectFit: 'cover',
+              objectPosition: 'center top',
+            }}
           />
+          {/* Gradient overlay over foto voor vloeiende overgang */}
+          <div style={{
+            position: 'absolute',
+            top: 0, left: 0, right: 0, bottom: 0,
+            background: 'linear-gradient(to right, #1F0E84 0%, rgba(31,14,132,0.8) 20%, rgba(31,14,132,0.2) 50%, transparent 70%)',
+            zIndex: 3,
+          }} />
+          {/* Onderkant fade */}
+          <div style={{
+            position: 'absolute',
+            bottom: 0, left: 0, right: 0,
+            height: '30%',
+            background: 'linear-gradient(to top, #1F0E84 0%, transparent 100%)',
+            zIndex: 3,
+          }} />
         </div>
 
-        {/* Gradient overlay — links vol #1F0E84, rechts transparant */}
-        <div
-          className="absolute inset-0 pointer-events-none"
-          style={{
-            background: 'linear-gradient(to right, #1F0E84 0%, #1F0E84 15%, rgba(31,14,132,0.9) 25%, rgba(31,14,132,0.5) 40%, rgba(20,30,50,0.1) 60%, transparent 70%)',
-            zIndex: 1,
-          }}
-        />
+        {/* LAAG 5: Tekst content links */}
+        <div className="hero-container" style={{
+          position: 'relative',
+          zIndex: 10,
+          width: '100%',
+          maxWidth: '1440px',
+          margin: '0 auto',
+          padding: '0 60px',
+          display: 'flex',
+          flexDirection: 'column',
+          gap: '24px',
+          paddingTop: '80px',
+          paddingBottom: '40px',
+        }}>
+
+          {/* Badge */}
+          <div style={{
+            display: 'inline-flex',
+            alignSelf: 'flex-start',
+            padding: '6px 16px',
+            borderRadius: '20px',
+            border: '1px solid rgba(255,255,255,0.3)',
+            background: 'rgba(255,255,255,0.1)',
+            fontSize: '12px',
+            color: 'white',
+            letterSpacing: '2px',
+            fontWeight: 600,
+          }}>
+            DE ENIGE NEDERLANDSE FPL PODCAST
+          </div>
+
+          {/* H1 */}
+          <h1 className="hero-h1" style={{
+            fontSize: 'clamp(36px, 6vw, 80px)',
+            fontWeight: 800,
+            color: 'white',
+            lineHeight: 1.0,
+            margin: 0,
+            maxWidth: '45%',
+            fontFamily: 'Montserrat, sans-serif',
+          }}>
+            DE PLEK VOOR<br/>
+            NEDERLANDSE<br/>
+            FPL MANAGERS
+          </h1>
+
+          {/* Groene subtitel */}
+          <p style={{
+            color: '#00FA61',
+            fontSize: '20px',
+            fontWeight: 600,
+            margin: 0,
+            fontFamily: 'Montserrat, sans-serif',
+            textShadow: '0 0 24px rgba(0,250,97,0.7)',
+          }}>
+            Fantasy Premier League podcast
+          </p>
+
+          {/* Body tekst */}
+          <p style={{
+            color: 'rgba(255,255,255,0.8)',
+            fontSize: '16px',
+            maxWidth: '420px',
+            margin: 0,
+            lineHeight: 1.6,
+          }}>
+            Wekelijkse analyse, captainkeuzes en discussies om
+            jouw FPL-team aan een groene pijl te helpen.
+          </p>
+
+          {/* Knoppen */}
+          <div style={{ display: 'flex', gap: '16px', flexWrap: 'wrap' }}>
+            <a
+              href={episode?.spotify_url ?? '/afleveringen'}
+              target={episode?.spotify_url ? '_blank' : undefined}
+              rel="noopener noreferrer"
+              style={{
+                display: 'inline-flex',
+                alignItems: 'center',
+                gap: '8px',
+                padding: '14px 28px',
+                borderRadius: '25px',
+                background: '#00FA61',
+                color: '#0d0d0d',
+                fontWeight: 700,
+                fontSize: '15px',
+                textDecoration: 'none',
+                fontFamily: 'Montserrat, sans-serif',
+                boxShadow: '0 0 24px rgba(0,250,97,0.5), 0 4px 16px rgba(0,0,0,0.3)',
+              }}
+            >
+              🎙️ Luister nieuwste aflevering
+            </a>
+            <a
+              href="#captain-pick"
+              style={{
+                display: 'inline-flex',
+                alignItems: 'center',
+                padding: '14px 28px',
+                borderRadius: '25px',
+                border: '2px solid white',
+                color: 'white',
+                fontWeight: 600,
+                fontSize: '15px',
+                textDecoration: 'none',
+                background: 'transparent',
+                fontFamily: 'Montserrat, sans-serif',
+              }}
+            >
+              Bekijk captain advies
+            </a>
+          </div>
+
+          {/* Stats balk */}
+          <div style={{
+            display: 'flex',
+            gap: '32px',
+            paddingTop: '24px',
+            borderTop: '1px solid rgba(255,255,255,0.2)',
+            marginTop: '8px',
+          }}>
+            <div>
+              <div style={{ color: '#00FA61', fontWeight: 700, fontSize: '18px' }}>
+                GW{gwInfo.currentGW ?? 29}
+              </div>
+              <div style={{ color: 'rgba(255,255,255,0.6)', fontSize: '13px' }}>
+                Elke week content
+              </div>
+            </div>
+            <div>
+              <div style={{ color: 'white', fontWeight: 700, fontSize: '18px' }}>4</div>
+              <div style={{ color: 'rgba(255,255,255,0.6)', fontSize: '13px' }}>Managers</div>
+            </div>
+            <div>
+              <div style={{ fontSize: '20px' }}>🎙️</div>
+              <div style={{ color: 'rgba(255,255,255,0.6)', fontSize: '13px' }}>Spotify Podcast</div>
+            </div>
+          </div>
+
+        </div>
 
         {/* Diagonal white SVG divider */}
-        <div className="absolute bottom-0 left-0 right-0 pointer-events-none" style={{ zIndex: 2 }}>
+        <div style={{ position: 'absolute', bottom: 0, left: 0, right: 0, pointerEvents: 'none', zIndex: 11 }}>
           <svg
             viewBox="0 0 1440 90"
             preserveAspectRatio="none"
@@ -434,85 +602,6 @@ export default async function HomePage() {
           </svg>
         </div>
 
-        <div className="relative w-full pt-24 pb-16" style={{ zIndex: 3, paddingLeft: 'max(5%, 32px)', paddingRight: '4px' }}>
-          <div style={{ maxWidth: '45%', minWidth: '320px' }}>
-
-            <div className="inline-flex items-center gap-2 bg-white/10 border border-white/20 text-white text-xs font-semibold px-4 py-2 rounded-full mb-6 uppercase tracking-widest backdrop-blur-sm">
-              De enige Nederlandse FPL Podcast
-            </div>
-
-            <h1
-              className="text-5xl sm:text-6xl lg:text-7xl font-bold leading-[1.0] mb-4"
-              style={{ fontFamily: 'Montserrat, sans-serif' }}
-            >
-              <span className="text-white">DE PLEK VOOR</span>
-              <span className="block text-white">NEDERLANDSE</span>
-              <span className="block text-white">FPL MANAGERS</span>
-            </h1>
-
-            <p
-              className="text-xl sm:text-2xl font-semibold mb-5"
-              style={{
-                fontFamily: 'Montserrat, sans-serif',
-                color: '#00FA61',
-                textShadow: '0 0 24px rgba(0,250,97,0.7)',
-              }}
-            >
-              Fantasy Premier League podcast
-            </p>
-
-            <p className="text-base text-white/70 leading-relaxed mb-8 max-w-md">
-              Wekelijkse analyse, captainkeuzes en discussies om
-              jouw FPL-team aan een groene pijl te helpen.
-            </p>
-
-            {/* CTA buttons */}
-            <div className="flex flex-col sm:flex-row gap-3">
-              <a
-                href={episode?.spotify_url ?? '/afleveringen'}
-                target={episode?.spotify_url ? '_blank' : undefined}
-                rel="noopener noreferrer"
-                className="inline-flex items-center justify-center gap-2 font-semibold px-7 py-3.5 rounded-full text-sm transition-all duration-300 text-black"
-                style={{
-                  background: '#00FA61',
-                  boxShadow: '0 0 24px rgba(0,250,97,0.5), 0 4px 16px rgba(0,0,0,0.3)',
-                }}
-              >
-                <Mic size={16} />
-                Luister nieuwste aflevering
-              </a>
-              <a
-                href="#captain-pick"
-                className="inline-flex items-center justify-center gap-2 border border-white/30 text-white hover:border-primary hover:text-primary font-semibold px-7 py-3.5 rounded-full transition-all duration-300 text-sm backdrop-blur-sm"
-              >
-                Bekijk captain advies
-              </a>
-            </div>
-
-            {/* Stats row */}
-            <div className="flex gap-8 mt-10 pt-8 border-t border-white/10">
-              <div>
-                <p className="text-2xl font-bold" style={{ color: '#00FA61' }}>GW{gwInfo.currentGW ?? ''}</p>
-                <p className="text-xs text-white/40 mt-0.5">Elke week content</p>
-              </div>
-              <div>
-                <p className="text-2xl font-bold" style={{ color: '#00FA61' }}>4</p>
-                <p className="text-xs text-white/40 mt-0.5">Managers</p>
-              </div>
-              <div>
-                <p className="text-2xl font-bold" style={{ color: '#00FA61' }}>🎙️</p>
-                <p className="text-xs text-white/40 mt-0.5">Spotify Podcast</p>
-              </div>
-            </div>
-
-            {/* Scroll hint */}
-            <div className="flex items-center gap-2 mt-8 text-white/25 text-xs">
-              <ChevronDown size={14} className="animate-bounce" />
-              <span>Scroll</span>
-            </div>
-
-          </div>
-        </div>
       </section>
 
       {/* ── 2. LAATSTE AFLEVERING (white) ───────────────────────────── */}
