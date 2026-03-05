@@ -13,6 +13,7 @@ import StandingsTable from '@/components/public/StandingsTable';
 import { fetchLeagueStandings } from '@/lib/fpl/league';
 import type { LeagueApiResponse } from '@/lib/fpl/league';
 import { fetchGameweekInfo } from '@/lib/fpl/events';
+import HeroSection from '@/components/sections/HeroSection';
 
 // ─── Types ────────────────────────────────────────────────────────────────────
 
@@ -329,17 +330,6 @@ export default async function HomePage() {
     } catch { return fallback; }
   })();
 
-  // site_settings may not exist in all environments — silent fallback
-  const heroImageRes = await (async () => {
-    try {
-      return await supabase
-        .from('site_settings')
-        .select('value')
-        .eq('key', 'hero_image')
-        .maybeSingle();
-    } catch { return fallback; }
-  })();
-
   // ── Safely extract data with fallbacks ───────────────────────────────────────
 
   const episode      = (episodesRes.data?.[0] as Episode | undefined) ?? null;
@@ -348,10 +338,6 @@ export default async function HomePage() {
   const articles     = (articlesRes.data as Article[] | null) ?? [];
   const team         = (teamRes.data?.[0] as TeamOfTheWeek | undefined) ?? null;
   const playerOfWeek = (playerOfWeekRes.data?.[0] as PlayerOfWeek | undefined) ?? null;
-
-  // hero image: heroImageRes.data can be null (no row) or { value: string }
-  const heroImageData = heroImageRes.data as { value?: string } | null;
-  const heroImageUrl  = heroImageData?.value ?? null;
 
   // Deduplicate managers by name
   const allManagers = (managersRes.data as Manager[] | null) ?? [];
@@ -375,101 +361,10 @@ export default async function HomePage() {
     <main className="text-white overflow-x-hidden" style={{ background: '#0D0B2A' }}>
 
       {/* ── 1. HERO ──────────────────────────────────────────────────── */}
-      <section className="relative min-h-screen overflow-hidden flex items-center"
-        style={{ background: 'linear-gradient(135deg, #1F0E84 0%, #2D1B69 40%, #0d1a3a 100%)' }}>
-
-        {/* Groene/paarse glow rechts */}
-        <div className="absolute inset-0 pointer-events-none"
-          style={{ background: 'radial-gradient(ellipse at 75% 50%, rgba(0,250,97,0.12) 0%, rgba(200,33,195,0.08) 40%, transparent 65%)' }} />
-
-        {/* Spelersafbeelding */}
-        <div className="absolute right-0 bottom-0 h-full" style={{ width: '58%', zIndex: 2 }}>
-          {/* eslint-disable-next-line @next/next/no-img-element */}
-          <img src={heroImageUrl ?? '/hero-players.jpg'} alt="spelers"
-            className="absolute bottom-0 right-0 h-full w-full"
-            style={{ objectFit: 'cover', objectPosition: 'top center' }} />
-          {/* Links fade */}
-          <div className="absolute inset-0"
-            style={{ background: 'linear-gradient(to right, #1F0E84 0%, rgba(31,14,132,0.9) 15%, rgba(31,14,132,0.4) 40%, transparent 65%)', zIndex: 3 }} />
-          {/* Onder fade */}
-          <div className="absolute bottom-0 left-0 right-0"
-            style={{ height: '25%', background: 'linear-gradient(to top, #1F0E84, transparent)', zIndex: 3 }} />
-        </div>
-
-        {/* Decoratieve driehoek */}
-        <svg className="absolute pointer-events-none" style={{ right: '5%', top: '10%', width: 400, height: 400, opacity: 0.07, zIndex: 1 }} viewBox="0 0 200 220">
-          <polygon points="100,5 195,175 5,175" fill="none" stroke="#00FA61" strokeWidth="2.5"/>
-          <polygon points="100,215 195,45 5,45" fill="none" stroke="#C821C3" strokeWidth="2.5"/>
-        </svg>
-
-        {/* Tekst content */}
-        <div className="relative w-full mx-auto px-8 md:px-16 flex flex-col gap-5 pt-20 pb-12" style={{ maxWidth: 1440, zIndex: 10 }}>
-
-          {/* Badge */}
-          <span className="inline-flex self-start px-4 py-1.5 rounded-full text-white text-xs font-semibold tracking-widest"
-            style={{ border: '1px solid rgba(255,255,255,0.25)', background: 'rgba(255,255,255,0.08)', letterSpacing: '0.15em' }}>
-            DE ENIGE NEDERLANDSE FPL PODCAST
-          </span>
-
-          {/* H1 */}
-          <h1 className="hero-h1 font-extrabold text-white leading-none m-0"
-            style={{ fontSize: 'clamp(44px, 5.5vw, 76px)', maxWidth: '44%', fontFamily: 'Montserrat, sans-serif', lineHeight: 1.02 }}>
-            DE PLEK VOOR<br/>NEDERLANDSE<br/>FPL MANAGERS
-          </h1>
-
-          {/* Groene subtitel */}
-          <p className="font-semibold m-0" style={{ color: '#00FA61', fontSize: 18, fontFamily: 'Montserrat, sans-serif' }}>
-            Fantasy Premier League podcast
-          </p>
-
-          {/* Body */}
-          <p className="m-0" style={{ color: 'rgba(255,255,255,0.75)', fontSize: 15, maxWidth: 400, lineHeight: 1.65 }}>
-            Wekelijkse analyse, captainkeuzes en discussies om jouw FPL-team aan een groene pijl te helpen.
-          </p>
-
-          {/* Knoppen */}
-          <div className="flex gap-4 flex-wrap">
-            <a href={episode?.spotify_url ?? '/afleveringen'}
-              target={episode?.spotify_url ? '_blank' : undefined}
-              rel="noopener noreferrer"
-              className="inline-flex items-center gap-2 font-bold no-underline"
-              style={{ padding: '13px 26px', borderRadius: 25, background: '#00FA61', color: '#0a0a0a', fontSize: 14, fontFamily: 'Montserrat, sans-serif', boxShadow: '0 0 20px rgba(0,250,97,0.4)' }}>
-              🎙️ Luister nieuwste aflevering
-            </a>
-            <a href="#captain-pick"
-              className="inline-flex items-center font-semibold no-underline"
-              style={{ padding: '13px 26px', borderRadius: 25, border: '2px solid rgba(255,255,255,0.7)', color: 'white', fontSize: 14, background: 'transparent', fontFamily: 'Montserrat, sans-serif' }}>
-              Bekijk captain advies
-            </a>
-          </div>
-
-          {/* Stats */}
-          <div className="flex gap-8 flex-wrap" style={{ paddingTop: 20, borderTop: '1px solid rgba(255,255,255,0.15)', marginTop: 4 }}>
-            <div>
-              <div className="font-bold" style={{ color: '#00FA61', fontSize: 17 }}>GW{currentGameweek || 29}</div>
-              <div style={{ color: 'rgba(255,255,255,0.5)', fontSize: 12 }}>Elke week content</div>
-            </div>
-            <div>
-              <div className="font-bold text-white" style={{ fontSize: 17 }}>4</div>
-              <div style={{ color: 'rgba(255,255,255,0.5)', fontSize: 12 }}>Managers</div>
-            </div>
-            <div>
-              <div style={{ fontSize: 18 }}>🎙️</div>
-              <div style={{ color: 'rgba(255,255,255,0.5)', fontSize: 12 }}>Spotify Podcast</div>
-            </div>
-          </div>
-
-        </div>
-
-        {/* Diagonal white SVG divider */}
-        <div className="absolute bottom-0 left-0 right-0 pointer-events-none" style={{ zIndex: 11 }}>
-          <svg viewBox="0 0 1440 90" preserveAspectRatio="none"
-            style={{ display: 'block', width: '100%', height: '90px' }} fill="white">
-            <polygon points="0,90 1440,0 1440,90" />
-          </svg>
-        </div>
-
-      </section>
+      <HeroSection
+        currentGameweek={currentGameweek ?? undefined}
+        latestEpisodeUrl={episode?.spotify_url ?? undefined}
+      />
 
       {/* ── 2. LAATSTE AFLEVERING (white) ───────────────────────────── */}
       <section id="afleveringen" className="py-20 px-4 bg-white">
