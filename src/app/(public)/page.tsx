@@ -375,7 +375,13 @@ export default async function HomePage() {
     <main className="text-white overflow-x-hidden" style={{ background: '#0D0B2A' }}>
 
       {/* ── 1. HERO ──────────────────────────────────────────────────── */}
-      <section className="relative flex items-center overflow-hidden" style={{ minHeight: 'calc(100vh - 60px)', background: '#1F0E84' }}>
+      <section
+        className="relative flex items-center overflow-hidden"
+        style={{
+          minHeight: 'calc(100vh - 60px)',
+          background: 'linear-gradient(135deg, #1F0E84 0%, #2D1B69 40%, #0d3d2a 70%, #0a4a1a 100%)',
+        }}
+      >
 
         {/* Decoratieve groene driehoek — groot, subtiel achtergrond ornament */}
         <div
@@ -393,25 +399,25 @@ export default async function HomePage() {
           </svg>
         </div>
 
-        {/* Hero spelersafbeelding — absolute, top: 0, 65% breedte, object-cover */}
+        {/* Hero spelersafbeelding — contain, rechts uitgelijnd, bottom */}
         <div
-          className="absolute right-0 top-0 h-full pointer-events-none"
-          style={{ width: '65%' }}
+          className="absolute right-0 bottom-0 h-full pointer-events-none"
+          style={{ width: '58%' }}
         >
           {/* eslint-disable-next-line @next/next/no-img-element */}
           <img
             src={heroImageUrl ?? '/hero-players.jpg'}
             alt="FPL spelers"
-            className="h-full w-full object-cover"
-            style={{ objectPosition: 'left center' }}
+            className="h-full w-full object-contain"
+            style={{ objectPosition: 'right bottom' }}
           />
         </div>
 
-        {/* Gradient overlay — links volledig #1F0E84, rechts transparant */}
+        {/* Gradient overlay — links vol #1F0E84, rechts transparant */}
         <div
           className="absolute inset-0 pointer-events-none"
           style={{
-            background: 'linear-gradient(to right, #1F0E84 0%, #1F0E84 20%, rgba(31,14,132,0.95) 30%, rgba(31,14,132,0.7) 45%, rgba(31,14,132,0.2) 60%, transparent 75%)',
+            background: 'linear-gradient(to right, #1F0E84 0%, #1F0E84 15%, rgba(31,14,132,0.9) 25%, rgba(31,14,132,0.5) 40%, rgba(20,30,50,0.1) 60%, transparent 70%)',
             zIndex: 1,
           }}
         />
@@ -428,8 +434,8 @@ export default async function HomePage() {
           </svg>
         </div>
 
-        <div className="relative max-w-8xl mx-auto px-4 sm:px-6 lg:px-8 w-full pt-24 pb-16" style={{ zIndex: 3 }}>
-          <div className="max-w-xl">
+        <div className="relative w-full pt-24 pb-16" style={{ zIndex: 3, paddingLeft: 'max(5%, 32px)', paddingRight: '4px' }}>
+          <div style={{ maxWidth: '45%', minWidth: '320px' }}>
 
             <div className="inline-flex items-center gap-2 bg-white/10 border border-white/20 text-white text-xs font-semibold px-4 py-2 rounded-full mb-6 uppercase tracking-widest backdrop-blur-sm">
               De enige Nederlandse FPL Podcast
@@ -439,7 +445,8 @@ export default async function HomePage() {
               className="text-5xl sm:text-6xl lg:text-7xl font-bold leading-[1.0] mb-4"
               style={{ fontFamily: 'Montserrat, sans-serif' }}
             >
-              <span className="text-white">DE PLEK VOOR NEDERLANDSE</span>
+              <span className="text-white">DE PLEK VOOR</span>
+              <span className="block text-white">NEDERLANDSE</span>
               <span className="block text-white">FPL MANAGERS</span>
             </h1>
 
