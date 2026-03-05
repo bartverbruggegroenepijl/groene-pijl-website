@@ -369,235 +369,102 @@ export default async function HomePage() {
   // Self-referential fetches (server → own /api/... route) fail on Vercel during SSR.
   const leagueData: LeagueApiResponse | null = await fetchLeagueStandings();
   const gwInfo = await fetchGameweekInfo();
+  const currentGameweek = gwInfo.currentGW;
 
   return (
     <main className="text-white overflow-x-hidden" style={{ background: '#0D0B2A' }}>
 
       {/* ── 1. HERO ──────────────────────────────────────────────────── */}
-      <section style={{
-        position: 'relative',
-        minHeight: '100vh',
-        overflow: 'hidden',
-        background: 'linear-gradient(135deg, #1F0E84 0%, #2D1B69 35%, #1a0a3b 60%, #0d1a3a 100%)',
-        display: 'flex',
-        alignItems: 'center',
-      }}>
+      <section className="relative min-h-screen overflow-hidden flex items-center"
+        style={{ background: 'linear-gradient(135deg, #1F0E84 0%, #2D1B69 40%, #0d1a3a 100%)' }}>
 
-        {/* LAAG 2: Groene/magenta gloed rechts */}
-        <div style={{
-          position: 'absolute',
-          top: 0, right: 0, bottom: 0,
-          width: '70%',
-          background: 'radial-gradient(ellipse at 80% 50%, rgba(0,250,97,0.15) 0%, rgba(200,33,195,0.1) 50%, transparent 70%)',
-          pointerEvents: 'none',
-          zIndex: 1,
-        }} />
+        {/* Groene/paarse glow rechts */}
+        <div className="absolute inset-0 pointer-events-none"
+          style={{ background: 'radial-gradient(ellipse at 75% 50%, rgba(0,250,97,0.12) 0%, rgba(200,33,195,0.08) 40%, transparent 65%)' }} />
 
-        {/* LAAG 3: Grote decoratieve logo-driehoeken achtergrond */}
-        <svg style={{
-          position: 'absolute',
-          right: '-100px',
-          top: '50%',
-          transform: 'translateY(-50%)',
-          width: '500px',
-          height: '500px',
-          opacity: 0.06,
-          zIndex: 1,
-          pointerEvents: 'none',
-        }} viewBox="0 0 200 200">
-          <polygon points="100,10 190,170 10,170" fill="none" stroke="#00FA61" strokeWidth="3"/>
-          <polygon points="100,190 190,30 10,30" fill="none" stroke="#C821C3" strokeWidth="3"/>
-        </svg>
-
-        {/* LAAG 4: Spelersafbeelding rechts */}
-        <div className="hero-image-wrapper" style={{
-          position: 'absolute',
-          right: 0,
-          bottom: 0,
-          width: '60%',
-          height: '100%',
-          zIndex: 2,
-        }}>
+        {/* Spelersafbeelding */}
+        <div className="absolute right-0 bottom-0 h-full" style={{ width: '58%', zIndex: 2 }}>
           {/* eslint-disable-next-line @next/next/no-img-element */}
-          <img
-            src={heroImageUrl ?? '/hero-players.jpg'}
-            alt="FPL spelers"
-            style={{
-              position: 'absolute',
-              bottom: 0,
-              right: 0,
-              height: '95%',
-              width: '100%',
-              objectFit: 'cover',
-              objectPosition: 'center top',
-            }}
-          />
-          {/* Gradient overlay over foto voor vloeiende overgang */}
-          <div style={{
-            position: 'absolute',
-            top: 0, left: 0, right: 0, bottom: 0,
-            background: 'linear-gradient(to right, #1F0E84 0%, rgba(31,14,132,0.8) 20%, rgba(31,14,132,0.2) 50%, transparent 70%)',
-            zIndex: 3,
-          }} />
-          {/* Onderkant fade */}
-          <div style={{
-            position: 'absolute',
-            bottom: 0, left: 0, right: 0,
-            height: '30%',
-            background: 'linear-gradient(to top, #1F0E84 0%, transparent 100%)',
-            zIndex: 3,
-          }} />
+          <img src={heroImageUrl ?? '/hero-players.jpg'} alt="spelers"
+            className="absolute bottom-0 right-0 h-full w-full"
+            style={{ objectFit: 'cover', objectPosition: 'top center' }} />
+          {/* Links fade */}
+          <div className="absolute inset-0"
+            style={{ background: 'linear-gradient(to right, #1F0E84 0%, rgba(31,14,132,0.9) 15%, rgba(31,14,132,0.4) 40%, transparent 65%)', zIndex: 3 }} />
+          {/* Onder fade */}
+          <div className="absolute bottom-0 left-0 right-0"
+            style={{ height: '25%', background: 'linear-gradient(to top, #1F0E84, transparent)', zIndex: 3 }} />
         </div>
 
-        {/* LAAG 5: Tekst content links */}
-        <div className="hero-container" style={{
-          position: 'relative',
-          zIndex: 10,
-          width: '100%',
-          maxWidth: '1440px',
-          margin: '0 auto',
-          padding: '0 60px',
-          display: 'flex',
-          flexDirection: 'column',
-          gap: '24px',
-          paddingTop: '80px',
-          paddingBottom: '40px',
-        }}>
+        {/* Decoratieve driehoek */}
+        <svg className="absolute pointer-events-none" style={{ right: '5%', top: '10%', width: 400, height: 400, opacity: 0.07, zIndex: 1 }} viewBox="0 0 200 220">
+          <polygon points="100,5 195,175 5,175" fill="none" stroke="#00FA61" strokeWidth="2.5"/>
+          <polygon points="100,215 195,45 5,45" fill="none" stroke="#C821C3" strokeWidth="2.5"/>
+        </svg>
+
+        {/* Tekst content */}
+        <div className="relative w-full mx-auto px-8 md:px-16 flex flex-col gap-5 pt-20 pb-12" style={{ maxWidth: 1440, zIndex: 10 }}>
 
           {/* Badge */}
-          <div style={{
-            display: 'inline-flex',
-            alignSelf: 'flex-start',
-            padding: '6px 16px',
-            borderRadius: '20px',
-            border: '1px solid rgba(255,255,255,0.3)',
-            background: 'rgba(255,255,255,0.1)',
-            fontSize: '12px',
-            color: 'white',
-            letterSpacing: '2px',
-            fontWeight: 600,
-          }}>
+          <span className="inline-flex self-start px-4 py-1.5 rounded-full text-white text-xs font-semibold tracking-widest"
+            style={{ border: '1px solid rgba(255,255,255,0.25)', background: 'rgba(255,255,255,0.08)', letterSpacing: '0.15em' }}>
             DE ENIGE NEDERLANDSE FPL PODCAST
-          </div>
+          </span>
 
           {/* H1 */}
-          <h1 className="hero-h1" style={{
-            fontSize: 'clamp(36px, 6vw, 80px)',
-            fontWeight: 800,
-            color: 'white',
-            lineHeight: 1.0,
-            margin: 0,
-            maxWidth: '45%',
-            fontFamily: 'Montserrat, sans-serif',
-          }}>
-            DE PLEK VOOR<br/>
-            NEDERLANDSE<br/>
-            FPL MANAGERS
+          <h1 className="hero-h1 font-extrabold text-white leading-none m-0"
+            style={{ fontSize: 'clamp(44px, 5.5vw, 76px)', maxWidth: '44%', fontFamily: 'Montserrat, sans-serif', lineHeight: 1.02 }}>
+            DE PLEK VOOR<br/>NEDERLANDSE<br/>FPL MANAGERS
           </h1>
 
           {/* Groene subtitel */}
-          <p style={{
-            color: '#00FA61',
-            fontSize: '20px',
-            fontWeight: 600,
-            margin: 0,
-            fontFamily: 'Montserrat, sans-serif',
-            textShadow: '0 0 24px rgba(0,250,97,0.7)',
-          }}>
+          <p className="font-semibold m-0" style={{ color: '#00FA61', fontSize: 18, fontFamily: 'Montserrat, sans-serif' }}>
             Fantasy Premier League podcast
           </p>
 
-          {/* Body tekst */}
-          <p style={{
-            color: 'rgba(255,255,255,0.8)',
-            fontSize: '16px',
-            maxWidth: '420px',
-            margin: 0,
-            lineHeight: 1.6,
-          }}>
-            Wekelijkse analyse, captainkeuzes en discussies om
-            jouw FPL-team aan een groene pijl te helpen.
+          {/* Body */}
+          <p className="m-0" style={{ color: 'rgba(255,255,255,0.75)', fontSize: 15, maxWidth: 400, lineHeight: 1.65 }}>
+            Wekelijkse analyse, captainkeuzes en discussies om jouw FPL-team aan een groene pijl te helpen.
           </p>
 
           {/* Knoppen */}
-          <div style={{ display: 'flex', gap: '16px', flexWrap: 'wrap' }}>
-            <a
-              href={episode?.spotify_url ?? '/afleveringen'}
+          <div className="flex gap-4 flex-wrap">
+            <a href={episode?.spotify_url ?? '/afleveringen'}
               target={episode?.spotify_url ? '_blank' : undefined}
               rel="noopener noreferrer"
-              style={{
-                display: 'inline-flex',
-                alignItems: 'center',
-                gap: '8px',
-                padding: '14px 28px',
-                borderRadius: '25px',
-                background: '#00FA61',
-                color: '#0d0d0d',
-                fontWeight: 700,
-                fontSize: '15px',
-                textDecoration: 'none',
-                fontFamily: 'Montserrat, sans-serif',
-                boxShadow: '0 0 24px rgba(0,250,97,0.5), 0 4px 16px rgba(0,0,0,0.3)',
-              }}
-            >
+              className="inline-flex items-center gap-2 font-bold no-underline"
+              style={{ padding: '13px 26px', borderRadius: 25, background: '#00FA61', color: '#0a0a0a', fontSize: 14, fontFamily: 'Montserrat, sans-serif', boxShadow: '0 0 20px rgba(0,250,97,0.4)' }}>
               🎙️ Luister nieuwste aflevering
             </a>
-            <a
-              href="#captain-pick"
-              style={{
-                display: 'inline-flex',
-                alignItems: 'center',
-                padding: '14px 28px',
-                borderRadius: '25px',
-                border: '2px solid white',
-                color: 'white',
-                fontWeight: 600,
-                fontSize: '15px',
-                textDecoration: 'none',
-                background: 'transparent',
-                fontFamily: 'Montserrat, sans-serif',
-              }}
-            >
+            <a href="#captain-pick"
+              className="inline-flex items-center font-semibold no-underline"
+              style={{ padding: '13px 26px', borderRadius: 25, border: '2px solid rgba(255,255,255,0.7)', color: 'white', fontSize: 14, background: 'transparent', fontFamily: 'Montserrat, sans-serif' }}>
               Bekijk captain advies
             </a>
           </div>
 
-          {/* Stats balk */}
-          <div style={{
-            display: 'flex',
-            gap: '32px',
-            paddingTop: '24px',
-            borderTop: '1px solid rgba(255,255,255,0.2)',
-            marginTop: '8px',
-          }}>
+          {/* Stats */}
+          <div className="flex gap-8 flex-wrap" style={{ paddingTop: 20, borderTop: '1px solid rgba(255,255,255,0.15)', marginTop: 4 }}>
             <div>
-              <div style={{ color: '#00FA61', fontWeight: 700, fontSize: '18px' }}>
-                GW{gwInfo.currentGW ?? 29}
-              </div>
-              <div style={{ color: 'rgba(255,255,255,0.6)', fontSize: '13px' }}>
-                Elke week content
-              </div>
+              <div className="font-bold" style={{ color: '#00FA61', fontSize: 17 }}>GW{currentGameweek || 29}</div>
+              <div style={{ color: 'rgba(255,255,255,0.5)', fontSize: 12 }}>Elke week content</div>
             </div>
             <div>
-              <div style={{ color: 'white', fontWeight: 700, fontSize: '18px' }}>4</div>
-              <div style={{ color: 'rgba(255,255,255,0.6)', fontSize: '13px' }}>Managers</div>
+              <div className="font-bold text-white" style={{ fontSize: 17 }}>4</div>
+              <div style={{ color: 'rgba(255,255,255,0.5)', fontSize: 12 }}>Managers</div>
             </div>
             <div>
-              <div style={{ fontSize: '20px' }}>🎙️</div>
-              <div style={{ color: 'rgba(255,255,255,0.6)', fontSize: '13px' }}>Spotify Podcast</div>
+              <div style={{ fontSize: 18 }}>🎙️</div>
+              <div style={{ color: 'rgba(255,255,255,0.5)', fontSize: 12 }}>Spotify Podcast</div>
             </div>
           </div>
 
         </div>
 
         {/* Diagonal white SVG divider */}
-        <div style={{ position: 'absolute', bottom: 0, left: 0, right: 0, pointerEvents: 'none', zIndex: 11 }}>
-          <svg
-            viewBox="0 0 1440 90"
-            preserveAspectRatio="none"
-            style={{ display: 'block', width: '100%', height: '90px' }}
-            fill="white"
-          >
+        <div className="absolute bottom-0 left-0 right-0 pointer-events-none" style={{ zIndex: 11 }}>
+          <svg viewBox="0 0 1440 90" preserveAspectRatio="none"
+            style={{ display: 'block', width: '100%', height: '90px' }} fill="white">
             <polygon points="0,90 1440,0 1440,90" />
           </svg>
         </div>
