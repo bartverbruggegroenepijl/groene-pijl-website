@@ -377,33 +377,56 @@ export default async function HomePage() {
       {/* ── 1. HERO ──────────────────────────────────────────────────── */}
       <section className="relative min-h-screen flex items-center overflow-hidden">
 
-        {/* Achtergrond: donkerblauw → paars → donkergroen */}
+        {/* Achtergrond: paars #1F0E84 → donkerpaars → donkerblauw */}
         <div
           className="absolute inset-0"
           style={{
-            background: 'linear-gradient(135deg, #0D0B2A 0%, #1F0E84 45%, #1A3A2A 100%)',
+            background: 'linear-gradient(135deg, #1F0E84 0%, #2D1B69 50%, #0d1f3c 100%)',
           }}
         />
+
+        {/* Decoratieve logo-driehoek — groot, subtiel op achtergrond */}
+        <div
+          className="absolute pointer-events-none"
+          style={{ right: '-2%', top: '50%', transform: 'translateY(-50%)', width: '55%', aspectRatio: '40/56', opacity: 0.12, zIndex: 0 }}
+        >
+          <svg viewBox="0 0 40 56" fill="none" xmlns="http://www.w3.org/2000/svg" style={{ width: '100%', height: '100%' }}>
+            <polygon
+              points="20,2 38,26 2,26"
+              fill="none"
+              stroke="#00FA61"
+              strokeWidth="0.8"
+              strokeLinejoin="round"
+            />
+            <polygon
+              points="3,32 37,32 20,54"
+              fill="none"
+              stroke="#00FA61"
+              strokeWidth="0.8"
+              strokeLinejoin="round"
+            />
+          </svg>
+        </div>
 
         {/* Hero spelersafbeelding — absolute, volledige hoogte, rechterkant, geen border of card */}
         <div
           className="absolute right-0 bottom-0 h-full pointer-events-none"
-          style={{ width: '60%' }}
+          style={{ width: '55%' }}
         >
           {/* eslint-disable-next-line @next/next/no-img-element */}
           <img
             src={heroImageUrl ?? '/hero-players.jpg'}
             alt="FPL spelers"
-            className="h-full w-full object-cover"
-            style={{ objectPosition: 'center bottom' }}
+            className="h-full w-full object-contain"
+            style={{ objectPosition: 'bottom right' }}
           />
         </div>
 
-        {/* Gradient overlay — links ondoorzichtig #1F0E84, rechts transparant */}
+        {/* Gradient overlay — links ondoorzichtig, rechts transparant */}
         <div
           className="absolute inset-0 pointer-events-none"
           style={{
-            background: 'linear-gradient(to right, #1F0E84 30%, rgba(31,14,132,0.7) 50%, transparent 70%)',
+            background: 'linear-gradient(to right, #1F0E84 25%, rgba(31,14,132,0.85) 40%, rgba(31,14,132,0.3) 60%, transparent 75%)',
             zIndex: 1,
           }}
         />
