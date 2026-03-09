@@ -499,16 +499,27 @@ export default async function HomePage() {
                         {(() => {
                           const fix: NextFixture | undefined = nextFixturesMap.get(p.player_club?.toLowerCase() ?? '');
                           if (!fix) return null;
+                          const fdrStyle = getFdrStyle(fix.difficulty);
+                          const fdrBg    = fdrStyle.background as string;
+                          const fdrTxt   = fdrStyle.color as string;
                           return (
-                            <div className="flex items-center gap-1.5 mt-2 flex-wrap">
-                              <span className="text-xs text-gray-400">GW{fix.gw} vs</span>
-                              <span className="text-xs font-bold text-gray-700">{fix.opponent} ({fix.location === 'H' ? 'T' : 'U'})</span>
-                              <span
-                                className="text-xs font-bold px-1.5 py-0.5 rounded"
-                                style={getFdrStyle(fix.difficulty)}
-                              >
-                                {fix.difficulty}
-                              </span>
+                            <div className="mt-2">
+                              <div style={{
+                                display: 'inline-flex',
+                                flexDirection: 'column',
+                                alignItems: 'center',
+                                padding: '4px 10px',
+                                borderRadius: '6px',
+                                backgroundColor: fdrBg,
+                                minWidth: '48px',
+                              }}>
+                                <span style={{ fontSize: '12px', fontWeight: 700, color: fdrTxt, lineHeight: 1.2 }}>
+                                  {fix.opponent}
+                                </span>
+                                <span style={{ fontSize: '10px', fontWeight: 500, color: fdrTxt, opacity: 0.85 }}>
+                                  ({fix.location === 'H' ? 'H' : 'U'})
+                                </span>
+                              </div>
                             </div>
                           );
                         })()}
