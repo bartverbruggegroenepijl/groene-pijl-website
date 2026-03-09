@@ -228,7 +228,7 @@ function PitchPlayer({ player }: { player: TeamPlayer }) {
   return (
     <div className="flex flex-col items-center gap-1 w-14 sm:w-16">
       <div className="relative">
-        <PlayerBadgeDark imageUrl={player.player_image_url ?? null} name={player.player_name} size={48} />
+        <PlayerBadgeDark imageUrl={player.player_image_url ?? null} name={player.player_name} size={48} objectPosition="50% 15%" />
         {player.is_captain && (
           <span className="absolute -top-1 -right-1 w-5 h-5 bg-primary text-black text-[9px] font-black rounded-full flex items-center justify-center leading-none">
             C
