@@ -5,6 +5,8 @@ interface LogoProps {
   size?: 'sm' | 'md' | 'lg';
   /** Show the "DE GROENE PIJL" text next to the icon */
   showText?: boolean;
+  /** Also show text on mobile (default: false — hidden below sm) */
+  showTextMobile?: boolean;
   /** Wrap in a Link to / (default: true) */
   linked?: boolean;
   className?: string;
@@ -17,7 +19,9 @@ const sizeMap = {
 };
 
 function LogoIcon({ size = 'md' }: { size?: keyof typeof sizeMap }) {
-  const { iconW, iconH, glowW, glowH } = sizeMap[size];
+  const { iconH, glowW, glowH } = sizeMap[size];
+  // Bereken de juiste breedte op basis van de SVG aspect ratio (465:540)
+  const iconW = Math.round(iconH * (465 / 540));
   return (
     <div style={{ position: 'relative', width: iconW, height: iconH, flexShrink: 0 }}>
       {/* Glow achter het beeldmerk */}
@@ -36,14 +40,12 @@ function LogoIcon({ size = 'md' }: { size?: keyof typeof sizeMap }) {
           zIndex: 0,
         }}
       />
-      {/* SVG beeldmerk */}
+      {/* SVG beeldmerk — width: auto zodat beide pijlen volledig zichtbaar zijn */}
       <svg
-        width={iconW}
-        height={iconH}
         viewBox="0 0 465 540"
         fill="none"
         xmlns="http://www.w3.org/2000/svg"
-        style={{ position: 'relative', zIndex: 1 }}
+        style={{ position: 'relative', zIndex: 1, height: iconH, width: 'auto', display: 'block' }}
       >
         {/* Groene pijl omhoog */}
         <path
@@ -63,6 +65,7 @@ function LogoIcon({ size = 'md' }: { size?: keyof typeof sizeMap }) {
 export default function Logo({
   size = 'md',
   showText = true,
+  showTextMobile = false,
   linked = true,
   className = '',
 }: LogoProps) {
@@ -82,7 +85,7 @@ export default function Logo({
       <LogoIcon size={size} />
       {showText && (
         <span
-          className="hidden sm:block"
+          className={showTextMobile ? 'block' : 'hidden sm:block'}
           style={{
             color: 'white',
             fontFamily: 'Montserrat, sans-serif',

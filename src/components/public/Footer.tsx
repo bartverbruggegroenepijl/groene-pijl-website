@@ -1,9 +1,19 @@
 'use client';
 
+import Link from 'next/link';
 import { Instagram, Mic } from 'lucide-react';
 import Logo from '@/components/ui/Logo';
 
-export default function Footer() {
+interface Manager {
+  id: string;
+  name: string;
+}
+
+interface FooterProps {
+  managers?: Manager[];
+}
+
+export default function Footer({ managers = [] }: FooterProps) {
   return (
     <footer
       className="text-white/70"
@@ -16,10 +26,10 @@ export default function Footer() {
       <div className="max-w-8xl mx-auto px-4 sm:px-6 lg:px-8 py-14">
         <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-10 mb-10">
 
-          {/* Brand */}
+          {/* Brand — logo + tekst altijd zichtbaar, ook op mobiel */}
           <div className="lg:col-span-1">
             <div className="mb-4">
-              <Logo size="md" />
+              <Logo size="md" showTextMobile />
             </div>
             <p className="text-sm text-white/40 leading-relaxed">
               Dé Nederlandse Fantasy Premier League podcast. Elke week tips, analyses en discussies van vier managers.
@@ -38,15 +48,31 @@ export default function Footer() {
             </ul>
           </div>
 
-          {/* Managers */}
+          {/* Managers — klikbare links naar managerpagina */}
           <div>
             <h4 className="font-semibold text-sm mb-4 uppercase tracking-wider" style={{ color: '#00FA61', letterSpacing: '0.1em' }}>Managers</h4>
             <ul className="space-y-2.5 text-sm">
-              {['Bart', 'Jeffrey', 'Tom', 'Kieran'].map((name) => (
-                <li key={name}>
-                  <a href="#managers" className="hover:text-primary transition-colors">{name}</a>
-                </li>
-              ))}
+              {managers.length > 0 ? (
+                managers.map((m) => (
+                  <li key={m.id}>
+                    <Link
+                      href={`/managers/${m.id}`}
+                      style={{ color: 'rgba(255,255,255,0.7)', textDecoration: 'none', cursor: 'pointer', transition: 'color 0.15s' }}
+                      onMouseEnter={(e) => (e.currentTarget.style.color = '#00FA61')}
+                      onMouseLeave={(e) => (e.currentTarget.style.color = 'rgba(255,255,255,0.7)')}
+                    >
+                      {m.name}
+                    </Link>
+                  </li>
+                ))
+              ) : (
+                // Fallback als managers nog niet geladen zijn
+                ['Bart', 'Jeffrey', 'Tom', 'Kieran'].map((name) => (
+                  <li key={name}>
+                    <span style={{ color: 'rgba(255,255,255,0.7)' }}>{name}</span>
+                  </li>
+                ))
+              )}
             </ul>
           </div>
 
