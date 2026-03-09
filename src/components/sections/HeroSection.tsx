@@ -18,86 +18,7 @@ export default function HeroSection({ currentGameweek, latestEpisodeUrl }: HeroS
         background: 'linear-gradient(135deg, #1a1361 0%, #1F0E84 30%, #2D1B69 60%, #0d3d2a 85%, #0a4a1a 100%)',
       }}
     >
-      {/* Spelersafbeelding */}
-      <div className="hero-image">
-        {/* eslint-disable-next-line @next/next/no-img-element */}
-        <img
-          src="/hero-players.webp"
-          alt="FPL spelers"
-          style={{
-            position: 'absolute',
-            right: 0,
-            top: 0,
-            height: '100%',
-            width: '75%',
-            objectFit: 'cover',
-            objectPosition: 'right center',
-            zIndex: 2,
-            pointerEvents: 'none',
-          }}
-        />
-      </div>
-
-      {/* Gradient fade links */}
-      <div
-        className="hero-gradient-left"
-        style={{
-          position: 'absolute',
-          top: 0,
-          left: 0,
-          bottom: 0,
-          width: '50%',
-          background: 'linear-gradient(to right, #1a1361 0%, #1a1361 15%, rgba(26,19,97,0.9) 40%, rgba(26,19,97,0.5) 65%, transparent 100%)',
-          zIndex: 3,
-          pointerEvents: 'none',
-        }}
-      />
-      {/* Gradient fade rechts */}
-      <div
-        className="hero-gradient-right"
-        style={{
-          position: 'absolute',
-          top: 0,
-          right: 0,
-          bottom: 0,
-          width: '8%',
-          background: 'linear-gradient(to left, #1F0E84 0%, transparent 100%)',
-          zIndex: 3,
-          pointerEvents: 'none',
-        }}
-      />
-
-      {/* Groene/magenta glow */}
-      <div
-        style={{
-          position: 'absolute',
-          inset: 0,
-          background: 'radial-gradient(ellipse at 80% 50%, rgba(0,250,97,0.13) 0%, rgba(200,33,195,0.09) 45%, transparent 65%)',
-          pointerEvents: 'none',
-          zIndex: 1,
-        }}
-      />
-
-      {/* Decoratieve driehoeken */}
-      <svg
-        style={{
-          position: 'absolute',
-          right: '6%',
-          top: '50%',
-          transform: 'translateY(-50%)',
-          width: 380,
-          height: 420,
-          opacity: 0.07,
-          zIndex: 1,
-          pointerEvents: 'none',
-        }}
-        viewBox="0 0 200 220"
-      >
-        <polygon points="100,5 195,175 5,175" fill="none" stroke="#00FA61" strokeWidth="2.5" />
-        <polygon points="100,215 195,45 5,45" fill="none" stroke="#C821C3" strokeWidth="2.5" />
-      </svg>
-
-      {/* Tekst content links */}
+      {/* Tekst content links — EERST in DOM zodat het bovenaan staat op mobiel (flex column) */}
       <div
         className="hero-content"
         style={{
@@ -246,6 +167,85 @@ export default function HeroSection({ currentGameweek, latestEpisodeUrl }: HeroS
           </div>
         </div>
       </div>
+
+      {/* Spelersafbeelding — NA content in DOM, verschijnt onder tekst op mobiel */}
+      <div className="hero-image">
+        {/* eslint-disable-next-line @next/next/no-img-element */}
+        <img
+          src="/hero-players.webp"
+          alt="FPL spelers"
+          style={{
+            position: 'absolute',
+            right: 0,
+            top: 0,
+            height: '100%',
+            width: '75%',
+            objectFit: 'cover',
+            objectPosition: 'right center',
+            zIndex: 2,
+            pointerEvents: 'none',
+          }}
+        />
+      </div>
+
+      {/* Gradient fade links */}
+      <div
+        className="hero-gradient-left"
+        style={{
+          position: 'absolute',
+          top: 0,
+          left: 0,
+          bottom: 0,
+          width: '50%',
+          background: 'linear-gradient(to right, #1a1361 0%, #1a1361 15%, rgba(26,19,97,0.9) 40%, rgba(26,19,97,0.5) 65%, transparent 100%)',
+          zIndex: 3,
+          pointerEvents: 'none',
+        }}
+      />
+      {/* Gradient fade rechts */}
+      <div
+        className="hero-gradient-right"
+        style={{
+          position: 'absolute',
+          top: 0,
+          right: 0,
+          bottom: 0,
+          width: '8%',
+          background: 'linear-gradient(to left, #1F0E84 0%, transparent 100%)',
+          zIndex: 3,
+          pointerEvents: 'none',
+        }}
+      />
+
+      {/* Groene/magenta glow */}
+      <div
+        style={{
+          position: 'absolute',
+          inset: 0,
+          background: 'radial-gradient(ellipse at 80% 50%, rgba(0,250,97,0.13) 0%, rgba(200,33,195,0.09) 45%, transparent 65%)',
+          pointerEvents: 'none',
+          zIndex: 1,
+        }}
+      />
+
+      {/* Decoratieve driehoeken */}
+      <svg
+        style={{
+          position: 'absolute',
+          right: '6%',
+          top: '50%',
+          transform: 'translateY(-50%)',
+          width: 380,
+          height: 420,
+          opacity: 0.07,
+          zIndex: 1,
+          pointerEvents: 'none',
+        }}
+        viewBox="0 0 200 220"
+      >
+        <polygon points="100,5 195,175 5,175" fill="none" stroke="#00FA61" strokeWidth="2.5" />
+        <polygon points="100,215 195,45 5,45" fill="none" stroke="#C821C3" strokeWidth="2.5" />
+      </svg>
     </section>
   )
 }

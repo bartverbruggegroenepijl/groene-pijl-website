@@ -98,7 +98,7 @@ body {
   /* Section layout */
   .hero-section {
     min-height: auto !important;
-    flex-direction: column-reverse !important;
+    flex-direction: column !important;
     align-items: stretch !important;
   }
 
@@ -132,7 +132,7 @@ body {
     right: 0;
     bottom: 0;
     height: 50%;
-    background: linear-gradient(to bottom, transparent 0%, #1a1361 100%);
+    background: linear-gradient(to bottom, transparent 60%, #1a1361 100%);
     z-index: 2;
     pointer-events: none;
   }
