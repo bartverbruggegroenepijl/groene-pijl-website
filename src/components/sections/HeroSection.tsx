@@ -35,15 +35,25 @@ export default function HeroSection({ currentGameweek, latestEpisodeUrl }: HeroS
         }}
       />
 
-      {/* Gradient fade over afbeelding */}
+      {/* Gradient fade links + rechts over afbeelding */}
       <div
         style={{
           position: 'absolute',
-          top: 0,
-          left: 0,
+          inset: 0,
+          background: 'linear-gradient(to right, #1F0E84 0%, rgba(31,14,132,0.3) 35%, transparent 55%, rgba(31,14,132,0.6) 80%, #1F0E84 100%)',
+          zIndex: 3,
+          pointerEvents: 'none',
+        }}
+      />
+      {/* Gradient fade onderkant */}
+      <div
+        style={{
+          position: 'absolute',
           bottom: 0,
-          width: '75%',
-          background: 'linear-gradient(to right, #1F0E84 0%, rgba(31,14,132,0.5) 30%, transparent 50%)',
+          left: 0,
+          right: 0,
+          height: '30%',
+          background: 'linear-gradient(to top, #1F0E84, transparent)',
           zIndex: 3,
           pointerEvents: 'none',
         }}
