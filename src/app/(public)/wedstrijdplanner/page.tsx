@@ -163,10 +163,10 @@ export default function WedstrijdplannerPage() {
             {error}
           </div>
         ) : (
-          /* Outer wrapper: max 580px breed = 160px naam + 5×70px GW zichtbaar */
-          <div style={{ maxWidth: 580, overflowX: 'auto', position: 'relative' }}>
+          /* Relatieve wrapper voor fade-overlay */
+          <div style={{ position: 'relative' }}>
 
-            {/* Fade-overlay rechts: visuele hint dat er meer kolommen zijn */}
+            {/* Fade-overlay rechts: visuele scroll-hint */}
             <div style={{
               position: 'absolute',
               right: 0, top: 0, bottom: 0,
@@ -176,29 +176,23 @@ export default function WedstrijdplannerPage() {
               zIndex: 5,
             }} />
 
-            {/* Horizontaal scrollbare container */}
+            {/* Horizontaal scrollbare container — volledige breedte */}
             <div
               className="fdr-scroll"
               style={{
-                overflowX: 'scroll',
+                width: '100%',
+                overflowX: 'auto',
                 WebkitOverflowScrolling: 'touch' as unknown as undefined,
                 scrollbarWidth: 'thin',
                 scrollbarColor: '#00FA61 rgba(255,255,255,0.1)',
               }}
             >
               <table style={{
-                tableLayout: 'fixed',
+                width: '100%',
+                tableLayout: 'auto',
                 borderCollapse: 'collapse',
-                width: 'auto',
+                minWidth: 900,
               }}>
-
-                {/* Vaste kolombreedtes */}
-                <colgroup>
-                  <col style={{ width: 160 }} />
-                  {gameweeks.map((gw) => (
-                    <col key={gw} style={{ width: 70 }} />
-                  ))}
-                </colgroup>
 
                 <thead>
                   <tr>
@@ -209,7 +203,7 @@ export default function WedstrijdplannerPage() {
                       zIndex: 20,
                       background: STICKY_HDR_BG,
                       textAlign: 'left',
-                      padding: '0 14px 10px',
+                      padding: '0 16px 10px',
                       color: 'rgba(255,255,255,0.35)',
                       fontSize: 11,
                       fontWeight: 700,
@@ -217,6 +211,7 @@ export default function WedstrijdplannerPage() {
                       textTransform: 'uppercase',
                       fontFamily: 'Montserrat, sans-serif',
                       whiteSpace: 'nowrap',
+                      minWidth: 180,
                     }}>
                       Team
                     </th>
@@ -231,6 +226,7 @@ export default function WedstrijdplannerPage() {
                         textTransform: 'uppercase',
                         fontFamily: 'Montserrat, sans-serif',
                         whiteSpace: 'nowrap',
+                        minWidth: 68,
                       }}>
                         GW{gw}
                       </th>
@@ -247,9 +243,10 @@ export default function WedstrijdplannerPage() {
                         left: 0,
                         zIndex: 10,
                         background: STICKY_BG,
-                        padding: '5px 14px',
+                        padding: '5px 16px',
                         verticalAlign: 'middle',
                         whiteSpace: 'nowrap',
+                        minWidth: 180,
                         borderBottom: '3px solid transparent',
                       }}>
                         <span style={{
@@ -274,6 +271,7 @@ export default function WedstrijdplannerPage() {
                               background: 'rgba(255,255,255,0.06)',
                               textAlign: 'center',
                               verticalAlign: 'middle',
+                              minWidth: 68,
                               borderBottom: '3px solid transparent',
                             }}
                           >
