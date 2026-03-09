@@ -163,8 +163,8 @@ export default function WedstrijdplannerPage() {
             {error}
           </div>
         ) : (
-          /* Relatieve wrapper voor fade-overlay */
-          <div style={{ position: 'relative' }}>
+          /* Outer wrapper: max 580px breed = 160px naam + 5×70px GW zichtbaar */
+          <div style={{ maxWidth: 580, overflowX: 'auto', position: 'relative' }}>
 
             {/* Fade-overlay rechts: visuele hint dat er meer kolommen zijn */}
             <div style={{
@@ -180,24 +180,23 @@ export default function WedstrijdplannerPage() {
             <div
               className="fdr-scroll"
               style={{
-                overflowX: 'auto',
-                width: '100%',
+                overflowX: 'scroll',
+                WebkitOverflowScrolling: 'touch' as unknown as undefined,
                 scrollbarWidth: 'thin',
                 scrollbarColor: '#00FA61 rgba(255,255,255,0.1)',
               }}
             >
               <table style={{
-                borderCollapse: 'collapse',
                 tableLayout: 'fixed',
-                minWidth: '100%',
-                width: `${160 + gameweeks.length * 68}px`,
+                borderCollapse: 'collapse',
+                width: 'auto',
               }}>
 
                 {/* Vaste kolombreedtes */}
                 <colgroup>
                   <col style={{ width: 160 }} />
                   {gameweeks.map((gw) => (
-                    <col key={gw} style={{ width: 68 }} />
+                    <col key={gw} style={{ width: 70 }} />
                   ))}
                 </colgroup>
 
