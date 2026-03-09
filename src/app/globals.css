@@ -95,25 +95,28 @@ body {
 
 /* Hero section — mobiel responsive (desktop ONGEWIJZIGD) */
 @media (max-width: 768px) {
+  /* Section layout */
   .hero-section {
     min-height: auto !important;
     flex-direction: column-reverse !important;
     align-items: stretch !important;
   }
 
+  /* Spelersafbeelding: uit absolute positioning, onder de tekst */
   .hero-image {
     position: relative !important;
     width: 100% !important;
-    height: 300px !important;
+    height: 280px !important;
     top: auto !important;
     right: auto !important;
     bottom: auto !important;
+    overflow: hidden !important;
   }
 
   .hero-image img {
     position: relative !important;
     width: 100% !important;
-    height: 300px !important;
+    height: 280px !important;
     top: auto !important;
     right: auto !important;
     object-fit: cover !important;
@@ -121,18 +124,43 @@ body {
     z-index: 1 !important;
   }
 
+  /* Onderkant fade over de spelersafbeelding */
+  .hero-image::after {
+    content: '';
+    position: absolute;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    height: 50%;
+    background: linear-gradient(to bottom, transparent 0%, #1a1361 100%);
+    z-index: 2;
+    pointer-events: none;
+  }
+
+  /* Tekst content */
   .hero-content {
     width: 100% !important;
     max-width: 100% !important;
-    padding: 40px 20px 24px !important;
+    padding: 32px 20px 24px !important;
   }
 
   .hero-content h1 {
-    font-size: 36px !important;
+    font-size: 38px !important;
     max-width: 100% !important;
   }
 
-  .hero-gradient-left {
+  /* Stats balk iets kleiner */
+  .hero-stats > div > div:first-child {
+    font-size: 14px !important;
+  }
+
+  .hero-stats > div > div:last-child {
+    font-size: 11px !important;
+  }
+
+  /* Verberg desktop gradient overlays op mobiel */
+  .hero-gradient-left,
+  .hero-gradient-right {
     display: none !important;
   }
 }

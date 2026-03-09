@@ -54,6 +54,7 @@ export default function HeroSection({ currentGameweek, latestEpisodeUrl }: HeroS
       />
       {/* Gradient fade rechts */}
       <div
+        className="hero-gradient-right"
         style={{
           position: 'absolute',
           top: 0,
@@ -220,6 +221,7 @@ export default function HeroSection({ currentGameweek, latestEpisodeUrl }: HeroS
 
         {/* Stats */}
         <div
+          className="hero-stats"
           style={{
             display: 'flex',
             gap: 32,
