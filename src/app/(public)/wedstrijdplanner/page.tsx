@@ -74,9 +74,9 @@ export default function WedstrijdplannerPage() {
       {/* Scrollbar styling passend bij huisstijl */}
       <style>{`
         .fdr-scroll::-webkit-scrollbar          { height: 6px; }
-        .fdr-scroll::-webkit-scrollbar-track    { background: rgba(255,255,255,0.05); border-radius: 3px; }
-        .fdr-scroll::-webkit-scrollbar-thumb    { background: rgba(0,250,97,0.35); border-radius: 3px; }
-        .fdr-scroll::-webkit-scrollbar-thumb:hover { background: rgba(0,250,97,0.6); }
+        .fdr-scroll::-webkit-scrollbar-track    { background: rgba(255,255,255,0.05); }
+        .fdr-scroll::-webkit-scrollbar-thumb    { background: #00FA61; border-radius: 3px; }
+        .fdr-scroll::-webkit-scrollbar-thumb:hover { background: rgba(0,250,97,0.7); }
       `}</style>
 
       <div style={{ maxWidth: 1400, margin: '0 auto', padding: '100px 24px 80px' }}>
@@ -163,141 +163,168 @@ export default function WedstrijdplannerPage() {
             {error}
           </div>
         ) : (
-          <div
-            className="fdr-scroll"
-            style={{ overflowX: 'auto', WebkitOverflowScrolling: 'touch' as unknown as undefined }}
-          >
-            <table style={{
-              width: 'max-content',
-              minWidth: '100%',
-              borderCollapse: 'separate',
-              borderSpacing: '0 5px',
-            }}>
-              <thead>
-                <tr>
-                  {/* Sticky teamkolom header */}
-                  <th style={{
-                    position: 'sticky',
-                    left: 0,
-                    zIndex: 20,
-                    background: STICKY_HDR_BG,
-                    textAlign: 'left',
-                    padding: '0 20px 10px',
-                    color: 'rgba(255,255,255,0.35)',
-                    fontSize: 11,
-                    fontWeight: 700,
-                    letterSpacing: '0.1em',
-                    textTransform: 'uppercase',
-                    fontFamily: 'Montserrat, sans-serif',
-                    minWidth: 190,
-                    whiteSpace: 'nowrap',
-                  }}>
-                    Team
-                  </th>
+          /* Relatieve wrapper voor fade-overlay */
+          <div style={{ position: 'relative' }}>
+
+            {/* Fade-overlay rechts: visuele hint dat er meer kolommen zijn */}
+            <div style={{
+              position: 'absolute',
+              right: 0, top: 0, bottom: 0,
+              width: 40,
+              background: 'linear-gradient(to right, transparent, rgba(26,19,97,0.8))',
+              pointerEvents: 'none',
+              zIndex: 5,
+            }} />
+
+            {/* Horizontaal scrollbare container */}
+            <div
+              className="fdr-scroll"
+              style={{
+                overflowX: 'auto',
+                width: '100%',
+                scrollbarWidth: 'thin',
+                scrollbarColor: '#00FA61 rgba(255,255,255,0.1)',
+              }}
+            >
+              <table style={{
+                borderCollapse: 'collapse',
+                tableLayout: 'fixed',
+                minWidth: '100%',
+                width: `${160 + gameweeks.length * 68}px`,
+              }}>
+
+                {/* Vaste kolombreedtes */}
+                <colgroup>
+                  <col style={{ width: 160 }} />
                   {gameweeks.map((gw) => (
-                    <th key={gw} style={{
-                      textAlign: 'center',
-                      padding: '0 3px 10px',
+                    <col key={gw} style={{ width: 68 }} />
+                  ))}
+                </colgroup>
+
+                <thead>
+                  <tr>
+                    {/* Sticky teamkolom header */}
+                    <th style={{
+                      position: 'sticky',
+                      left: 0,
+                      zIndex: 20,
+                      background: STICKY_HDR_BG,
+                      textAlign: 'left',
+                      padding: '0 14px 10px',
                       color: 'rgba(255,255,255,0.35)',
                       fontSize: 11,
                       fontWeight: 700,
                       letterSpacing: '0.1em',
                       textTransform: 'uppercase',
                       fontFamily: 'Montserrat, sans-serif',
-                      minWidth: 76,
                       whiteSpace: 'nowrap',
                     }}>
-                      GW{gw}
+                      Team
                     </th>
-                  ))}
-                </tr>
-              </thead>
-              <tbody>
-                {sortedTeams.map((team) => (
-                  <tr key={team.id}>
-                    {/* Sticky teamkolom */}
-                    <td style={{
-                      position: 'sticky',
-                      left: 0,
-                      zIndex: 10,
-                      background: STICKY_BG,
-                      padding: '6px 20px',
-                      borderRadius: '8px 0 0 8px',
-                      verticalAlign: 'middle',
-                      whiteSpace: 'nowrap',
-                    }}>
-                      <span style={{
-                        color: 'white',
-                        fontSize: 13,
-                        fontWeight: 600,
+                    {gameweeks.map((gw) => (
+                      <th key={gw} style={{
+                        textAlign: 'center',
+                        padding: '0 2px 10px',
+                        color: 'rgba(255,255,255,0.35)',
+                        fontSize: 11,
+                        fontWeight: 700,
+                        letterSpacing: '0.1em',
+                        textTransform: 'uppercase',
                         fontFamily: 'Montserrat, sans-serif',
+                        whiteSpace: 'nowrap',
                       }}>
-                        {team.name}
-                      </span>
-                    </td>
-
-                    {/* Fixture cellen */}
-                    {gameweeks.map((gw, gwIdx) => {
-                      const fixture = team.fixtures.find((f) => f.gw === gw);
-                      const cfg     = fixture ? (FDR_CONFIG[fixture.difficulty] ?? FDR_CONFIG[3]) : null;
-                      const isLast  = gwIdx === gameweeks.length - 1;
-                      return (
-                        <td
-                          key={gw}
-                          style={{
-                            padding: '6px 3px',
-                            background: 'rgba(255,255,255,0.06)',
-                            textAlign: 'center',
-                            verticalAlign: 'middle',
-                            borderRadius: isLast ? '0 8px 8px 0' : undefined,
-                          }}
-                        >
-                          {fixture && cfg ? (
-                            <div style={{
-                              background: cfg.bg,
-                              color: cfg.text,
-                              borderRadius: 6,
-                              padding: '7px 4px',
-                              fontSize: 11,
-                              fontWeight: 700,
-                              fontFamily: 'Montserrat, sans-serif',
-                              lineHeight: 1.2,
-                              display: 'flex',
-                              flexDirection: 'column',
-                              alignItems: 'center',
-                              gap: 1,
-                            }}>
-                              <span>{fixture.opponent}</span>
-                              <span style={{ fontSize: 9, opacity: 0.8, fontWeight: 500 }}>
-                                ({fixture.location === 'H' ? 'T' : 'U'})
-                              </span>
-                            </div>
-                          ) : (
-                            /* Speelvrij — grijze achtergrond */
-                            <div style={{
-                              background: 'rgba(255,255,255,0.04)',
-                              borderRadius: 6,
-                              padding: '7px 4px',
-                              color: 'rgba(255,255,255,0.2)',
-                              fontSize: 12,
-                              fontFamily: 'Montserrat, sans-serif',
-                            }}>
-                              –
-                            </div>
-                          )}
-                        </td>
-                      );
-                    })}
+                        GW{gw}
+                      </th>
+                    ))}
                   </tr>
-                ))}
-              </tbody>
-            </table>
+                </thead>
 
-            {sortedTeams.length === 0 && (
-              <p style={{ textAlign: 'center', padding: '40px 0', color: 'rgba(255,255,255,0.3)', fontFamily: 'Montserrat, sans-serif' }}>
-                Geen teams gevonden.
-              </p>
-            )}
+                <tbody>
+                  {sortedTeams.map((team) => (
+                    <tr key={team.id}>
+                      {/* Sticky teamkolom */}
+                      <td style={{
+                        position: 'sticky',
+                        left: 0,
+                        zIndex: 10,
+                        background: STICKY_BG,
+                        padding: '5px 14px',
+                        verticalAlign: 'middle',
+                        whiteSpace: 'nowrap',
+                        borderBottom: '3px solid transparent',
+                      }}>
+                        <span style={{
+                          color: 'white',
+                          fontSize: 13,
+                          fontWeight: 600,
+                          fontFamily: 'Montserrat, sans-serif',
+                        }}>
+                          {team.name}
+                        </span>
+                      </td>
+
+                      {/* Fixture cellen */}
+                      {gameweeks.map((gw) => {
+                        const fixture = team.fixtures.find((f) => f.gw === gw);
+                        const cfg     = fixture ? (FDR_CONFIG[fixture.difficulty] ?? FDR_CONFIG[3]) : null;
+                        return (
+                          <td
+                            key={gw}
+                            style={{
+                              padding: '3px 2px',
+                              background: 'rgba(255,255,255,0.06)',
+                              textAlign: 'center',
+                              verticalAlign: 'middle',
+                              borderBottom: '3px solid transparent',
+                            }}
+                          >
+                            {fixture && cfg ? (
+                              <div style={{
+                                background: cfg.bg,
+                                color: cfg.text,
+                                borderRadius: 5,
+                                padding: '7px 2px',
+                                fontSize: 11,
+                                fontWeight: 700,
+                                fontFamily: 'Montserrat, sans-serif',
+                                lineHeight: 1.2,
+                                display: 'flex',
+                                flexDirection: 'column',
+                                alignItems: 'center',
+                                gap: 1,
+                              }}>
+                                <span>{fixture.opponent}</span>
+                                <span style={{ fontSize: 9, opacity: 0.8, fontWeight: 500 }}>
+                                  ({fixture.location === 'H' ? 'T' : 'U'})
+                                </span>
+                              </div>
+                            ) : (
+                              /* Speelvrij — grijze achtergrond */
+                              <div style={{
+                                background: 'rgba(255,255,255,0.04)',
+                                borderRadius: 5,
+                                padding: '7px 2px',
+                                color: 'rgba(255,255,255,0.2)',
+                                fontSize: 12,
+                                fontFamily: 'Montserrat, sans-serif',
+                              }}>
+                                –
+                              </div>
+                            )}
+                          </td>
+                        );
+                      })}
+                    </tr>
+                  ))}
+                </tbody>
+              </table>
+
+              {sortedTeams.length === 0 && (
+                <p style={{ textAlign: 'center', padding: '40px 0', color: 'rgba(255,255,255,0.3)', fontFamily: 'Montserrat, sans-serif' }}>
+                  Geen teams gevonden.
+                </p>
+              )}
+            </div>
           </div>
         )}
 
