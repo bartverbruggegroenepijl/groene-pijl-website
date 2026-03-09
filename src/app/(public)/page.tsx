@@ -427,8 +427,8 @@ export default async function HomePage() {
         </div>
       </section>
 
-      {/* ── 3. CAPTAIN PICK VAN DE WEEK (dark navy) ─────────────────── */}
-      <section id="captain-pick" className="py-20 px-4 bg-navy" style={{ borderTop: '2px solid rgba(0,250,97,0.18)' }}>
+      {/* ── 3. CAPTAIN PICK VAN DE WEEK (gradient) ─────────────────── */}
+      <section id="captain-pick" className="py-20 px-4" style={{ background: 'linear-gradient(135deg, #1F0E84 0%, #2D1B69 50%, #1a0a3b 100%)', borderTop: '2px solid rgba(0,250,97,0.18)' }}>
         <div className="max-w-8xl mx-auto">
           <SectionLabel>{captain ? `Gameweek ${captain.gameweek}` : 'Captain Pick'}</SectionLabel>
           <SectionTitleDark>Captain Pick van de Week</SectionTitleDark>
@@ -493,8 +493,8 @@ export default async function HomePage() {
         </div>
       </section>
 
-      {/* ── 5. TEAM VAN DE WEEK (dark navy) ─────────────────────────── */}
-      <section id="team" className="py-20 px-4 bg-navy" style={{ borderTop: '2px solid rgba(0,250,97,0.18)' }}>
+      {/* ── 5. TEAM VAN DE WEEK (gradient) ─────────────────────────── */}
+      <section id="team" className="py-20 px-4" style={{ background: 'linear-gradient(135deg, #1F0E84 0%, #2D1B69 50%, #1a0a3b 100%)', borderTop: '2px solid rgba(0,250,97,0.18)' }}>
         <div className="max-w-8xl mx-auto">
           <SectionLabel>{team ? `Gameweek ${team.week_number}` : 'Team'}</SectionLabel>
           <SectionTitleDark>Team van de Week</SectionTitleDark>
@@ -680,32 +680,32 @@ export default async function HomePage() {
         </div>
       </section>
 
-      {/* ── 7. DE MANAGERS (dark navy) ───────────────────────────────── */}
-      <section id="managers" className="py-20 px-4 bg-navy" style={{ borderTop: '2px solid rgba(0,250,97,0.18)' }}>
+      {/* ── 7. DE MANAGERS (white) ───────────────────────────────── */}
+      <section id="managers" className="py-20 px-4 bg-white">
         <div className="max-w-8xl mx-auto">
           <SectionLabel>Het Team</SectionLabel>
-          <SectionTitleDark>De Managers</SectionTitleDark>
+          <SectionTitleLight>De Managers</SectionTitleLight>
 
           {managers.length > 0 ? (
             <div className="mt-10 grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6">
               {managers.map((m) => (
-                <Link key={m.id} href={`/managers/${m.id}`} className="card-lift bg-navy-card border border-white/8 hover:border-primary/50 hover:shadow-[0_0_28px_rgba(0,250,97,0.12)] rounded-2xl p-6 flex flex-col items-center text-center gap-3 transition-all duration-300 group">
+                <Link key={m.id} href={`/managers/${m.id}`} className="card-lift bg-white border border-gray-100 hover:border-primary/30 hover:shadow-lg rounded-2xl p-6 flex flex-col items-center text-center gap-3 transition-all duration-300 group">
                   {m.avatar_url ? (
-                    <div className="relative w-20 h-20 rounded-full overflow-hidden ring-2 ring-white/10 group-hover:ring-primary/40 transition-all duration-300">
+                    <div className="relative w-20 h-20 rounded-full overflow-hidden ring-2 ring-gray-200 group-hover:ring-primary/40 transition-all duration-300">
                       <Image src={m.avatar_url} alt={m.name} fill className="object-cover" />
                     </div>
                   ) : (
-                    <div className="w-20 h-20 rounded-full bg-white/5 ring-2 ring-white/10 group-hover:ring-primary/40 flex items-center justify-center transition-all duration-300">
+                    <div className="w-20 h-20 rounded-full bg-gray-100 ring-2 ring-gray-200 group-hover:ring-primary/40 flex items-center justify-center transition-all duration-300">
                       <span className="text-3xl font-bold text-primary">{m.name.charAt(0)}</span>
                     </div>
                   )}
                   <div>
-                    <h3 className="font-bold text-xl text-white group-hover:text-primary transition-colors">{m.name}</h3>
+                    <h3 className="font-bold text-xl text-gray-900 group-hover:text-primary transition-colors">{m.name}</h3>
                     {m.role && <p className="text-xs text-primary mt-0.5">{m.role}</p>}
                   </div>
-                  {m.bio && <p className="text-xs text-white/50 leading-relaxed line-clamp-3">{m.bio}</p>}
+                  {m.bio && <p className="text-xs text-gray-500 leading-relaxed line-clamp-3">{m.bio}</p>}
                   {m.instagram_url && (
-                    <span className="flex items-center gap-1.5 text-white/30 group-hover:text-primary text-xs transition-colors mt-auto">
+                    <span className="flex items-center gap-1.5 text-gray-400 group-hover:text-primary text-xs transition-colors mt-auto">
                       <Instagram size={13} />Instagram
                     </span>
                   )}
@@ -713,7 +713,7 @@ export default async function HomePage() {
               ))}
             </div>
           ) : (
-            <EmptyPlaceholderDark message="Managers worden binnenkort toegevoegd." />
+            <EmptyPlaceholderLight message="Managers worden binnenkort toegevoegd." />
           )}
         </div>
       </section>
@@ -723,7 +723,7 @@ export default async function HomePage() {
         <section
           id="rankings"
           className="py-20 px-4"
-          style={{ background: '#1F0E84', borderTop: '2px solid rgba(200,33,195,0.18)' }}
+          style={{ background: 'linear-gradient(135deg, #1F0E84 0%, #2D1B69 50%, #1a0a3b 100%)', borderTop: '2px solid rgba(200,33,195,0.18)' }}
         >
           <div className="max-w-8xl mx-auto">
             {/* Header */}
@@ -775,7 +775,7 @@ export default async function HomePage() {
       )}
 
       {/* ── MINI-LEAGUE CTA (gradient) ───────────────────────────────── */}
-      <section className="py-20 px-4 bg-navy">
+      <section className="py-20 px-4" style={{ background: 'linear-gradient(135deg, #1F0E84 0%, #2D1B69 50%, #1a0a3b 100%)' }}>
         <div className="max-w-8xl mx-auto">
           <div className="relative rounded-3xl overflow-hidden">
             <div className="absolute inset-0" style={{ background: 'linear-gradient(135deg, #00FA61 0%, #7B2FFF 100%)' }} />
