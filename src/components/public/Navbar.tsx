@@ -22,14 +22,20 @@ const navLinks = [
   { label: 'Artikelen',            href: '/artikelen'      },
   { label: 'Transfers & Captains', href: '/#captain-pick'  },
   { label: 'Rankings',             href: '/rankings'       },
-  { label: 'Spelerstatus',          href: '/spelerstatus'   },
+];
+
+const teamstatusLinks = [
+  { label: 'Spelerstatus',    href: '/spelerstatus',     desc: 'Blessures & beschikbaarheid' },
+  { label: 'Wedstrijdplanner', href: '/wedstrijdplanner', desc: 'Fixture Difficulty Rating'   },
 ];
 
 export default function Navbar({ managers = [] }: NavbarProps) {
   const [scrolled, setScrolled] = useState(false);
   const [menuOpen, setMenuOpen] = useState(false);
   const [managersOpen, setManagersOpen] = useState(false);
+  const [teamstatusOpen, setTeamstatusOpen] = useState(false);
   const dropdownRef = useRef<HTMLDivElement>(null);
+  const teamstatusRef = useRef<HTMLDivElement>(null);
 
   useEffect(() => {
     const handleScroll = () => setScrolled(window.scrollY > 60);
@@ -37,11 +43,14 @@ export default function Navbar({ managers = [] }: NavbarProps) {
     return () => window.removeEventListener('scroll', handleScroll);
   }, []);
 
-  // Close dropdown on outside click
+  // Close dropdowns on outside click
   useEffect(() => {
     function handleOutside(e: MouseEvent) {
       if (dropdownRef.current && !dropdownRef.current.contains(e.target as Node)) {
         setManagersOpen(false);
+      }
+      if (teamstatusRef.current && !teamstatusRef.current.contains(e.target as Node)) {
+        setTeamstatusOpen(false);
       }
     }
     document.addEventListener('mousedown', handleOutside);
@@ -78,10 +87,40 @@ export default function Navbar({ managers = [] }: NavbarProps) {
               </Link>
             ))}
 
+            {/* Teamstatus dropdown */}
+            <div className="relative" ref={teamstatusRef}>
+              <button
+                onClick={() => { setTeamstatusOpen(!teamstatusOpen); setManagersOpen(false); }}
+                className="flex items-center gap-1.5 px-4 py-2 text-sm font-medium text-white/70 hover:text-primary rounded-lg hover:bg-primary/8 transition-all duration-200"
+              >
+                Teamstatus
+                <ChevronDown
+                  size={14}
+                  className={`transition-transform duration-200 ${teamstatusOpen ? 'rotate-180' : ''}`}
+                />
+              </button>
+
+              {teamstatusOpen && (
+                <div className="absolute top-full left-1/2 -translate-x-1/2 mt-2 bg-navy-card border border-white/10 rounded-xl shadow-card-hover py-2 min-w-[220px] z-50">
+                  {teamstatusLinks.map((item) => (
+                    <Link
+                      key={item.href}
+                      href={item.href}
+                      onClick={() => setTeamstatusOpen(false)}
+                      className="flex flex-col px-4 py-3 hover:bg-white/5 transition-colors"
+                    >
+                      <span className="text-white text-sm font-semibold">{item.label}</span>
+                      <span className="text-white/40 text-xs mt-0.5">{item.desc}</span>
+                    </Link>
+                  ))}
+                </div>
+              )}
+            </div>
+
             {/* Managers dropdown */}
             <div className="relative" ref={dropdownRef}>
               <button
-                onClick={() => setManagersOpen(!managersOpen)}
+                onClick={() => { setManagersOpen(!managersOpen); setTeamstatusOpen(false); }}
                 className="flex items-center gap-1.5 px-4 py-2 text-sm font-medium text-white/70 hover:text-primary rounded-lg hover:bg-primary/8 transition-all duration-200"
               >
                 Managers
@@ -161,6 +200,22 @@ export default function Navbar({ managers = [] }: NavbarProps) {
                 {link.label}
               </Link>
             ))}
+
+            {/* Teamstatus section */}
+            <div className="border-t border-white/8 my-2" />
+            <p className="px-4 text-xs font-semibold uppercase tracking-widest mb-1" style={{ color: '#00FA61' }}>Teamstatus</p>
+            {teamstatusLinks.map((item) => (
+              <Link
+                key={item.href}
+                href={item.href}
+                onClick={() => setMenuOpen(false)}
+                className="flex flex-col px-4 py-2.5 text-white/80 hover:text-primary hover:bg-white/5 rounded-lg transition-colors"
+              >
+                <span className="font-semibold">{item.label}</span>
+                <span className="text-xs text-white/40 mt-0.5">{item.desc}</span>
+              </Link>
+            ))}
+
             <div className="border-t border-white/8 my-2" />
             <p className="px-4 text-xs font-semibold uppercase tracking-widest mb-1" style={{ color: '#00FA61' }}>Managers</p>
             {managers.map((m) => (
