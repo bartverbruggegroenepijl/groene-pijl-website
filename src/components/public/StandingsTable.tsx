@@ -10,7 +10,7 @@ import type { LeagueApiResponse, LeagueEntry } from '@/lib/fpl/league';
 const MANAGER_FULL_NAMES = [
   'bart verbrugge',
   'jeffrey nederlof',
-  'tom verbrugge',
+  'thomas verbrugge',
   'kieran walsh',
 ];
 

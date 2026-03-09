@@ -13,6 +13,8 @@ import StandingsTable from '@/components/public/StandingsTable';
 import { fetchLeagueStandings } from '@/lib/fpl/league';
 import type { LeagueApiResponse } from '@/lib/fpl/league';
 import { fetchGameweekInfo } from '@/lib/fpl/events';
+import { fetchNextFixturesMap } from '@/lib/fpl/fixtures';
+import type { NextFixture } from '@/lib/fpl/fixtures';
 import HeroSection from '@/components/sections/HeroSection';
 
 // ─── Types ────────────────────────────────────────────────────────────────────
@@ -128,6 +130,18 @@ const CAPTAIN_RANKS = [
   { rank: 2, emoji: '🥈', label: '2e Keuze', borderColor: 'border-gray-300',   textColor: 'text-gray-500',   bgColor: 'bg-gray-50'   },
   { rank: 3, emoji: '🥉', label: '3e Keuze', borderColor: 'border-orange-400', textColor: 'text-orange-500', bgColor: 'bg-orange-50' },
 ];
+
+// FDR kleurschema (1=makkelijk → 5=heel moeilijk)
+function getFdrStyle(difficulty: number): React.CSSProperties {
+  const styles: Record<number, React.CSSProperties> = {
+    1: { background: '#375523', color: '#ffffff' },
+    2: { background: '#01FC7A', color: '#111111' },
+    3: { background: '#E7E7E7', color: '#111111' },
+    4: { background: '#FF1751', color: '#ffffff' },
+    5: { background: '#80072D', color: '#ffffff' },
+  };
+  return styles[difficulty] ?? styles[3];
+}
 
 // ─── Sub-components ───────────────────────────────────────────────────────────
 
@@ -369,6 +383,9 @@ export default async function HomePage() {
   const gwInfo = await fetchGameweekInfo();
   const currentGameweek = gwInfo.currentGW;
 
+  // ── FPL fixtures: eerstvolgende wedstrijd per team voor captain FDR badge ────
+  const nextFixturesMap = await fetchNextFixturesMap();
+
   return (
     <main className="text-white overflow-x-hidden" style={{ background: '#0D0B2A' }}>
 
@@ -479,6 +496,22 @@ export default async function HomePage() {
                       <div>
                         <p className="text-xl font-bold text-gray-900 leading-tight">{p.player_name ?? '—'}</p>
                         <p className="text-sm text-gray-400 mt-0.5">{p.player_club}{p.position && ` · ${p.position}`}</p>
+                        {(() => {
+                          const fix: NextFixture | undefined = nextFixturesMap.get(p.player_club?.toLowerCase() ?? '');
+                          if (!fix) return null;
+                          return (
+                            <div className="flex items-center gap-1.5 mt-2 flex-wrap">
+                              <span className="text-xs text-gray-400">GW{fix.gw} vs</span>
+                              <span className="text-xs font-bold text-gray-700">{fix.opponent} ({fix.location === 'H' ? 'T' : 'U'})</span>
+                              <span
+                                className="text-xs font-bold px-1.5 py-0.5 rounded"
+                                style={getFdrStyle(fix.difficulty)}
+                              >
+                                {fix.difficulty}
+                              </span>
+                            </div>
+                          );
+                        })()}
                       </div>
                     </div>
                     {p.motivation && (
