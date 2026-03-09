@@ -17,44 +17,34 @@ export default function HeroSection({ currentGameweek, latestEpisodeUrl }: HeroS
         background: 'linear-gradient(135deg, #1F0E84 0%, #2D1B69 40%, #0d1a3a 100%)',
       }}
     >
-      {/* Spelersafbeelding wrapper */}
-      <div
+      {/* Spelersafbeelding */}
+      {/* eslint-disable-next-line @next/next/no-img-element */}
+      <img
+        src="/hero-players.jpg"
+        alt="FPL spelers"
         style={{
           position: 'absolute',
           right: 0,
-          top: 0,
           bottom: 0,
-          width: '60%',
+          height: '110%',
+          width: 'auto',
+          maxWidth: '65%',
+          objectFit: 'contain',
+          objectPosition: 'bottom right',
           zIndex: 2,
-          overflow: 'hidden',
+          pointerEvents: 'none',
         }}
-      >
-        {/* eslint-disable-next-line @next/next/no-img-element */}
-        <img
-          src="/hero-players.jpg"
-          alt="FPL spelers"
-          style={{
-            position: 'absolute',
-            right: 0,
-            bottom: 0,
-            height: '105%',
-            width: 'auto',
-            objectFit: 'contain',
-            objectPosition: 'bottom right',
-            zIndex: 2,
-          }}
-        />
-      </div>
+      />
 
-      {/* Gradient overlay */}
+      {/* Gradient fade over afbeelding */}
       <div
         style={{
           position: 'absolute',
           top: 0,
           right: 0,
           bottom: 0,
-          width: '60%',
-          background: 'linear-gradient(to right, #1F0E84 0%, rgba(31,14,132,0.7) 30%, transparent 60%)',
+          width: '65%',
+          background: 'linear-gradient(to right, #1F0E84 0%, rgba(31,14,132,0.6) 25%, transparent 55%)',
           zIndex: 3,
           pointerEvents: 'none',
         }}
