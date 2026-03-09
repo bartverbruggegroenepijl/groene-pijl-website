@@ -14,7 +14,7 @@ export default function HeroSection({ currentGameweek, latestEpisodeUrl }: HeroS
         overflow: 'hidden',
         display: 'flex',
         alignItems: 'center',
-        background: 'linear-gradient(135deg, #1a1361 0%, #1F0E84 40%, #2D1B69 70%, #0d1a3a 100%)',
+        background: 'linear-gradient(135deg, #1a1361 0%, #1F0E84 30%, #2D1B69 60%, #0d3d2a 85%, #0a4a1a 100%)',
       }}
     >
       {/* Spelersafbeelding */}
