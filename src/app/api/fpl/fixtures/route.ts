@@ -72,13 +72,16 @@ export async function GET() {
     const teams: FplTeam[] = bootstrap.teams;
     const events: FplEvent[] = bootstrap.events;
 
-    // Find starting GW (current or next)
+    // Start vanaf de VOLGENDE gameweek (huidige GW niet meer tonen)
     const currentEvent = events.find((e) => e.is_current);
-    const nextEvent = events.find((e) => e.is_next);
-    const startGW = currentEvent?.id ?? nextEvent?.id ?? 1;
+    const nextEvent    = events.find((e) => e.is_next);
+    const nextGW       = nextEvent?.id ?? (currentEvent ? currentEvent.id + 1 : 1);
 
-    // Build range of 6 GWs
-    const gwRange = Array.from({ length: 6 }, (_, i) => startGW + i);
+    // Alle resterende GWs van nextGW tot en met GW38
+    const gwRange = Array.from(
+      { length: Math.max(0, 38 - nextGW + 1) },
+      (_, i) => nextGW + i,
+    ).filter((gw) => gw >= 1 && gw <= 38);
 
     // Team lookup map
     const teamMap: Record<number, FplTeam> = {};

@@ -10,7 +10,7 @@ const FDR_CONFIG: Record<number, { bg: string; text: string; label: string }> = 
   1: { bg: '#375523', text: '#ffffff', label: 'Zeer makkelijk' },
   2: { bg: '#01FC7A', text: '#111111', label: 'Makkelijk'      },
   3: { bg: '#E7E7E7', text: '#111111', label: 'Neutraal'       },
-  4: { bg: '#FF1751', text: '#111111', label: 'Moeilijk'       },
+  4: { bg: '#FF1751', text: '#ffffff', label: 'Moeilijk'       },
   5: { bg: '#80072D', text: '#ffffff', label: 'Zeer moeilijk'  },
 };
 
@@ -31,66 +31,28 @@ interface TeamFDR {
   avgDifficulty: number;
 }
 
-interface FplPlayer {
-  teamId: number;
-  position: string;
-  totalPoints: number;
-}
-
-type Position = 'all' | 'GK' | 'DEF' | 'MID' | 'FWD';
+// ─── Achtergrond sticky kolom (opaque — matcht linker gradient kleur) ─────────
+const STICKY_BG     = '#1a1460'; // row bg = rgba(255,255,255,0.06) over #1a1361
+const STICKY_HDR_BG = '#1a1361';
 
 // ─── Page ─────────────────────────────────────────────────────────────────────
 
 export default function WedstrijdplannerPage() {
-  const [teams, setTeams] = useState<TeamFDR[]>([]);
-  const [gameweeks, setGameweeks] = useState<number[]>([]);
-  const [position, setPosition] = useState<Position>('all');
-  const [teamsByPosition, setTeamsByPosition] = useState<Record<string, Set<number>>>({});
-  const [loading, setLoading] = useState(true);
-  const [error, setError] = useState<string | null>(null);
+  const [teams,       setTeams]       = useState<TeamFDR[]>([]);
+  const [gameweeks,   setGameweeks]   = useState<number[]>([]);
+  const [loading,     setLoading]     = useState(true);
+  const [error,       setError]       = useState<string | null>(null);
   const [lastUpdated, setLastUpdated] = useState<Date | null>(null);
 
   const fetchData = useCallback(async () => {
     setLoading(true);
     setError(null);
     try {
-      const [fdrRes, playersRes] = await Promise.all([
-        fetch('/api/fpl/fixtures'),
-        fetch('/api/fpl/players'),
-      ]);
-
-      if (!fdrRes.ok) throw new Error('Kan fixtures niet laden');
-      const fdrData = await fdrRes.json();
-      setTeams(fdrData.teams ?? []);
-      setGameweeks(fdrData.gameweeks ?? []);
-
-      // Build per-position team sets: teams with above-median points at that position
-      if (playersRes.ok) {
-        const playerData = await playersRes.json();
-        const players: FplPlayer[] = playerData.players ?? [];
-
-        // Median points per position
-        const byPos: Record<string, number[]> = { GK: [], DEF: [], MID: [], FWD: [] };
-        players.forEach((p) => { byPos[p.position]?.push(p.totalPoints); });
-
-        const medians: Record<string, number> = {};
-        Object.entries(byPos).forEach(([pos, pts]) => {
-          const sorted = [...pts].sort((a, b) => a - b);
-          medians[pos] = sorted[Math.floor(sorted.length / 2)] ?? 0;
-        });
-
-        // Teams with at least one player >= median at that position
-        const posTeams: Record<string, Set<number>> = {
-          GK: new Set(), DEF: new Set(), MID: new Set(), FWD: new Set(),
-        };
-        players.forEach((p) => {
-          if (p.totalPoints >= (medians[p.position] ?? 0)) {
-            posTeams[p.position]?.add(p.teamId);
-          }
-        });
-        setTeamsByPosition(posTeams);
-      }
-
+      const res = await fetch('/api/fpl/fixtures');
+      if (!res.ok) throw new Error('Kan fixtures niet laden');
+      const data = await res.json();
+      setTeams(data.teams ?? []);
+      setGameweeks(data.gameweeks ?? []);
       setLastUpdated(new Date());
     } catch (e) {
       setError(e instanceof Error ? e.message : 'Onbekende fout');
@@ -101,21 +63,25 @@ export default function WedstrijdplannerPage() {
 
   useEffect(() => { fetchData(); }, [fetchData]);
 
-  // Filter and sort: easiest fixtures first (lowest avgDifficulty)
-  const visibleTeams = teams
-    .filter((t) => {
-      if (position === 'all') return true;
-      return teamsByPosition[position]?.has(t.id) ?? true;
-    })
-    .sort((a, b) => a.avgDifficulty - b.avgDifficulty);
+  // Sorteer op makkelijkste fixtures (laagste gemiddelde FDR)
+  const sortedTeams = [...teams].sort((a, b) => a.avgDifficulty - b.avgDifficulty);
 
   const PAGE_BG = 'linear-gradient(135deg, #1a1361 0%, #1F0E84 30%, #2D1B69 60%, #0d3d2a 85%, #0a4a1a 100%)';
 
   return (
     <main style={{ minHeight: '100vh', background: PAGE_BG }}>
+
+      {/* Scrollbar styling passend bij huisstijl */}
+      <style>{`
+        .fdr-scroll::-webkit-scrollbar          { height: 6px; }
+        .fdr-scroll::-webkit-scrollbar-track    { background: rgba(255,255,255,0.05); border-radius: 3px; }
+        .fdr-scroll::-webkit-scrollbar-thumb    { background: rgba(0,250,97,0.35); border-radius: 3px; }
+        .fdr-scroll::-webkit-scrollbar-thumb:hover { background: rgba(0,250,97,0.6); }
+      `}</style>
+
       <div style={{ maxWidth: 1400, margin: '0 auto', padding: '100px 24px 80px' }}>
 
-        {/* Back link */}
+        {/* Terug link */}
         <Link
           href="/"
           style={{
@@ -150,64 +116,36 @@ export default function WedstrijdplannerPage() {
           </p>
         </div>
 
-        {/* Controls row */}
-        <div style={{ display: 'flex', flexWrap: 'wrap', gap: 16, marginBottom: 28, alignItems: 'center' }}>
-
-          {/* Position filter */}
-          <div style={{ display: 'flex', gap: 6, flexWrap: 'wrap' }}>
-            {(['all', 'GK', 'DEF', 'MID', 'FWD'] as Position[]).map((pos) => (
-              <button
-                key={pos}
-                onClick={() => setPosition(pos)}
-                style={{
-                  padding: '7px 18px', borderRadius: 20, cursor: 'pointer',
-                  border: position === pos ? '1.5px solid #00FA61' : '1px solid rgba(255,255,255,0.18)',
-                  background: position === pos ? 'rgba(0,250,97,0.12)' : 'rgba(255,255,255,0.05)',
-                  color: position === pos ? '#00FA61' : 'rgba(255,255,255,0.55)',
-                  fontSize: 12, fontWeight: 700,
-                  letterSpacing: '0.08em', fontFamily: 'Montserrat, sans-serif',
-                  transition: 'all 0.15s',
-                }}
-              >
-                {pos === 'all' ? 'Alle' : pos}
-              </button>
-            ))}
-          </div>
-
-          {/* Right: refresh + timestamp */}
-          <div style={{ display: 'flex', alignItems: 'center', gap: 10, marginLeft: 'auto' }}>
-            {lastUpdated && (
-              <span style={{ color: 'rgba(255,255,255,0.3)', fontSize: 12, fontFamily: 'Montserrat, sans-serif' }}>
-                {lastUpdated.toLocaleTimeString('nl-NL', { hour: '2-digit', minute: '2-digit' })}
-              </span>
-            )}
-            <button
-              onClick={fetchData}
-              disabled={loading}
-              style={{
-                display: 'inline-flex', alignItems: 'center', gap: 6,
-                padding: '7px 16px', borderRadius: 20,
-                border: '1px solid rgba(255,255,255,0.18)',
-                background: 'rgba(255,255,255,0.05)',
-                color: 'rgba(255,255,255,0.55)', fontSize: 12,
-                cursor: loading ? 'not-allowed' : 'pointer',
-                fontFamily: 'Montserrat, sans-serif',
-              }}
-            >
-              <RefreshCw size={12} className={loading ? 'animate-spin' : ''} />
-              Verversen
-            </button>
-          </div>
+        {/* Controls: alleen ververs knop */}
+        <div style={{ display: 'flex', alignItems: 'center', gap: 10, marginBottom: 28 }}>
+          {lastUpdated && (
+            <span style={{ color: 'rgba(255,255,255,0.3)', fontSize: 12, fontFamily: 'Montserrat, sans-serif' }}>
+              {lastUpdated.toLocaleTimeString('nl-NL', { hour: '2-digit', minute: '2-digit' })}
+            </span>
+          )}
+          <button
+            onClick={fetchData}
+            disabled={loading}
+            style={{
+              display: 'inline-flex', alignItems: 'center', gap: 6,
+              padding: '7px 16px', borderRadius: 20,
+              border: '1px solid rgba(255,255,255,0.18)',
+              background: 'rgba(255,255,255,0.05)',
+              color: 'rgba(255,255,255,0.55)', fontSize: 12,
+              cursor: loading ? 'not-allowed' : 'pointer',
+              fontFamily: 'Montserrat, sans-serif',
+            }}
+          >
+            <RefreshCw size={12} className={loading ? 'animate-spin' : ''} />
+            Verversen
+          </button>
         </div>
 
-        {/* Legend */}
+        {/* Legenda */}
         <div style={{ display: 'flex', flexWrap: 'wrap', gap: 12, marginBottom: 28 }}>
           {Object.entries(FDR_CONFIG).map(([score, cfg]) => (
             <div key={score} style={{ display: 'flex', alignItems: 'center', gap: 7 }}>
-              <div style={{
-                width: 18, height: 18, borderRadius: 4,
-                background: cfg.bg, flexShrink: 0,
-              }} />
+              <div style={{ width: 18, height: 18, borderRadius: 4, background: cfg.bg, flexShrink: 0 }} />
               <span style={{ color: 'rgba(255,255,255,0.45)', fontSize: 11, fontFamily: 'Montserrat, sans-serif' }}>
                 {score} – {cfg.label}
               </span>
@@ -215,45 +153,59 @@ export default function WedstrijdplannerPage() {
           ))}
         </div>
 
-        {/* Table */}
+        {/* Tabel */}
         {loading ? (
-          <div style={{
-            textAlign: 'center', padding: '80px 0',
-            color: 'rgba(255,255,255,0.3)', fontFamily: 'Montserrat, sans-serif',
-          }}>
+          <div style={{ textAlign: 'center', padding: '80px 0', color: 'rgba(255,255,255,0.3)', fontFamily: 'Montserrat, sans-serif' }}>
             Fixtures laden...
           </div>
         ) : error ? (
-          <div style={{
-            textAlign: 'center', padding: '80px 0',
-            color: '#FF1751', fontFamily: 'Montserrat, sans-serif',
-          }}>
+          <div style={{ textAlign: 'center', padding: '80px 0', color: '#FF1751', fontFamily: 'Montserrat, sans-serif' }}>
             {error}
           </div>
         ) : (
-          <div style={{ overflowX: 'auto', WebkitOverflowScrolling: 'touch' as unknown as undefined }}>
+          <div
+            className="fdr-scroll"
+            style={{ overflowX: 'auto', WebkitOverflowScrolling: 'touch' as unknown as undefined }}
+          >
             <table style={{
-              width: '100%', minWidth: 600,
-              borderCollapse: 'separate', borderSpacing: '0 5px',
+              width: 'max-content',
+              minWidth: '100%',
+              borderCollapse: 'separate',
+              borderSpacing: '0 5px',
             }}>
               <thead>
                 <tr>
+                  {/* Sticky teamkolom header */}
                   <th style={{
-                    textAlign: 'left', padding: '0 16px 10px',
-                    color: 'rgba(255,255,255,0.35)', fontSize: 11,
-                    fontWeight: 700, letterSpacing: '0.1em',
-                    textTransform: 'uppercase', fontFamily: 'Montserrat, sans-serif',
-                    minWidth: 180,
+                    position: 'sticky',
+                    left: 0,
+                    zIndex: 20,
+                    background: STICKY_HDR_BG,
+                    textAlign: 'left',
+                    padding: '0 20px 10px',
+                    color: 'rgba(255,255,255,0.35)',
+                    fontSize: 11,
+                    fontWeight: 700,
+                    letterSpacing: '0.1em',
+                    textTransform: 'uppercase',
+                    fontFamily: 'Montserrat, sans-serif',
+                    minWidth: 190,
+                    whiteSpace: 'nowrap',
                   }}>
                     Team
                   </th>
                   {gameweeks.map((gw) => (
                     <th key={gw} style={{
-                      textAlign: 'center', padding: '0 3px 10px',
-                      color: 'rgba(255,255,255,0.35)', fontSize: 11,
-                      fontWeight: 700, letterSpacing: '0.1em',
-                      textTransform: 'uppercase', fontFamily: 'Montserrat, sans-serif',
-                      minWidth: 88,
+                      textAlign: 'center',
+                      padding: '0 3px 10px',
+                      color: 'rgba(255,255,255,0.35)',
+                      fontSize: 11,
+                      fontWeight: 700,
+                      letterSpacing: '0.1em',
+                      textTransform: 'uppercase',
+                      fontFamily: 'Montserrat, sans-serif',
+                      minWidth: 76,
+                      whiteSpace: 'nowrap',
                     }}>
                       GW{gw}
                     </th>
@@ -261,28 +213,34 @@ export default function WedstrijdplannerPage() {
                 </tr>
               </thead>
               <tbody>
-                {visibleTeams.map((team) => (
+                {sortedTeams.map((team) => (
                   <tr key={team.id}>
-                    {/* Team name cell */}
+                    {/* Sticky teamkolom */}
                     <td style={{
-                      padding: '6px 16px',
-                      background: 'rgba(255,255,255,0.06)',
+                      position: 'sticky',
+                      left: 0,
+                      zIndex: 10,
+                      background: STICKY_BG,
+                      padding: '6px 20px',
                       borderRadius: '8px 0 0 8px',
                       verticalAlign: 'middle',
+                      whiteSpace: 'nowrap',
                     }}>
                       <span style={{
-                        color: 'white', fontSize: 13, fontWeight: 600,
-                        fontFamily: 'Montserrat, sans-serif', whiteSpace: 'nowrap',
+                        color: 'white',
+                        fontSize: 13,
+                        fontWeight: 600,
+                        fontFamily: 'Montserrat, sans-serif',
                       }}>
                         {team.name}
                       </span>
                     </td>
 
-                    {/* Fixture cells */}
+                    {/* Fixture cellen */}
                     {gameweeks.map((gw, gwIdx) => {
                       const fixture = team.fixtures.find((f) => f.gw === gw);
-                      const cfg = fixture ? (FDR_CONFIG[fixture.difficulty] ?? FDR_CONFIG[3]) : null;
-                      const isLast = gwIdx === gameweeks.length - 1;
+                      const cfg     = fixture ? (FDR_CONFIG[fixture.difficulty] ?? FDR_CONFIG[3]) : null;
+                      const isLast  = gwIdx === gameweeks.length - 1;
                       return (
                         <td
                           key={gw}
@@ -299,27 +257,32 @@ export default function WedstrijdplannerPage() {
                               background: cfg.bg,
                               color: cfg.text,
                               borderRadius: 6,
-                              padding: '9px 4px',
-                              fontSize: 12,
+                              padding: '7px 4px',
+                              fontSize: 11,
                               fontWeight: 700,
                               fontFamily: 'Montserrat, sans-serif',
                               lineHeight: 1.2,
                               display: 'flex',
                               flexDirection: 'column',
                               alignItems: 'center',
-                              gap: 2,
+                              gap: 1,
                             }}>
                               <span>{fixture.opponent}</span>
-                              <span style={{ fontSize: 10, opacity: 0.75, fontWeight: 500 }}>
+                              <span style={{ fontSize: 9, opacity: 0.8, fontWeight: 500 }}>
                                 ({fixture.location === 'H' ? 'T' : 'U'})
                               </span>
                             </div>
                           ) : (
+                            /* Speelvrij — grijze achtergrond */
                             <div style={{
-                              color: 'rgba(255,255,255,0.15)', fontSize: 11,
-                              padding: '9px 0',
+                              background: 'rgba(255,255,255,0.04)',
+                              borderRadius: 6,
+                              padding: '7px 4px',
+                              color: 'rgba(255,255,255,0.2)',
+                              fontSize: 12,
+                              fontFamily: 'Montserrat, sans-serif',
                             }}>
-                              —
+                              –
                             </div>
                           )}
                         </td>
@@ -330,21 +293,20 @@ export default function WedstrijdplannerPage() {
               </tbody>
             </table>
 
-            {visibleTeams.length === 0 && !loading && (
-              <p style={{
-                textAlign: 'center', padding: '40px 0',
-                color: 'rgba(255,255,255,0.3)', fontFamily: 'Montserrat, sans-serif',
-              }}>
-                Geen teams gevonden voor dit filter.
+            {sortedTeams.length === 0 && (
+              <p style={{ textAlign: 'center', padding: '40px 0', color: 'rgba(255,255,255,0.3)', fontFamily: 'Montserrat, sans-serif' }}>
+                Geen teams gevonden.
               </p>
             )}
           </div>
         )}
 
-        {/* Note */}
+        {/* Voetnoot */}
         <p style={{
-          marginTop: 32, color: 'rgba(255,255,255,0.2)',
-          fontSize: 12, fontFamily: 'Montserrat, sans-serif',
+          marginTop: 32,
+          color: 'rgba(255,255,255,0.2)',
+          fontSize: 12,
+          fontFamily: 'Montserrat, sans-serif',
           textAlign: 'center',
         }}>
           T = Thuis · U = Uit · FDR data via de officiële FPL API
