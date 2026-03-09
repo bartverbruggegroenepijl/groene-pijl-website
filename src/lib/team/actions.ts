@@ -10,6 +10,7 @@ interface PlayerData {
   position: 'GK' | 'DEF' | 'MID' | 'FWD';
   points: number;
   is_captain: boolean;
+  is_star_player: boolean;
   player_image_url: string;
 }
 

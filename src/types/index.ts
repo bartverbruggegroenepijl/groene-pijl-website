@@ -118,6 +118,7 @@ export interface TeamPlayer {
   position: 'GK' | 'DEF' | 'MID' | 'FWD' | null;
   points: number | null;
   is_captain: boolean;
+  is_star_player: boolean;
   player_image_url: string | null;
 }
 

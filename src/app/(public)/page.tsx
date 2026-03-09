@@ -76,6 +76,7 @@ interface TeamPlayer {
   position: string | null;
   points: number | null;
   is_captain: boolean;
+  is_star_player: boolean;
   player_image_url: string | null;
 }
 
@@ -248,6 +249,11 @@ function PitchPlayer({ player }: { player: TeamPlayer }) {
             C
           </span>
         )}
+        {player.is_star_player && (
+          <span className="absolute -top-1 -left-1 w-5 h-5 bg-yellow-400 text-black text-[9px] font-black rounded-full flex items-center justify-center leading-none">
+            ★
+          </span>
+        )}
       </div>
       <span className="text-[10px] sm:text-xs text-white font-semibold text-center leading-tight truncate w-full">
         {player.player_name ?? '—'}
@@ -329,7 +335,7 @@ export default async function HomePage() {
     try {
       return await supabase
         .from('team_of_the_week')
-        .select('id, week_number, formation, team_players(player_name, player_club, position, points, is_captain, player_image_url)')
+        .select('id, week_number, formation, team_players(player_name, player_club, position, points, is_captain, is_star_player, player_image_url)')
         .eq('published', true)
         .order('created_at', { ascending: false })
         .limit(1);

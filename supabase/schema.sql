@@ -458,6 +458,13 @@ ALTER TABLE team_players
   ADD COLUMN IF NOT EXISTS player_club_id uuid REFERENCES clubs (id) ON DELETE SET NULL;
 
 -- ============================================================
+-- ALTER team_players – add star player flag
+-- ============================================================
+
+ALTER TABLE team_players
+  ADD COLUMN IF NOT EXISTS is_star_player boolean NOT NULL DEFAULT false;
+
+-- ============================================================
 -- TABLE: player_of_the_week
 -- ============================================================
 
