@@ -96,3 +96,52 @@ export function getPlayerImageUrl(
   const { data } = supabase.storage.from(BUCKET).getPublicUrl(path);
   return data.publicUrl;
 }
+
+// ─── Article images ──────────────────────────────────────────
+
+const ARTICLE_BUCKET = 'article-images';
+
+/**
+ * Upload an article cover image to the "article-images" bucket.
+ * Returns the public URL of the uploaded file.
+ */
+export async function uploadArticleImage(
+  supabase: SupabaseClient,
+  file: File,
+  title: string
+): Promise<string> {
+  const slug = toSlug(title || 'artikel');
+  const ext  = getExtension(file);
+  const path = `${slug}-${Date.now()}.${ext}`;
+
+  const { error } = await supabase.storage
+    .from(ARTICLE_BUCKET)
+    .upload(path, file, {
+      contentType: file.type,
+      upsert:      false,
+    });
+
+  if (error) throw new Error(error.message);
+
+  const { data } = supabase.storage.from(ARTICLE_BUCKET).getPublicUrl(path);
+  return data.publicUrl;
+}
+
+/**
+ * Delete an article image by its public URL.
+ */
+export async function deleteArticleImage(
+  supabase: SupabaseClient,
+  url: string
+): Promise<void> {
+  const marker = `/object/public/${ARTICLE_BUCKET}/`;
+  const idx = url.indexOf(marker);
+  if (idx === -1) return;
+  const path = decodeURIComponent(url.slice(idx + marker.length));
+
+  const { error } = await supabase.storage
+    .from(ARTICLE_BUCKET)
+    .remove([path]);
+
+  if (error) throw new Error(error.message);
+}

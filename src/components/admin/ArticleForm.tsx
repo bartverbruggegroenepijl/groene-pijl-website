@@ -5,6 +5,7 @@ import Link from 'next/link';
 import { ArrowLeft, Save, Loader2 } from 'lucide-react';
 import type { Article, Manager } from '@/types';
 import { ARTICLE_CATEGORIES } from '@/types';
+import ArticleImageUpload from '@/components/admin/ArticleImageUpload';
 
 // ─── Slug helper ─────────────────────────────────────────────
 
@@ -265,28 +266,33 @@ export default function ArticleForm({ managers, article, action, mode }: Article
           </div>
 
           {/* Cover afbeelding */}
-          <div className="bg-[#1a1a1a] border border-white/8 rounded-xl p-5">
-            <label htmlFor="cover_image" className={labelClass}>Cover afbeelding URL</label>
-            <input
-              id="cover_image"
-              name="cover_image"
-              type="url"
+          <div className="bg-[#1a1a1a] border border-white/8 rounded-xl p-5 space-y-4">
+            <p className={labelClass}>Cover afbeelding</p>
+
+            {/* Hidden input passes the value to the server action */}
+            <input type="hidden" name="cover_image" value={coverImage} />
+
+            {/* Upload component */}
+            <ArticleImageUpload
               value={coverImage}
-              onChange={(e) => setCoverImage(e.target.value)}
-              placeholder="https://..."
-              className={inputClass}
+              onChange={(url) => setCoverImage(url)}
+              title={title}
             />
-            {coverImage && (
-              <div className="mt-3 rounded-lg overflow-hidden border border-white/10">
-                {/* eslint-disable-next-line @next/next/no-img-element */}
-                <img
-                  src={coverImage}
-                  alt="Preview"
-                  className="w-full h-32 object-cover"
-                  onError={(e) => (e.currentTarget.style.display = 'none')}
-                />
-              </div>
-            )}
+
+            {/* Optioneel: URL invoer */}
+            <div>
+              <label htmlFor="cover_image_url" className="block text-xs text-gray-600 mb-1">
+                Of gebruik een externe URL (optioneel)
+              </label>
+              <input
+                id="cover_image_url"
+                type="url"
+                value={coverImage}
+                onChange={(e) => setCoverImage(e.target.value)}
+                placeholder="https://..."
+                className={inputClass}
+              />
+            </div>
           </div>
 
           {/* Meta info bij bewerken */}

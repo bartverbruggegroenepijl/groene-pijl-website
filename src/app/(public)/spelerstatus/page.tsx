@@ -2,7 +2,7 @@
 
 import { useState, useEffect, useCallback } from 'react';
 import Link from 'next/link';
-import { ArrowLeft, RefreshCw, Activity } from 'lucide-react';
+import { ArrowLeft, RefreshCw, Activity, Search } from 'lucide-react';
 
 // ─── Types ────────────────────────────────────────────────────────────────────
 
@@ -61,6 +61,7 @@ export default function SpelerstatusPage() {
   const [players,     setPlayers]     = useState<PlayerNewsItem[]>([]);
   const [loading,     setLoading]     = useState(true);
   const [filter,      setFilter]      = useState<FilterStatus>('all');
+  const [search,      setSearch]      = useState('');
   const [lastUpdated, setLastUpdated] = useState<Date | null>(null);
 
   const fetchStatus = useCallback(async () => {
@@ -84,9 +85,16 @@ export default function SpelerstatusPage() {
     return () => clearInterval(iv);
   }, [fetchStatus]);
 
-  const filtered = filter === 'all'
-    ? players
-    : players.filter((p) => p.status === filter);
+  const filtered = players
+    .filter((p) => filter === 'all' || p.status === filter)
+    .filter((p) => {
+      if (!search.trim()) return true;
+      const q = search.toLowerCase();
+      return (
+        p.name.toLowerCase().includes(q) ||
+        (p.teamFull || p.team).toLowerCase().includes(q)
+      );
+    });
 
   return (
     <main className="min-h-screen text-white" style={{ background: '#1F0E84' }}>
@@ -137,8 +145,42 @@ export default function SpelerstatusPage() {
             </button>
           </div>
 
+          {/* Zoekbalk */}
+          <div className="flex justify-center mt-6 mb-1">
+            <div style={{ position: 'relative', width: '100%', maxWidth: '500px' }}>
+              <Search
+                size={16}
+                style={{
+                  position: 'absolute',
+                  left: '16px',
+                  top: '50%',
+                  transform: 'translateY(-50%)',
+                  color: '#00FA61',
+                  pointerEvents: 'none',
+                }}
+              />
+              <input
+                type="text"
+                value={search}
+                onChange={(e) => setSearch(e.target.value)}
+                placeholder="Zoek op spelernaam of club..."
+                style={{
+                  width: '100%',
+                  background: 'rgba(255,255,255,0.1)',
+                  border: '1px solid rgba(0,250,97,0.4)',
+                  borderRadius: '25px',
+                  padding: '10px 20px 10px 44px',
+                  color: 'white',
+                  fontSize: '14px',
+                  outline: 'none',
+                  boxSizing: 'border-box',
+                }}
+              />
+            </div>
+          </div>
+
           {/* Filter buttons */}
-          <div className="flex flex-wrap gap-2 mt-6">
+          <div className="flex flex-wrap gap-2 mt-4">
             {FILTERS.map((f) => {
               const count  = f.status === 'all'
                 ? players.length

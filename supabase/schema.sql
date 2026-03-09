@@ -549,3 +549,32 @@ CREATE POLICY "Authenticated delete site-assets"
   ON storage.objects FOR DELETE
   TO authenticated
   USING (bucket_id = 'site-assets');
+
+-- STORAGE – article-images bucket
+INSERT INTO storage.buckets (id, name, public)
+  VALUES ('article-images', 'article-images', true)
+  ON CONFLICT DO NOTHING;
+
+DROP POLICY IF EXISTS "Public read article-images" ON storage.objects;
+CREATE POLICY "Public read article-images"
+  ON storage.objects FOR SELECT
+  TO public
+  USING (bucket_id = 'article-images');
+
+DROP POLICY IF EXISTS "Auth upload article-images" ON storage.objects;
+CREATE POLICY "Auth upload article-images"
+  ON storage.objects FOR INSERT
+  TO authenticated
+  WITH CHECK (bucket_id = 'article-images');
+
+DROP POLICY IF EXISTS "Auth update article-images" ON storage.objects;
+CREATE POLICY "Auth update article-images"
+  ON storage.objects FOR UPDATE
+  TO authenticated
+  USING (bucket_id = 'article-images');
+
+DROP POLICY IF EXISTS "Auth delete article-images" ON storage.objects;
+CREATE POLICY "Auth delete article-images"
+  ON storage.objects FOR DELETE
+  TO authenticated
+  USING (bucket_id = 'article-images');
