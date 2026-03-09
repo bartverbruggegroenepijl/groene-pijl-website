@@ -42,8 +42,8 @@ export default function HeroSection({ currentGameweek, latestEpisodeUrl }: HeroS
           top: 0,
           left: 0,
           bottom: 0,
-          width: '35%',
-          background: 'linear-gradient(to right, #1F0E84 0%, rgba(31,14,132,0.8) 60%, transparent 100%)',
+          width: '45%',
+          background: 'linear-gradient(to right, #1F0E84 0%, #1F0E84 20%, rgba(31,14,132,0.9) 60%, transparent 100%)',
           zIndex: 3,
           pointerEvents: 'none',
         }}
