@@ -8,6 +8,7 @@ interface HeroSectionProps {
 export default function HeroSection({ currentGameweek, latestEpisodeUrl }: HeroSectionProps) {
   return (
     <section
+      className="hero-section"
       style={{
         position: 'relative',
         minHeight: '100vh',
@@ -18,25 +19,28 @@ export default function HeroSection({ currentGameweek, latestEpisodeUrl }: HeroS
       }}
     >
       {/* Spelersafbeelding */}
-      {/* eslint-disable-next-line @next/next/no-img-element */}
-      <img
-        src="/hero-players.webp"
-        alt="FPL spelers"
-        style={{
-          position: 'absolute',
-          right: 0,
-          top: 0,
-          height: '100%',
-          width: '75%',
-          objectFit: 'cover',
-          objectPosition: 'right center',
-          zIndex: 2,
-          pointerEvents: 'none',
-        }}
-      />
+      <div className="hero-image">
+        {/* eslint-disable-next-line @next/next/no-img-element */}
+        <img
+          src="/hero-players.webp"
+          alt="FPL spelers"
+          style={{
+            position: 'absolute',
+            right: 0,
+            top: 0,
+            height: '100%',
+            width: '75%',
+            objectFit: 'cover',
+            objectPosition: 'right center',
+            zIndex: 2,
+            pointerEvents: 'none',
+          }}
+        />
+      </div>
 
       {/* Gradient fade links */}
       <div
+        className="hero-gradient-left"
         style={{
           position: 'absolute',
           top: 0,
@@ -94,6 +98,7 @@ export default function HeroSection({ currentGameweek, latestEpisodeUrl }: HeroS
 
       {/* Tekst content links */}
       <div
+        className="hero-content"
         style={{
           position: 'relative',
           zIndex: 10,

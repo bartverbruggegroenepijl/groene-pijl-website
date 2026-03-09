@@ -93,17 +93,46 @@ body {
   }
 }
 
-/* Hero section — mobiel responsive */
+/* Hero section — mobiel responsive (desktop ONGEWIJZIGD) */
 @media (max-width: 768px) {
-  .hero-h1 {
+  .hero-section {
+    min-height: auto !important;
+    flex-direction: column-reverse !important;
+    align-items: stretch !important;
+  }
+
+  .hero-image {
+    position: relative !important;
+    width: 100% !important;
+    height: 300px !important;
+    top: auto !important;
+    right: auto !important;
+    bottom: auto !important;
+  }
+
+  .hero-image img {
+    position: relative !important;
+    width: 100% !important;
+    height: 300px !important;
+    top: auto !important;
+    right: auto !important;
+    object-fit: cover !important;
+    object-position: top center !important;
+    z-index: 1 !important;
+  }
+
+  .hero-content {
+    width: 100% !important;
+    max-width: 100% !important;
+    padding: 40px 20px 24px !important;
+  }
+
+  .hero-content h1 {
     font-size: 36px !important;
     max-width: 100% !important;
   }
-  .hero-container {
-    padding: 80px 20px 40px !important;
-  }
-  .hero-image-wrapper {
-    width: 100% !important;
-    opacity: 0.3 !important;
+
+  .hero-gradient-left {
+    display: none !important;
   }
 }
