@@ -3,6 +3,7 @@
 import Link from 'next/link';
 import { usePathname } from 'next/navigation';
 import { signOut } from '@/lib/auth/actions';
+import Logo from '@/components/ui/Logo';
 import {
   LayoutDashboard,
   FileText,
@@ -45,29 +46,9 @@ export default function AdminSidebar({ userEmail }: AdminSidebarProps) {
     <aside className="w-64 flex-shrink-0 bg-[#0d0d0d] border-r border-white/8 flex flex-col">
 
       {/* Logo */}
-      <div className="px-6 py-7 border-b border-white/8">
-        <div className="flex items-center gap-3">
-          <div className="w-9 h-9 rounded-lg bg-[#00A651] flex items-center justify-center flex-shrink-0">
-            <svg
-              viewBox="0 0 24 24"
-              fill="none"
-              className="w-5 h-5 text-white"
-              stroke="currentColor"
-              strokeWidth={2.5}
-            >
-              <path strokeLinecap="round" strokeLinejoin="round" d="M13 7l5 5m0 0l-5 5m5-5H6" />
-            </svg>
-          </div>
-          <div>
-            <p
-              className="text-white text-lg leading-none tracking-wide"
-              style={{ fontFamily: 'Bebas Neue, sans-serif', fontSize: '1.3rem' }}
-            >
-              De Groene Pijl
-            </p>
-            <p className="text-gray-500 text-xs mt-0.5">CMS Beheer</p>
-          </div>
-        </div>
+      <div className="px-5 py-5 border-b border-white/8">
+        <Logo size="sm" linked={true} />
+        <p className="text-gray-500 text-xs mt-2 pl-1">CMS Beheer</p>
       </div>
 
       {/* Navigatie */}

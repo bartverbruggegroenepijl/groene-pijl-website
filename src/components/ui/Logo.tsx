@@ -11,53 +11,52 @@ interface LogoProps {
 }
 
 const sizeMap = {
-  sm: { iconW: 24, iconH: 34, fontSize: '0.75rem' },
-  md: { iconW: 30, iconH: 42, fontSize: '0.875rem' },
-  lg: { iconW: 40, iconH: 56, fontSize: '1.1rem' },
+  sm: { iconW: 28, iconH: 32, glowW: 32, glowH: 32, fontSize: '0.75rem'  },
+  md: { iconW: 36, iconH: 40, glowW: 40, glowH: 40, fontSize: '0.875rem' },
+  lg: { iconW: 48, iconH: 54, glowW: 54, glowH: 54, fontSize: '1.1rem'   },
 };
 
-/**
- * De Groene Pijl icon:
- * — Green outline △ on top   (#00FA61, neon glow)
- * — Magenta outline ▽ below  (#C821C3, neon glow)
- * Both triangles are hollow (stroke only, very subtle fill)
- */
 function LogoIcon({ size = 'md' }: { size?: keyof typeof sizeMap }) {
-  const { iconW, iconH } = sizeMap[size];
+  const { iconW, iconH, glowW, glowH } = sizeMap[size];
   return (
-    <svg
-      width={iconW}
-      height={iconH}
-      viewBox="0 0 40 56"
-      fill="none"
-      xmlns="http://www.w3.org/2000/svg"
-      className="flex-shrink-0"
-    >
-      {/* Green upward triangle — outline + neon glow */}
-      <polygon
-        points="20,2 38,26 2,26"
-        fill="rgba(0,250,97,0.07)"
-        stroke="#00FA61"
-        strokeWidth="2.8"
-        strokeLinejoin="round"
+    <div style={{ position: 'relative', width: iconW, height: iconH, flexShrink: 0 }}>
+      {/* Glow achter het beeldmerk */}
+      <div
         style={{
-          filter:
-            'drop-shadow(0 0 3px #00FA61) drop-shadow(0 0 8px rgba(0,250,97,0.65))',
+          position: 'absolute',
+          left: '50%',
+          top: '50%',
+          transform: 'translate(-50%, -50%)',
+          width: glowW,
+          height: glowH,
+          background:
+            'radial-gradient(ellipse, rgba(0,250,97,0.6) 0%, rgba(200,33,195,0.4) 50%, transparent 70%)',
+          filter: 'blur(10px)',
+          borderRadius: '50%',
+          zIndex: 0,
         }}
       />
-      {/* Magenta downward triangle — outline + neon glow */}
-      <polygon
-        points="3,32 37,32 20,54"
-        fill="rgba(200,33,195,0.07)"
-        stroke="#C821C3"
-        strokeWidth="2.8"
-        strokeLinejoin="round"
-        style={{
-          filter:
-            'drop-shadow(0 0 3px #C821C3) drop-shadow(0 0 8px rgba(200,33,195,0.65))',
-        }}
-      />
-    </svg>
+      {/* SVG beeldmerk */}
+      <svg
+        width={iconW}
+        height={iconH}
+        viewBox="0 0 465 540"
+        fill="none"
+        xmlns="http://www.w3.org/2000/svg"
+        style={{ position: 'relative', zIndex: 1 }}
+      >
+        {/* Groene pijl omhoog */}
+        <path
+          fill="#00FA61"
+          d="M461.62,255.74h-185.33c-2.11,0-3.82-1.56-3.82-3.48v-34.93c0-1.92,1.71-3.48,3.82-3.48h86.76c3.24,0,5.01-3.45,2.93-5.71L235.66,66.49c-1.53-1.66-4.33-1.66-5.86,0L99.47,208.14c-2.08,2.26-.31,5.71,2.93,5.71h80.68c2.11,0,3.82-1.56,3.82-3.48v-38.53c0-.79.3-1.56.84-2.18l38.38-43.51c2.26-2.56,6.8-1.11,6.8,2.18v123.93c0,1.92-1.71,3.48-3.82,3.48H3.83c-3.24,0-5.01-3.45-2.93-5.71L229.8,1.25c1.53-1.66,4.33-1.66,5.86,0l228.9,248.79c2.08,2.26.31,5.71-2.93,5.71Z"
+        />
+        {/* Magenta pijl omlaag */}
+        <path
+          fill="#C821C3"
+          d="M461.62,283.33H3.83c-3.24,0-5.01,3.45-2.93,5.71l228.9,248.79c1.53,1.66,4.33,1.66,5.86,0l228.9-248.79c2.08-2.26.31-5.71-2.93-5.71ZM365.98,330.93l-130.33,141.65c-1.53,1.66-4.33,1.66-5.86,0l-130.32-141.65c-2.08-2.26-.31-5.71,2.93-5.71h260.65c3.24,0,5.01,3.45,2.93,5.71Z"
+        />
+      </svg>
+    </div>
   );
 }
 
@@ -70,27 +69,39 @@ export default function Logo({
   const { fontSize } = sizeMap[size];
 
   const inner = (
-    <span className={`flex items-center gap-2.5 shrink-0 ${className}`}>
+    <div
+      style={{
+        position: 'relative',
+        display: 'inline-flex',
+        alignItems: 'center',
+        gap: 10,
+        flexShrink: 0,
+      }}
+      className={className}
+    >
       <LogoIcon size={size} />
       {showText && (
         <span
-          className="font-bold text-white hidden sm:block"
+          className="hidden sm:block"
           style={{
+            color: 'white',
             fontFamily: 'Montserrat, sans-serif',
+            fontWeight: 700,
             fontSize,
-            letterSpacing: '0.08em',
+            letterSpacing: '0.05em',
+            whiteSpace: 'nowrap',
           }}
         >
           DE GROENE PIJL
         </span>
       )}
-    </span>
+    </div>
   );
 
   if (!linked) return inner;
 
   return (
-    <Link href="/" className="shrink-0">
+    <Link href="/" style={{ textDecoration: 'none', flexShrink: 0 }}>
       {inner}
     </Link>
   );
