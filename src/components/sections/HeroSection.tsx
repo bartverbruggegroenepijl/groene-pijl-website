@@ -20,17 +20,16 @@ export default function HeroSection({ currentGameweek, latestEpisodeUrl }: HeroS
       {/* Spelersafbeelding */}
       {/* eslint-disable-next-line @next/next/no-img-element */}
       <img
-        src="/hero-players.jpg"
+        src="/hero-players.webp"
         alt="FPL spelers"
         style={{
           position: 'absolute',
           right: 0,
-          bottom: 0,
-          height: '110%',
-          width: 'auto',
-          maxWidth: '65%',
-          objectFit: 'contain',
-          objectPosition: 'bottom right',
+          top: 0,
+          height: '100%',
+          width: '75%',
+          objectFit: 'cover',
+          objectPosition: 'right center',
           zIndex: 2,
           pointerEvents: 'none',
         }}
@@ -41,10 +40,10 @@ export default function HeroSection({ currentGameweek, latestEpisodeUrl }: HeroS
         style={{
           position: 'absolute',
           top: 0,
-          right: 0,
+          left: 0,
           bottom: 0,
-          width: '65%',
-          background: 'linear-gradient(to right, #1F0E84 0%, rgba(31,14,132,0.6) 25%, transparent 55%)',
+          width: '75%',
+          background: 'linear-gradient(to right, #1F0E84 0%, rgba(31,14,132,0.5) 30%, transparent 50%)',
           zIndex: 3,
           pointerEvents: 'none',
         }}
