@@ -256,6 +256,18 @@ export default async function HomePage() {
 
   const fallback = { data: null, error: null };
 
+  // Mobiele hero afbeelding uit site_settings
+  const mobileHeroRes = await (async () => {
+    try {
+      return await supabase
+        .from('site_settings')
+        .select('value')
+        .eq('key', 'mobile_hero_image')
+        .maybeSingle();
+    } catch { return { data: null, error: null }; }
+  })();
+  const mobileHeroUrl = (mobileHeroRes.data as { value: string } | null)?.value ?? null;
+
   const episodesRes = await (async () => {
     try {
       return await supabase
@@ -365,6 +377,24 @@ export default async function HomePage() {
         currentGameweek={currentGameweek ?? undefined}
         latestEpisodeUrl={episode?.spotify_url ?? undefined}
       />
+
+      {/* ── MOBIELE HERO FOTO — alleen zichtbaar op mobiel (< 768px) ── */}
+      {mobileHeroUrl && (
+        <div className="block md:hidden">
+          {/* eslint-disable-next-line @next/next/no-img-element */}
+          <img
+            src={mobileHeroUrl}
+            alt="Hero afbeelding"
+            style={{
+              width: '100%',
+              maxHeight: 300,
+              objectFit: 'cover',
+              objectPosition: 'top center',
+              display: 'block',
+            }}
+          />
+        </div>
+      )}
 
       {/* ── 2. LAATSTE AFLEVERING (white) ───────────────────────────── */}
       <section id="afleveringen" className="py-20 px-4 bg-white">

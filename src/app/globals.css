@@ -95,53 +95,23 @@ body {
 
 /* Hero section — mobiel responsive (desktop ONGEWIJZIGD) */
 @media (max-width: 768px) {
-  /* Section layout */
+  /* Section: min-height auto, clean column layout */
   .hero-section {
     min-height: auto !important;
     flex-direction: column !important;
     align-items: stretch !important;
   }
 
-  /* Spelersafbeelding: uit absolute positioning, onder de tekst */
+  /* Spelersafbeelding: volledig verbergen op mobiel */
   .hero-image {
-    position: relative !important;
-    width: 100% !important;
-    height: 280px !important;
-    top: auto !important;
-    right: auto !important;
-    bottom: auto !important;
-    overflow: hidden !important;
+    display: none !important;
   }
 
-  .hero-image img {
-    position: relative !important;
-    width: 100% !important;
-    height: 280px !important;
-    top: auto !important;
-    right: auto !important;
-    object-fit: cover !important;
-    object-position: top center !important;
-    z-index: 1 !important;
-  }
-
-  /* Onderkant fade over de spelersafbeelding */
-  .hero-image::after {
-    content: '';
-    position: absolute;
-    left: 0;
-    right: 0;
-    bottom: 0;
-    height: 50%;
-    background: linear-gradient(to bottom, transparent 60%, #1a1361 100%);
-    z-index: 2;
-    pointer-events: none;
-  }
-
-  /* Tekst content */
+  /* Tekst content: volle breedte, ruimte voor navbar bovenaan */
   .hero-content {
     width: 100% !important;
     max-width: 100% !important;
-    padding: 32px 20px 24px !important;
+    padding: 100px 20px 40px !important;
   }
 
   .hero-content h1 {
@@ -158,9 +128,11 @@ body {
     font-size: 11px !important;
   }
 
-  /* Verberg desktop gradient overlays op mobiel */
+  /* Verberg alle decoratieve overlays op mobiel */
   .hero-gradient-left,
-  .hero-gradient-right {
+  .hero-gradient-right,
+  .hero-glow,
+  .hero-decorative-svg {
     display: none !important;
   }
 }

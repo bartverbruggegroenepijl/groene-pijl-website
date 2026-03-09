@@ -1,6 +1,7 @@
 import { createClient } from '@/lib/supabase/server';
 import HeroImageUpload from '@/components/admin/HeroImageUpload';
-import { Settings, Image as ImageIcon, Info } from 'lucide-react';
+import MobileHeroImageUpload from '@/components/admin/MobileHeroImageUpload';
+import { Settings, Image as ImageIcon, Smartphone, Info } from 'lucide-react';
 
 export default async function InstellingenPage() {
   const supabase = createClient();
@@ -12,6 +13,14 @@ export default async function InstellingenPage() {
     .maybeSingle();
 
   const heroImageUrl = (heroSetting as { value: string } | null)?.value ?? null;
+
+  const { data: mobileHeroSetting } = await supabase
+    .from('site_settings')
+    .select('value')
+    .eq('key', 'mobile_hero_image')
+    .maybeSingle();
+
+  const mobileHeroImageUrl = (mobileHeroSetting as { value: string } | null)?.value ?? null;
 
   return (
     <div style={{ fontFamily: 'Inter, sans-serif' }}>
@@ -54,6 +63,23 @@ export default async function InstellingenPage() {
             <HeroImageUpload currentUrl={heroImageUrl} />
           </div>
 
+          {/* Mobiele Hero Afbeelding */}
+          <div className="bg-[#1a1a1a] border border-white/8 rounded-xl p-5">
+            <div className="flex items-center gap-3 mb-5">
+              <div className="w-8 h-8 rounded-lg bg-[#00A651]/15 flex items-center justify-center flex-shrink-0">
+                <Smartphone className="w-4 h-4 text-[#00A651]" />
+              </div>
+              <div>
+                <p className="text-white font-semibold text-sm">Mobiele Hero Afbeelding</p>
+                <p className="text-gray-500 text-xs">
+                  Foto die onder de hero wordt getoond op mobiel. Aanbevolen: 800×400px.
+                </p>
+              </div>
+            </div>
+
+            <MobileHeroImageUpload currentUrl={mobileHeroImageUrl} />
+          </div>
+
         </div>
 
         {/* Info column */}
@@ -66,9 +92,10 @@ export default async function InstellingenPage() {
             <ul className="space-y-2 text-xs text-gray-500 leading-relaxed">
               <li>• De hero afbeelding wordt getoond als grote foto rechtsboven op de homepage.</li>
               <li>• Als er geen hero afbeelding is ingesteld, wordt de podcast cover foto gebruikt.</li>
-              <li>• Aanbevolen formaat: 800×800px of groter, vierkant of liggende rechthoek.</li>
-              <li>• Maximale bestandsgrootte: 5 MB.</li>
-              <li>• Ondersteunde formaten: JPG, PNG, WebP.</li>
+              <li>• Aanbevolen formaat desktop hero: 800×800px of groter.</li>
+              <li>• De mobiele hero afbeelding verschijnt direct onder de hero tekst op telefoons.</li>
+              <li>• Aanbevolen formaat mobiel: 800×400px of breder.</li>
+              <li>• Maximale bestandsgrootte: 5 MB. Formaten: JPG, PNG, WebP.</li>
             </ul>
           </div>
         </div>

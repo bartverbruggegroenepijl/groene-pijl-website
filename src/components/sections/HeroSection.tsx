@@ -219,6 +219,7 @@ export default function HeroSection({ currentGameweek, latestEpisodeUrl }: HeroS
 
       {/* Groene/magenta glow */}
       <div
+        className="hero-glow"
         style={{
           position: 'absolute',
           inset: 0,
@@ -230,6 +231,7 @@ export default function HeroSection({ currentGameweek, latestEpisodeUrl }: HeroS
 
       {/* Decoratieve driehoeken */}
       <svg
+        className="hero-decorative-svg"
         style={{
           position: 'absolute',
           right: '6%',
