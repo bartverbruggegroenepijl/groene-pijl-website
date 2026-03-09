@@ -428,7 +428,7 @@ export default async function HomePage() {
       </section>
 
       {/* ── 3. CAPTAIN PICK VAN DE WEEK (gradient) ─────────────────── */}
-      <section id="captain-pick" className="py-20 px-4" style={{ background: 'linear-gradient(135deg, #1F0E84 0%, #2D1B69 50%, #1a0a3b 100%)', borderTop: '2px solid rgba(0,250,97,0.18)' }}>
+      <section id="captain-pick" className="py-20 px-4" style={{ background: 'linear-gradient(135deg, #1a1361 0%, #1F0E84 30%, #2D1B69 60%, #0d3d2a 85%, #0a4a1a 100%)', borderTop: '2px solid rgba(0,250,97,0.18)' }}>
         <div className="max-w-8xl mx-auto">
           <SectionLabel>{captain ? `Gameweek ${captain.gameweek}` : 'Captain Pick'}</SectionLabel>
           <SectionTitleDark>Captain Pick van de Week</SectionTitleDark>
@@ -494,7 +494,7 @@ export default async function HomePage() {
       </section>
 
       {/* ── 5. TEAM VAN DE WEEK (gradient) ─────────────────────────── */}
-      <section id="team" className="py-20 px-4" style={{ background: 'linear-gradient(135deg, #1F0E84 0%, #2D1B69 50%, #1a0a3b 100%)', borderTop: '2px solid rgba(0,250,97,0.18)' }}>
+      <section id="team" className="py-20 px-4" style={{ background: 'linear-gradient(135deg, #1a1361 0%, #1F0E84 30%, #2D1B69 60%, #0d3d2a 85%, #0a4a1a 100%)', borderTop: '2px solid rgba(0,250,97,0.18)' }}>
         <div className="max-w-8xl mx-auto">
           <SectionLabel>{team ? `Gameweek ${team.week_number}` : 'Team'}</SectionLabel>
           <SectionTitleDark>Team van de Week</SectionTitleDark>
@@ -723,7 +723,7 @@ export default async function HomePage() {
         <section
           id="rankings"
           className="py-20 px-4"
-          style={{ background: 'linear-gradient(135deg, #1F0E84 0%, #2D1B69 50%, #1a0a3b 100%)', borderTop: '2px solid rgba(200,33,195,0.18)' }}
+          style={{ background: 'linear-gradient(135deg, #1a1361 0%, #1F0E84 30%, #2D1B69 60%, #0d3d2a 85%, #0a4a1a 100%)', borderTop: '2px solid rgba(200,33,195,0.18)' }}
         >
           <div className="max-w-8xl mx-auto">
             {/* Header */}
@@ -775,7 +775,7 @@ export default async function HomePage() {
       )}
 
       {/* ── MINI-LEAGUE CTA (gradient) ───────────────────────────────── */}
-      <section className="py-20 px-4" style={{ background: 'linear-gradient(135deg, #1F0E84 0%, #2D1B69 50%, #1a0a3b 100%)' }}>
+      <section className="py-20 px-4" style={{ background: 'linear-gradient(135deg, #1a1361 0%, #1F0E84 30%, #2D1B69 60%, #0d3d2a 85%, #0a4a1a 100%)' }}>
         <div className="max-w-8xl mx-auto">
           <div className="relative rounded-3xl overflow-hidden">
             <div className="absolute inset-0" style={{ background: 'linear-gradient(135deg, #00FA61 0%, #7B2FFF 100%)' }} />
