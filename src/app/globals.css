@@ -93,6 +93,17 @@ body {
   }
 }
 
+/* Logo — mobiel volledig zichtbaar (desktop ONGEWIJZIGD) */
+@media (max-width: 768px) {
+  .logo-wrapper {
+    overflow: visible !important;
+  }
+  .logo-img {
+    width: auto !important;
+    height: 44px !important;
+  }
+}
+
 /* Hero section — mobiel responsive (desktop ONGEWIJZIGD) */
 @media (max-width: 768px) {
   /* Section: min-height auto, clean column layout */

@@ -23,7 +23,7 @@ function LogoIcon({ size = 'md' }: { size?: keyof typeof sizeMap }) {
   // Bereken de juiste breedte op basis van de SVG aspect ratio (465:540)
   const iconW = Math.round(iconH * (465 / 540));
   return (
-    <div style={{ position: 'relative', width: iconW, height: iconH, flexShrink: 0 }}>
+    <div className="logo-wrapper" style={{ position: 'relative', width: iconW, height: iconH, flexShrink: 0, overflow: 'visible' }}>
       {/* Glow achter het beeldmerk */}
       <div
         style={{
@@ -42,6 +42,7 @@ function LogoIcon({ size = 'md' }: { size?: keyof typeof sizeMap }) {
       />
       {/* SVG beeldmerk — width: auto zodat beide pijlen volledig zichtbaar zijn */}
       <svg
+        className="logo-img"
         viewBox="0 0 465 540"
         fill="none"
         xmlns="http://www.w3.org/2000/svg"

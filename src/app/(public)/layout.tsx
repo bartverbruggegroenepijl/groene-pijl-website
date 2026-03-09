@@ -11,7 +11,7 @@ export default async function PublicLayout({
   const { data: managers } = await supabase
     .from('managers')
     .select('id, name, avatar_url')
-    .order('created_at', { ascending: true });
+    .order('name', { ascending: true });
 
   return (
     <>
