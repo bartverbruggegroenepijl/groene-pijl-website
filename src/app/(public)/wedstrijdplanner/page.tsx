@@ -1,8 +1,8 @@
 'use client';
 
-import { useState, useEffect, useCallback } from 'react';
+import { useState, useEffect, useCallback, useRef } from 'react';
 import Link from 'next/link';
-import { ArrowLeft, RefreshCw } from 'lucide-react';
+import { ArrowLeft, ChevronLeft, ChevronRight, RefreshCw } from 'lucide-react';
 
 // ─── FDR kleurenschema (exact zoals FPL website) ──────────────────────────────
 
@@ -14,35 +14,57 @@ const FDR_CONFIG: Record<number, { bg: string; text: string; label: string }> = 
   5: { bg: '#80072D', text: '#ffffff', label: 'Zeer moeilijk'  },
 };
 
+const TEAM_COL_WIDTH = 180; // px — sticky teamnaam kolom
+const GW_VISIBLE     = 5;   // aantal zichtbare GW kolommen tegelijk
+
 // ─── Types ────────────────────────────────────────────────────────────────────
 
 interface FixtureCell {
-  gw: number;
-  opponent: string;
-  location: 'H' | 'A';
+  gw:         number;
+  opponent:   string;
+  location:   'H' | 'A';
   difficulty: number;
 }
 
 interface TeamFDR {
-  id: number;
-  name: string;
-  shortName: string;
-  fixtures: FixtureCell[];
+  id:            number;
+  name:          string;
+  shortName:     string;
+  fixtures:      FixtureCell[];
   avgDifficulty: number;
 }
 
-// ─── Achtergrond sticky kolom (opaque — matcht linker gradient kleur) ─────────
-const STICKY_BG     = '#1a1460'; // row bg = rgba(255,255,255,0.06) over #1a1361
+// ─── Sticky kolom achtergronden (opaque over page gradient) ───────────────────
+const STICKY_BG     = '#1a1460';
 const STICKY_HDR_BG = '#1a1361';
 
 // ─── Page ─────────────────────────────────────────────────────────────────────
 
 export default function WedstrijdplannerPage() {
-  const [teams,       setTeams]       = useState<TeamFDR[]>([]);
-  const [gameweeks,   setGameweeks]   = useState<number[]>([]);
-  const [loading,     setLoading]     = useState(true);
-  const [error,       setError]       = useState<string | null>(null);
-  const [lastUpdated, setLastUpdated] = useState<Date | null>(null);
+  const [teams,             setTeams]             = useState<TeamFDR[]>([]);
+  const [gameweeks,         setGameweeks]         = useState<number[]>([]);
+  const [loading,           setLoading]           = useState(true);
+  const [error,             setError]             = useState<string | null>(null);
+  const [lastUpdated,       setLastUpdated]       = useState<Date | null>(null);
+  const [visibleStartIndex, setVisibleStartIndex] = useState(0);
+  const [gwColWidth,        setGwColWidth]        = useState(80); // fallback
+
+  const scrollRef    = useRef<HTMLDivElement>(null);
+  const containerRef = useRef<HTMLDivElement>(null);
+
+  // ── Meet containerbreedte → bereken GW kolombreedtes ────────────────────────
+  useEffect(() => {
+    if (!containerRef.current) return;
+    const measure = () => {
+      const w = containerRef.current?.clientWidth ?? 0;
+      const colW = Math.floor((w - TEAM_COL_WIDTH) / GW_VISIBLE);
+      setGwColWidth(Math.max(colW, 68)); // minimaal 68px
+    };
+    measure();
+    const ro = new ResizeObserver(measure);
+    ro.observe(containerRef.current);
+    return () => ro.disconnect();
+  }, []);
 
   const fetchData = useCallback(async () => {
     setLoading(true);
@@ -63,23 +85,58 @@ export default function WedstrijdplannerPage() {
 
   useEffect(() => { fetchData(); }, [fetchData]);
 
-  // Sorteer op makkelijkste fixtures (laagste gemiddelde FDR)
+  // ── Navigatie ────────────────────────────────────────────────────────────────
+  const totalGWs   = gameweeks.length;
+  const canPrev    = visibleStartIndex > 0;
+  const canNext    = visibleStartIndex + GW_VISIBLE < totalGWs;
+
+  const scrollPrev = () => {
+    if (!canPrev) return;
+    scrollRef.current!.scrollLeft -= gwColWidth;
+    setVisibleStartIndex((i) => i - 1);
+  };
+
+  const scrollNext = () => {
+    if (!canNext) return;
+    scrollRef.current!.scrollLeft += gwColWidth;
+    setVisibleStartIndex((i) => i + 1);
+  };
+
+  // Label: "GW30 — GW34"
+  const labelStart = gameweeks[visibleStartIndex];
+  const labelEnd   = gameweeks[Math.min(visibleStartIndex + GW_VISIBLE - 1, totalGWs - 1)];
+
   const sortedTeams = [...teams].sort((a, b) => a.avgDifficulty - b.avgDifficulty);
 
   const PAGE_BG = 'linear-gradient(135deg, #1a1361 0%, #1F0E84 30%, #2D1B69 60%, #0d3d2a 85%, #0a4a1a 100%)';
 
+  const navBtnStyle = (disabled: boolean): React.CSSProperties => ({
+    display: 'inline-flex', alignItems: 'center', gap: 4,
+    padding: '8px 16px', borderRadius: 8,
+    border: '1px solid rgba(255,255,255,0.2)',
+    background: disabled ? 'rgba(255,255,255,0.04)' : 'rgba(255,255,255,0.1)',
+    color: disabled ? 'rgba(255,255,255,0.25)' : 'white',
+    fontSize: 13, fontWeight: 600,
+    fontFamily: 'Montserrat, sans-serif',
+    cursor: disabled ? 'not-allowed' : 'pointer',
+    opacity: disabled ? 0.3 : 1,
+    transition: 'background 0.15s',
+  });
+
   return (
     <main style={{ minHeight: '100vh', background: PAGE_BG }}>
 
-      {/* Scrollbar styling passend bij huisstijl */}
+      {/* Scrollbar verbergen — navigatie via knoppen */}
       <style>{`
-        .fdr-scroll::-webkit-scrollbar          { height: 6px; }
-        .fdr-scroll::-webkit-scrollbar-track    { background: rgba(255,255,255,0.05); }
-        .fdr-scroll::-webkit-scrollbar-thumb    { background: #00FA61; border-radius: 3px; }
-        .fdr-scroll::-webkit-scrollbar-thumb:hover { background: rgba(0,250,97,0.7); }
+        .fdr-scroll { scrollbar-width: none; }
+        .fdr-scroll::-webkit-scrollbar { display: none; }
+        .nav-btn:hover:not(:disabled) { background: rgba(0,250,97,0.2) !important; }
       `}</style>
 
-      <div style={{ maxWidth: 1400, margin: '0 auto', padding: '100px 24px 80px' }}>
+      <div
+        ref={containerRef}
+        style={{ maxWidth: 1400, margin: '0 auto', padding: '100px 24px 80px' }}
+      >
 
         {/* Terug link */}
         <Link
@@ -116,29 +173,66 @@ export default function WedstrijdplannerPage() {
           </p>
         </div>
 
-        {/* Controls: alleen ververs knop */}
-        <div style={{ display: 'flex', alignItems: 'center', gap: 10, marginBottom: 28 }}>
-          {lastUpdated && (
-            <span style={{ color: 'rgba(255,255,255,0.3)', fontSize: 12, fontFamily: 'Montserrat, sans-serif' }}>
-              {lastUpdated.toLocaleTimeString('nl-NL', { hour: '2-digit', minute: '2-digit' })}
-            </span>
+        {/* Controls: ververs + navigatie */}
+        <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', flexWrap: 'wrap', gap: 16, marginBottom: 28 }}>
+
+          {/* Ververs */}
+          <div style={{ display: 'flex', alignItems: 'center', gap: 10 }}>
+            {lastUpdated && (
+              <span style={{ color: 'rgba(255,255,255,0.3)', fontSize: 12, fontFamily: 'Montserrat, sans-serif' }}>
+                {lastUpdated.toLocaleTimeString('nl-NL', { hour: '2-digit', minute: '2-digit' })}
+              </span>
+            )}
+            <button
+              onClick={fetchData}
+              disabled={loading}
+              style={{
+                display: 'inline-flex', alignItems: 'center', gap: 6,
+                padding: '7px 16px', borderRadius: 20,
+                border: '1px solid rgba(255,255,255,0.18)',
+                background: 'rgba(255,255,255,0.05)',
+                color: 'rgba(255,255,255,0.55)', fontSize: 12,
+                cursor: loading ? 'not-allowed' : 'pointer',
+                fontFamily: 'Montserrat, sans-serif',
+              }}
+            >
+              <RefreshCw size={12} className={loading ? 'animate-spin' : ''} />
+              Verversen
+            </button>
+          </div>
+
+          {/* GW navigatie — alleen tonen als data geladen is */}
+          {!loading && !error && totalGWs > 0 && (
+            <div style={{ display: 'flex', alignItems: 'center', gap: 12 }}>
+              <button
+                className="nav-btn"
+                onClick={scrollPrev}
+                disabled={!canPrev}
+                style={navBtnStyle(!canPrev)}
+              >
+                <ChevronLeft size={14} /> Vorige
+              </button>
+
+              <span style={{
+                color: 'white', fontWeight: 600, fontSize: 13,
+                fontFamily: 'Montserrat, sans-serif',
+                minWidth: 100, textAlign: 'center',
+              }}>
+                {labelStart !== undefined && labelEnd !== undefined
+                  ? `GW${labelStart} — GW${labelEnd}`
+                  : ''}
+              </span>
+
+              <button
+                className="nav-btn"
+                onClick={scrollNext}
+                disabled={!canNext}
+                style={navBtnStyle(!canNext)}
+              >
+                Volgende <ChevronRight size={14} />
+              </button>
+            </div>
           )}
-          <button
-            onClick={fetchData}
-            disabled={loading}
-            style={{
-              display: 'inline-flex', alignItems: 'center', gap: 6,
-              padding: '7px 16px', borderRadius: 20,
-              border: '1px solid rgba(255,255,255,0.18)',
-              background: 'rgba(255,255,255,0.05)',
-              color: 'rgba(255,255,255,0.55)', fontSize: 12,
-              cursor: loading ? 'not-allowed' : 'pointer',
-              fontFamily: 'Montserrat, sans-serif',
-            }}
-          >
-            <RefreshCw size={12} className={loading ? 'animate-spin' : ''} />
-            Verversen
-          </button>
         </div>
 
         {/* Legenda */}
@@ -166,67 +260,66 @@ export default function WedstrijdplannerPage() {
           /* Relatieve wrapper voor fade-overlay */
           <div style={{ position: 'relative' }}>
 
-            {/* Fade-overlay rechts: visuele scroll-hint */}
-            <div style={{
-              position: 'absolute',
-              right: 0, top: 0, bottom: 0,
-              width: 40,
-              background: 'linear-gradient(to right, transparent, rgba(26,19,97,0.8))',
-              pointerEvents: 'none',
-              zIndex: 5,
-            }} />
+            {/* Fade-overlay rechts */}
+            {canNext && (
+              <div style={{
+                position: 'absolute',
+                right: 0, top: 0, bottom: 0,
+                width: 48,
+                background: 'linear-gradient(to right, transparent, rgba(26,19,97,0.9))',
+                pointerEvents: 'none',
+                zIndex: 5,
+              }} />
+            )}
 
-            {/* Horizontaal scrollbare container — volledige breedte */}
+            {/* Scrollbare tabelcontainer — scrollbar verborgen */}
             <div
+              ref={scrollRef}
               className="fdr-scroll"
               style={{
                 width: '100%',
                 overflowX: 'auto',
                 WebkitOverflowScrolling: 'touch' as unknown as undefined,
-                scrollbarWidth: 'thin',
-                scrollbarColor: '#00FA61 rgba(255,255,255,0.1)',
+                scrollBehavior: 'smooth',
               }}
             >
               <table style={{
-                width: '100%',
-                tableLayout: 'auto',
+                tableLayout: 'fixed',
                 borderCollapse: 'collapse',
-                minWidth: 900,
+                width: `${TEAM_COL_WIDTH + totalGWs * gwColWidth}px`,
               }}>
+
+                {/* Vaste kolombreedtes via colgroup */}
+                <colgroup>
+                  <col style={{ width: TEAM_COL_WIDTH }} />
+                  {gameweeks.map((gw) => (
+                    <col key={gw} style={{ width: gwColWidth }} />
+                  ))}
+                </colgroup>
 
                 <thead>
                   <tr>
-                    {/* Sticky teamkolom header */}
                     <th style={{
-                      position: 'sticky',
-                      left: 0,
-                      zIndex: 20,
+                      position: 'sticky', left: 0, zIndex: 20,
                       background: STICKY_HDR_BG,
-                      textAlign: 'left',
-                      padding: '0 16px 10px',
-                      color: 'rgba(255,255,255,0.35)',
-                      fontSize: 11,
-                      fontWeight: 700,
-                      letterSpacing: '0.1em',
+                      textAlign: 'left', padding: '0 16px 10px',
+                      color: 'rgba(255,255,255,0.35)', fontSize: 11,
+                      fontWeight: 700, letterSpacing: '0.1em',
                       textTransform: 'uppercase',
                       fontFamily: 'Montserrat, sans-serif',
                       whiteSpace: 'nowrap',
-                      minWidth: 180,
                     }}>
                       Team
                     </th>
                     {gameweeks.map((gw) => (
                       <th key={gw} style={{
-                        textAlign: 'center',
-                        padding: '0 2px 10px',
-                        color: 'rgba(255,255,255,0.35)',
-                        fontSize: 11,
-                        fontWeight: 700,
-                        letterSpacing: '0.1em',
+                        textAlign: 'center', padding: '0 2px 10px',
+                        color: 'rgba(255,255,255,0.35)', fontSize: 11,
+                        fontWeight: 700, letterSpacing: '0.1em',
                         textTransform: 'uppercase',
                         fontFamily: 'Montserrat, sans-serif',
                         whiteSpace: 'nowrap',
-                        minWidth: 68,
+                        overflow: 'hidden',
                       }}>
                         GW{gw}
                       </th>
@@ -237,22 +330,17 @@ export default function WedstrijdplannerPage() {
                 <tbody>
                   {sortedTeams.map((team) => (
                     <tr key={team.id}>
-                      {/* Sticky teamkolom */}
+                      {/* Sticky teamnaam */}
                       <td style={{
-                        position: 'sticky',
-                        left: 0,
-                        zIndex: 10,
+                        position: 'sticky', left: 0, zIndex: 10,
                         background: STICKY_BG,
                         padding: '5px 16px',
-                        verticalAlign: 'middle',
-                        whiteSpace: 'nowrap',
-                        minWidth: 180,
+                        verticalAlign: 'middle', whiteSpace: 'nowrap',
+                        overflow: 'hidden', textOverflow: 'ellipsis',
                         borderBottom: '3px solid transparent',
                       }}>
                         <span style={{
-                          color: 'white',
-                          fontSize: 13,
-                          fontWeight: 600,
+                          color: 'white', fontSize: 13, fontWeight: 600,
                           fontFamily: 'Montserrat, sans-serif',
                         }}>
                           {team.name}
@@ -271,24 +359,19 @@ export default function WedstrijdplannerPage() {
                               background: 'rgba(255,255,255,0.06)',
                               textAlign: 'center',
                               verticalAlign: 'middle',
-                              minWidth: 68,
                               borderBottom: '3px solid transparent',
+                              overflow: 'hidden',
                             }}
                           >
                             {fixture && cfg ? (
                               <div style={{
-                                background: cfg.bg,
-                                color: cfg.text,
-                                borderRadius: 5,
-                                padding: '7px 2px',
-                                fontSize: 11,
-                                fontWeight: 700,
+                                background: cfg.bg, color: cfg.text,
+                                borderRadius: 5, padding: '7px 2px',
+                                fontSize: 11, fontWeight: 700,
                                 fontFamily: 'Montserrat, sans-serif',
                                 lineHeight: 1.2,
-                                display: 'flex',
-                                flexDirection: 'column',
-                                alignItems: 'center',
-                                gap: 1,
+                                display: 'flex', flexDirection: 'column',
+                                alignItems: 'center', gap: 1,
                               }}>
                                 <span>{fixture.opponent}</span>
                                 <span style={{ fontSize: 9, opacity: 0.8, fontWeight: 500 }}>
@@ -296,14 +379,11 @@ export default function WedstrijdplannerPage() {
                                 </span>
                               </div>
                             ) : (
-                              /* Speelvrij — grijze achtergrond */
                               <div style={{
                                 background: 'rgba(255,255,255,0.04)',
-                                borderRadius: 5,
-                                padding: '7px 2px',
+                                borderRadius: 5, padding: '7px 2px',
                                 color: 'rgba(255,255,255,0.2)',
-                                fontSize: 12,
-                                fontFamily: 'Montserrat, sans-serif',
+                                fontSize: 12, fontFamily: 'Montserrat, sans-serif',
                               }}>
                                 –
                               </div>
@@ -327,11 +407,8 @@ export default function WedstrijdplannerPage() {
 
         {/* Voetnoot */}
         <p style={{
-          marginTop: 32,
-          color: 'rgba(255,255,255,0.2)',
-          fontSize: 12,
-          fontFamily: 'Montserrat, sans-serif',
-          textAlign: 'center',
+          marginTop: 32, color: 'rgba(255,255,255,0.2)',
+          fontSize: 12, fontFamily: 'Montserrat, sans-serif', textAlign: 'center',
         }}>
           T = Thuis · U = Uit · FDR data via de officiële FPL API
         </p>
