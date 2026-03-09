@@ -41,7 +41,6 @@ interface SlotState {
   index: number;
   player: FplPlayer | null;
   points: string;
-  isCaptain: boolean;
   isStarPlayer: boolean;
   customImageUrl: string | null;
 }
@@ -57,7 +56,7 @@ function buildSlots(formation: string, existing: SlotState[] = []): SlotState[] 
       slots.push(
         existingForPos[i]
           ? { ...existingForPos[i], index: i }
-          : { position: pos, index: i, player: null, points: '', isCaptain: false, isStarPlayer: false, customImageUrl: null }
+          : { position: pos, index: i, player: null, points: '', isStarPlayer: false, customImageUrl: null }
       );
     }
   }
@@ -132,7 +131,6 @@ export default function TeamBuilder({
                 ...slot,
                 player: fplMatch,
                 points: dbP.points?.toString() ?? '',
-                isCaptain: dbP.is_captain,
                 isStarPlayer: dbP.is_star_player ?? false,
                 customImageUrl: dbP.player_image_url ?? null,
               };
@@ -154,15 +152,6 @@ export default function TeamBuilder({
   function updateSlot(pos: Position, index: number, updates: Partial<SlotState>) {
     setSlots((prev) =>
       prev.map((s) => (s.position === pos && s.index === index ? { ...s, ...updates } : s))
-    );
-  }
-
-  function setCaptain(pos: Position, index: number) {
-    setSlots((prev) =>
-      prev.map((s) => ({
-        ...s,
-        isCaptain: s.position === pos && s.index === index,
-      }))
     );
   }
 
@@ -192,7 +181,6 @@ export default function TeamBuilder({
         player_club:      s.player!.team,
         position:         s.position,
         points:           parseInt(s.points, 10) || 0,
-        is_captain:       s.isCaptain,
         is_star_player:   s.isStarPlayer,
         player_image_url: s.customImageUrl ?? s.player!.imageUrl,
       }));
@@ -393,8 +381,8 @@ export default function TeamBuilder({
 
           {/* Tip */}
           <div className="flex items-center gap-2 text-xs text-gray-600 px-1">
-            <Star className="w-3.5 h-3.5 text-[#00A651]" />
-            <span>Groene ster = aanvoerder · Gele ster = sterspeler. Punten zijn optioneel.</span>
+            <Star className="w-3.5 h-3.5 text-yellow-400" />
+            <span>Klik op de gele ster om de sterspeler aan te duiden. Punten zijn optioneel.</span>
           </div>
 
           {POSITIONS.map((pos) => {
@@ -440,7 +428,6 @@ export default function TeamBuilder({
                         onSelect={(player) =>
                           updateSlot(slot.position, slot.index, {
                             player,
-                            isCaptain: slot.isCaptain && player !== null,
                             isStarPlayer: slot.isStarPlayer && player !== null,
                           })
                         }
@@ -465,24 +452,6 @@ export default function TeamBuilder({
                                      disabled:opacity-30 disabled:cursor-not-allowed"
                         />
                       </div>
-
-                      {/* Aanvoerder knop */}
-                      <button
-                        type="button"
-                        onClick={() => setCaptain(slot.position, slot.index)}
-                        disabled={!slot.player}
-                        title={slot.isCaptain ? 'Aanvoerder' : 'Aanvoerder maken'}
-                        className={`flex-shrink-0 p-2 rounded-lg transition-all
-                                    disabled:opacity-25 disabled:cursor-not-allowed
-                                    ${slot.isCaptain
-                                      ? 'bg-[#00A651]/20 text-[#00A651]'
-                                      : 'text-gray-600 hover:text-gray-300 hover:bg-white/5'
-                                    }`}
-                      >
-                        <Star
-                          className={`w-4 h-4 transition-all ${slot.isCaptain ? 'fill-current' : ''}`}
-                        />
-                      </button>
 
                       {/* Sterspeler knop */}
                       <button
@@ -533,24 +502,14 @@ export default function TeamBuilder({
                 {filledCount}/{totalSlots} spelers geselecteerd
               </span>
             </div>
-            <div className="flex flex-col items-end gap-1">
-              {slots.some((s) => s.isCaptain) ? (
-                <span className="flex items-center gap-1.5 text-[#00A651] text-xs">
-                  <Star className="w-3.5 h-3.5 fill-current" />
-                  Aanvoerder gekozen
-                </span>
-              ) : (
-                <span className="text-gray-600 text-xs">Geen aanvoerder</span>
-              )}
-              {slots.some((s) => s.isStarPlayer) ? (
-                <span className="flex items-center gap-1.5 text-yellow-400 text-xs">
-                  <Star className="w-3.5 h-3.5 fill-current" />
-                  Sterspeler gekozen
-                </span>
-              ) : (
-                <span className="text-gray-600 text-xs">Geen sterspeler</span>
-              )}
-            </div>
+            {slots.some((s) => s.isStarPlayer) ? (
+              <span className="flex items-center gap-1.5 text-yellow-400 text-xs">
+                <Star className="w-3.5 h-3.5 fill-current" />
+                Sterspeler gekozen
+              </span>
+            ) : (
+              <span className="text-gray-600 text-xs">Geen sterspeler gekozen</span>
+            )}
           </div>
         </div>
       )}
