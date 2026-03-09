@@ -13,8 +13,8 @@ export default function DeleteBuyTipButton({ id, gameweek }: DeleteBuyTipButtonP
   const [isPending, startTransition] = useTransition();
 
   function handleDelete() {
-    const label = gameweek ? `GW ${gameweek}` : 'deze kooptips';
-    if (!confirm(`Weet je zeker dat je de kooptips voor ${label} wilt verwijderen?`)) return;
+    const label = gameweek ? `GW ${gameweek}` : 'deze transfertips';
+    if (!confirm(`Weet je zeker dat je de transfertips voor ${label} wilt verwijderen?`)) return;
 
     startTransition(async () => {
       await deleteBuyTip(id);

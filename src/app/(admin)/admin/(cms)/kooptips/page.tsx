@@ -33,10 +33,10 @@ export default async function KooptipsPage() {
             className="text-white"
             style={{ fontFamily: 'Bebas Neue, sans-serif', fontSize: '2.2rem', letterSpacing: '0.05em' }}
           >
-            Kooptips
+            Transfertips
           </h1>
           <p className="text-gray-500 text-sm mt-0.5">
-            {rows.length} {rows.length === 1 ? 'kooptip' : 'kooptips'} aangemaakt
+            {rows.length} {rows.length === 1 ? 'transfertip' : 'transfertips'} aangemaakt
           </p>
         </div>
         <Link
@@ -45,7 +45,7 @@ export default async function KooptipsPage() {
                      text-white font-semibold px-4 py-2.5 rounded-lg text-sm transition-colors"
         >
           <Plus className="w-4 h-4" />
-          Nieuwe kooptips
+          Nieuwe transfertips
         </Link>
       </div>
 
@@ -56,7 +56,7 @@ export default async function KooptipsPage() {
           <div className="w-12 h-12 rounded-full bg-white/5 flex items-center justify-center mb-4">
             <TrendingUp className="w-5 h-5 text-gray-600" />
           </div>
-          <p className="text-gray-400 font-medium mb-1">Nog geen kooptips</p>
+          <p className="text-gray-400 font-medium mb-1">Nog geen transfertips</p>
           <p className="text-gray-600 text-sm mb-5">
             Voeg de eerste aanbevolen spelers toe.
           </p>
@@ -66,7 +66,7 @@ export default async function KooptipsPage() {
                        text-white font-semibold px-4 py-2.5 rounded-lg text-sm transition-colors"
           >
             <Plus className="w-4 h-4" />
-            Nieuwe kooptips
+            Nieuwe transfertips
           </Link>
         </div>
       ) : (

@@ -34,7 +34,7 @@ export default function Footer() {
               <li><a href="#artikelen" className="hover:text-primary transition-colors">Artikelen</a></li>
               <li><a href="#captain-pick" className="hover:text-primary transition-colors">Captain Tips</a></li>
               <li><a href="#team" className="hover:text-primary transition-colors">Team vd Week</a></li>
-              <li><a href="#kooptips" className="hover:text-primary transition-colors">Kooptips</a></li>
+              <li><a href="#kooptips" className="hover:text-primary transition-colors">Transfertips</a></li>
             </ul>
           </div>
 

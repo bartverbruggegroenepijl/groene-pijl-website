@@ -25,7 +25,7 @@ const FPL_HEADERS = {
 
 // ─── Route ────────────────────────────────────────────────────────────────────
 
-export async function GET() {
+export async function GET(request: Request) {
   if (!LEAGUE_ID) {
     return NextResponse.json(
       {
@@ -36,8 +36,11 @@ export async function GET() {
     );
   }
 
+  const { searchParams } = new URL(request.url);
+  const page = parseInt(searchParams.get('page') ?? '1', 10);
+
   try {
-    const url = `https://fantasy.premierleague.com/api/leagues-classic/${LEAGUE_ID}/standings/`;
+    const url = `https://fantasy.premierleague.com/api/leagues-classic/${LEAGUE_ID}/standings/?page_standings=${page}`;
 
     const res = await fetch(url, {
       next: { revalidate: 1800 }, // cache 30 minutes

@@ -65,9 +65,9 @@ export default function HeroSection({ currentGameweek, latestEpisodeUrl }: HeroS
         >
           DE PLEK VOOR
           <br />
-          NEDERLANDSE
+          NEDERLANDSE FPL
           <br />
-          FPL MANAGERS
+          MANAGERS
         </h1>
 
         {/* Groene subtitel */}
@@ -155,7 +155,7 @@ export default function HeroSection({ currentGameweek, latestEpisodeUrl }: HeroS
             <div style={{ color: '#00FA61', fontWeight: 700, fontSize: 17, fontFamily: 'Montserrat, sans-serif' }}>
               GW{currentGameweek || 29}
             </div>
-            <div style={{ color: 'rgba(255,255,255,0.5)', fontSize: 12 }}>Elke week content</div>
+            <div style={{ color: 'rgba(255,255,255,0.5)', fontSize: 12 }}>Gameweek {currentGameweek || 29}</div>
           </div>
           <div>
             <div style={{ color: 'white', fontWeight: 700, fontSize: 17 }}>4</div>

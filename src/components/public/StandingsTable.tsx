@@ -1,17 +1,22 @@
 'use client';
 
 import { useState, useEffect, useCallback } from 'react';
-import { ArrowUp, ArrowDown, Minus, RefreshCw } from 'lucide-react';
-import type { LeagueApiResponse } from '@/lib/fpl/league';
+import { ArrowUp, ArrowDown, Minus, RefreshCw, Loader2 } from 'lucide-react';
+import type { LeagueApiResponse, LeagueEntry } from '@/lib/fpl/league';
 
 // ─── Config ───────────────────────────────────────────────────────────────────
 
-/** First names of De Groene Pijl managers — highlighted in green */
-const MANAGER_NAMES = ['bart', 'jeffrey', 'tom', 'kieran'];
+/** Exacte volledige namen van De Groene Pijl managers */
+const MANAGER_FULL_NAMES = [
+  'bart verbrugge',
+  'jeffrey nederlof',
+  'tom verbrugge',
+  'kieran walsh',
+];
 
 const isManager = (playerName: string) => {
-  const lower = playerName.toLowerCase();
-  return MANAGER_NAMES.some((n) => lower.includes(n));
+  const lower = playerName.toLowerCase().trim();
+  return MANAGER_FULL_NAMES.includes(lower);
 };
 
 const MEDAL = ['🥇', '🥈', '🥉'];
@@ -64,6 +69,14 @@ export default function StandingsTable({
   const [loading, setLoading] = useState(false);
   const [lastUpdated, setLastUpdated] = useState<Date | null>(initialData ? new Date() : null);
 
+  // Pagination state
+  const [allResults, setAllResults] = useState<LeagueEntry[]>(
+    initialData?.standings.results ?? []
+  );
+  const [hasNext, setHasNext] = useState(initialData?.standings.has_next ?? false);
+  const [nextPage, setNextPage] = useState(2);
+  const [loadingMore, setLoadingMore] = useState(false);
+
   const refresh = useCallback(async () => {
     setLoading(true);
     try {
@@ -74,6 +87,9 @@ export default function StandingsTable({
       } else {
         const json: LeagueApiResponse = await res.json();
         setData(json);
+        setAllResults(json.standings.results);
+        setHasNext(json.standings.has_next);
+        setNextPage(2);
         setError(null);
         setLastUpdated(new Date());
       }
@@ -83,6 +99,23 @@ export default function StandingsTable({
       setLoading(false);
     }
   }, []);
+
+  const loadMore = useCallback(async () => {
+    setLoadingMore(true);
+    try {
+      const res = await fetch(`/api/fpl/league?page=${nextPage}`, { cache: 'no-store' });
+      if (res.ok) {
+        const json: LeagueApiResponse = await res.json();
+        setAllResults((prev) => [...prev, ...json.standings.results]);
+        setHasNext(json.standings.has_next);
+        setNextPage((n) => n + 1);
+      }
+    } catch {
+      // Silently fail — keep existing results
+    } finally {
+      setLoadingMore(false);
+    }
+  }, [nextPage]);
 
   // Auto-refresh every 5 minutes
   useEffect(() => {
@@ -126,7 +159,7 @@ export default function StandingsTable({
     );
   }
 
-  const rows = limit ? data.standings.results.slice(0, limit) : data.standings.results;
+  const rows = limit ? allResults.slice(0, limit) : allResults;
 
   // ── Table ────────────────────────────────────────────────────────────────────
   return (
@@ -219,6 +252,39 @@ export default function StandingsTable({
           </div>
         );
       })}
+
+      {/* Laad meer knop — alleen op volledige stand (niet compact/limit) */}
+      {!compact && !limit && hasNext && (
+        <div className="pt-4 flex justify-center">
+          <button
+            onClick={loadMore}
+            disabled={loadingMore}
+            className="inline-flex items-center gap-2 font-semibold text-sm px-6 py-3 rounded-xl transition-all"
+            style={{
+              background: 'rgba(0,250,97,0.08)',
+              color: '#00FA61',
+              border: '1px solid rgba(0,250,97,0.25)',
+            }}
+            onMouseEnter={(e) => {
+              (e.currentTarget as HTMLButtonElement).style.background = 'rgba(0,250,97,0.15)';
+            }}
+            onMouseLeave={(e) => {
+              (e.currentTarget as HTMLButtonElement).style.background = 'rgba(0,250,97,0.08)';
+            }}
+          >
+            {loadingMore ? (
+              <>
+                <Loader2 size={16} className="animate-spin" />
+                Laden...
+              </>
+            ) : (
+              <>
+                Toon volledige stand ↓
+              </>
+            )}
+          </button>
+        </div>
+      )}
 
       {/* Last updated + refresh */}
       {!compact && (

@@ -467,8 +467,8 @@ export default async function HomePage() {
       {/* ── 4. KOOPTIPS VAN DE WEEK (white) ─────────────────────────── */}
       <section id="kooptips" className="py-20 px-4 bg-white">
         <div className="max-w-8xl mx-auto">
-          <SectionLabel>{kooptips ? `Gameweek ${kooptips.gameweek}` : 'Kooptips'}</SectionLabel>
-          <SectionTitleLight>Kooptips van de Week</SectionTitleLight>
+          <SectionLabel>{kooptips ? `Gameweek ${kooptips.gameweek}` : 'Transfertips'}</SectionLabel>
+          <SectionTitleLight>Transfertips van de Week</SectionTitleLight>
 
           {kooptips && kooptips.buy_tip_players.length > 0 ? (
             <div className="mt-10 grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-5 gap-4">
@@ -489,7 +489,7 @@ export default async function HomePage() {
               ))}
             </div>
           ) : (
-            <EmptyPlaceholderLight message="Nog geen kooptips beschikbaar voor deze gameweek." />
+            <EmptyPlaceholderLight message="Nog geen transfertips beschikbaar voor deze gameweek." />
           )}
         </div>
       </section>

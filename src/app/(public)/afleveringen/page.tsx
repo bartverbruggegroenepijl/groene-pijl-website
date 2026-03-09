@@ -13,7 +13,7 @@ function formatDate(iso: string): string {
   });
 }
 
-function EpisodeCard({ episode, index }: { episode: RssEpisode; index: number }) {
+function EpisodeCard({ episode }: { episode: RssEpisode }) {
   return (
     <article className="bg-white border border-gray-100 rounded-2xl overflow-hidden shadow-sm hover:shadow-lg transition-all duration-300 group flex flex-col">
       {/* Cover image */}
@@ -33,10 +33,6 @@ function EpisodeCard({ episode, index }: { episode: RssEpisode; index: number })
             <Mic size={48} className="text-black/20" />
           </div>
         )}
-        {/* Episode number badge */}
-        <div className="absolute top-3 left-3 bg-black/60 backdrop-blur-sm text-white text-xs font-bold px-2.5 py-1 rounded-full">
-          #{String(index + 1).padStart(2, '0')}
-        </div>
         {/* Play overlay */}
         {episode.spotifyUrl && (
           <a
@@ -145,7 +141,7 @@ export default async function AfleveringenPage() {
         ) : (
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
             {episodes.map((ep, i) => (
-              <EpisodeCard key={ep.guid || i} episode={ep} index={i} />
+              <EpisodeCard key={ep.guid || i} episode={ep} />
             ))}
           </div>
         )}

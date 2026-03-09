@@ -33,7 +33,7 @@ export default function Navbar({ managers = [] }: NavbarProps) {
   const [scrolled, setScrolled] = useState(false);
   const [menuOpen, setMenuOpen] = useState(false);
   const [managersOpen, setManagersOpen] = useState(false);
-  const [teamstatusOpen, setTeamstatusOpen] = useState(false);
+  const [teamstatusOpen, setTeaminformatieOpen] = useState(false);
   const dropdownRef = useRef<HTMLDivElement>(null);
   const teamstatusRef = useRef<HTMLDivElement>(null);
 
@@ -50,7 +50,7 @@ export default function Navbar({ managers = [] }: NavbarProps) {
         setManagersOpen(false);
       }
       if (teamstatusRef.current && !teamstatusRef.current.contains(e.target as Node)) {
-        setTeamstatusOpen(false);
+        setTeaminformatieOpen(false);
       }
     }
     document.addEventListener('mousedown', handleOutside);
@@ -87,13 +87,13 @@ export default function Navbar({ managers = [] }: NavbarProps) {
               </Link>
             ))}
 
-            {/* Teamstatus dropdown */}
+            {/* Teaminformatie dropdown */}
             <div className="relative" ref={teamstatusRef}>
               <button
-                onClick={() => { setTeamstatusOpen(!teamstatusOpen); setManagersOpen(false); }}
+                onClick={() => { setTeaminformatieOpen(!teamstatusOpen); setManagersOpen(false); }}
                 className="flex items-center gap-1.5 px-4 py-2 text-sm font-medium text-white/70 hover:text-primary rounded-lg hover:bg-primary/8 transition-all duration-200"
               >
-                Teamstatus
+                Teaminformatie
                 <ChevronDown
                   size={14}
                   className={`transition-transform duration-200 ${teamstatusOpen ? 'rotate-180' : ''}`}
@@ -106,7 +106,7 @@ export default function Navbar({ managers = [] }: NavbarProps) {
                     <Link
                       key={item.href}
                       href={item.href}
-                      onClick={() => setTeamstatusOpen(false)}
+                      onClick={() => setTeaminformatieOpen(false)}
                       className="flex flex-col px-4 py-3 hover:bg-white/5 transition-colors"
                     >
                       <span className="text-white text-sm font-semibold">{item.label}</span>
@@ -120,7 +120,7 @@ export default function Navbar({ managers = [] }: NavbarProps) {
             {/* Managers dropdown */}
             <div className="relative" ref={dropdownRef}>
               <button
-                onClick={() => { setManagersOpen(!managersOpen); setTeamstatusOpen(false); }}
+                onClick={() => { setManagersOpen(!managersOpen); setTeaminformatieOpen(false); }}
                 className="flex items-center gap-1.5 px-4 py-2 text-sm font-medium text-white/70 hover:text-primary rounded-lg hover:bg-primary/8 transition-all duration-200"
               >
                 Managers
@@ -201,9 +201,9 @@ export default function Navbar({ managers = [] }: NavbarProps) {
               </Link>
             ))}
 
-            {/* Teamstatus section */}
+            {/* Teaminformatie section */}
             <div className="border-t border-white/8 my-2" />
-            <p className="px-4 text-xs font-semibold uppercase tracking-widest mb-1" style={{ color: '#00FA61' }}>Teamstatus</p>
+            <p className="px-4 text-xs font-semibold uppercase tracking-widest mb-1" style={{ color: '#00FA61' }}>Teaminformatie</p>
             {teamstatusLinks.map((item) => (
               <Link
                 key={item.href}
