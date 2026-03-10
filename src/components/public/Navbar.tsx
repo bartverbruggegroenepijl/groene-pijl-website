@@ -20,8 +20,12 @@ interface NavbarProps {
 const navLinks = [
   { label: 'Afleveringen',         href: '/afleveringen'   },
   { label: 'Artikelen',            href: '/artikelen'      },
-  { label: 'Transfers & Captains', href: '/#captain-pick'  },
   { label: 'Rankings',             href: '/rankings'       },
+];
+
+const transfersLinks = [
+  { label: 'Transfers & Captains', href: '/#captain-pick',  desc: 'Captain picks & transfer tips'  },
+  { label: 'Bouw Mijn Team',       href: '/teambouwer',     desc: 'Stel jouw FPL-elftal samen'     },
 ];
 
 const teamstatusLinks = [
@@ -34,8 +38,10 @@ export default function Navbar({ managers = [] }: NavbarProps) {
   const [menuOpen, setMenuOpen] = useState(false);
   const [managersOpen, setManagersOpen] = useState(false);
   const [teamstatusOpen, setTeaminformatieOpen] = useState(false);
+  const [transfersOpen, setTransfersOpen] = useState(false);
   const dropdownRef = useRef<HTMLDivElement>(null);
   const teamstatusRef = useRef<HTMLDivElement>(null);
+  const transfersRef = useRef<HTMLDivElement>(null);
 
   useEffect(() => {
     const handleScroll = () => setScrolled(window.scrollY > 60);
@@ -51,6 +57,9 @@ export default function Navbar({ managers = [] }: NavbarProps) {
       }
       if (teamstatusRef.current && !teamstatusRef.current.contains(e.target as Node)) {
         setTeaminformatieOpen(false);
+      }
+      if (transfersRef.current && !transfersRef.current.contains(e.target as Node)) {
+        setTransfersOpen(false);
       }
     }
     document.addEventListener('mousedown', handleOutside);
@@ -89,10 +98,40 @@ export default function Navbar({ managers = [] }: NavbarProps) {
               </Link>
             ))}
 
+            {/* Transfers & Captains dropdown */}
+            <div className="relative" ref={transfersRef}>
+              <button
+                onClick={() => { setTransfersOpen(!transfersOpen); setManagersOpen(false); setTeaminformatieOpen(false); }}
+                className="flex items-center gap-1.5 px-4 py-2 text-sm font-medium text-white/70 hover:text-primary rounded-lg hover:bg-primary/8 transition-all duration-200"
+              >
+                Transfers &amp; Captains
+                <ChevronDown
+                  size={14}
+                  className={`transition-transform duration-200 ${transfersOpen ? 'rotate-180' : ''}`}
+                />
+              </button>
+
+              {transfersOpen && (
+                <div className="absolute top-full left-1/2 -translate-x-1/2 mt-2 bg-navy-card border border-white/10 rounded-xl shadow-card-hover py-2 min-w-[220px] z-50">
+                  {transfersLinks.map((item) => (
+                    <Link
+                      key={item.href}
+                      href={item.href}
+                      onClick={() => setTransfersOpen(false)}
+                      className="flex flex-col px-4 py-3 hover:bg-white/5 transition-colors"
+                    >
+                      <span className="text-white text-sm font-semibold">{item.label}</span>
+                      <span className="text-white/40 text-xs mt-0.5">{item.desc}</span>
+                    </Link>
+                  ))}
+                </div>
+              )}
+            </div>
+
             {/* Teaminformatie dropdown */}
             <div className="relative" ref={teamstatusRef}>
               <button
-                onClick={() => { setTeaminformatieOpen(!teamstatusOpen); setManagersOpen(false); }}
+                onClick={() => { setTeaminformatieOpen(!teamstatusOpen); setManagersOpen(false); setTransfersOpen(false); }}
                 className="flex items-center gap-1.5 px-4 py-2 text-sm font-medium text-white/70 hover:text-primary rounded-lg hover:bg-primary/8 transition-all duration-200"
               >
                 Teaminformatie
@@ -122,7 +161,7 @@ export default function Navbar({ managers = [] }: NavbarProps) {
             {/* Managers dropdown */}
             <div className="relative" ref={dropdownRef}>
               <button
-                onClick={() => { setManagersOpen(!managersOpen); setTeaminformatieOpen(false); }}
+                onClick={() => { setManagersOpen(!managersOpen); setTeaminformatieOpen(false); setTransfersOpen(false); }}
                 className="flex items-center gap-1.5 px-4 py-2 text-sm font-medium text-white/70 hover:text-primary rounded-lg hover:bg-primary/8 transition-all duration-200"
               >
                 Managers
@@ -200,6 +239,21 @@ export default function Navbar({ managers = [] }: NavbarProps) {
                 className="px-4 py-3 text-base font-medium text-white/80 hover:text-primary hover:bg-white/5 rounded-lg transition-colors"
               >
                 {link.label}
+              </Link>
+            ))}
+
+            {/* Transfers & Captains section */}
+            <div className="border-t border-white/8 my-2" />
+            <p className="px-4 text-xs font-semibold uppercase tracking-widest mb-1" style={{ color: '#00FA61' }}>Transfers &amp; Captains</p>
+            {transfersLinks.map((item) => (
+              <Link
+                key={item.href}
+                href={item.href}
+                onClick={() => setMenuOpen(false)}
+                className="flex flex-col px-4 py-2.5 text-white/80 hover:text-primary hover:bg-white/5 rounded-lg transition-colors"
+              >
+                <span className="font-semibold">{item.label}</span>
+                <span className="text-xs text-white/40 mt-0.5">{item.desc}</span>
               </Link>
             ))}
 
