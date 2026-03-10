@@ -16,6 +16,7 @@ import { fetchGameweekInfo } from '@/lib/fpl/events';
 import { fetchNextFixturesMap } from '@/lib/fpl/fixtures';
 import type { NextFixture } from '@/lib/fpl/fixtures';
 import HeroSection from '@/components/sections/HeroSection';
+import TeamVanDeWeekSection from '@/components/sections/TeamVanDeWeekSection';
 
 // ─── Types ────────────────────────────────────────────────────────────────────
 
@@ -187,31 +188,6 @@ function EmptyPlaceholderLight({ message }: { message: string }) {
   );
 }
 
-function PlayerBadgeDark({ imageUrl, name, size = 56, objectPosition = 'center' }: { imageUrl: string | null; name: string | null; size?: number; objectPosition?: string }) {
-  if (imageUrl) {
-    return (
-      <div className="rounded-full overflow-hidden shrink-0" style={{ width: size, height: size }}>
-        {/* eslint-disable-next-line @next/next/no-img-element */}
-        <img
-          src={imageUrl}
-          alt={name ?? ''}
-          width={size}
-          height={size}
-          className="w-full h-full object-cover"
-          style={{ objectPosition }}
-        />
-      </div>
-    );
-  }
-  return (
-    <div
-      className="rounded-full bg-white/10 flex items-center justify-center shrink-0 text-primary font-bold"
-      style={{ width: size, height: size, fontSize: size * 0.4 }}
-    >
-      {name?.charAt(0) ?? '?'}
-    </div>
-  );
-}
 
 function PlayerBadgeLight({ imageUrl, name, size = 56, objectPosition = 'center' }: { imageUrl: string | null; name: string | null; size?: number; objectPosition?: string }) {
   if (imageUrl) {
@@ -239,28 +215,6 @@ function PlayerBadgeLight({ imageUrl, name, size = 56, objectPosition = 'center'
   );
 }
 
-function PitchPlayer({ player }: { player: TeamPlayer }) {
-  return (
-    <div className="flex flex-col items-center gap-1 w-14 sm:w-16">
-      <div className="relative">
-        <PlayerBadgeDark imageUrl={player.player_image_url ?? null} name={player.player_name} size={48} objectPosition="50% 15%" />
-        {player.is_star_player && (
-          <span className="absolute -top-1 -left-1 w-5 h-5 bg-yellow-400 text-black text-[9px] font-black rounded-full flex items-center justify-center leading-none">
-            ★
-          </span>
-        )}
-      </div>
-      <span className="text-[10px] sm:text-xs text-white font-semibold text-center leading-tight truncate w-full">
-        {player.player_name ?? '—'}
-      </span>
-      {player.points !== null && player.points > 0 && (
-        <span className="text-[9px] bg-primary text-black font-bold px-1.5 py-0.5 rounded">
-          {player.points}
-        </span>
-      )}
-    </div>
-  );
-}
 
 // ─── Page ─────────────────────────────────────────────────────────────────────
 
@@ -373,10 +327,6 @@ export default async function HomePage() {
   );
 
   const captainPlayers = [...(captain?.captain_pick_players ?? [])].sort((a, b) => a.rank - b.rank);
-  const gk  = team?.team_players?.filter((p) => p.position === 'GK')  ?? [];
-  const def = team?.team_players?.filter((p) => p.position === 'DEF') ?? [];
-  const mid = team?.team_players?.filter((p) => p.position === 'MID') ?? [];
-  const fwd = team?.team_players?.filter((p) => p.position === 'FWD') ?? [];
 
   // ── FPL mini-league: call FPL API directly (no self-referential HTTP) ────────
   // Self-referential fetches (server → own /api/... route) fail on Vercel during SSR.
@@ -570,47 +520,7 @@ export default async function HomePage() {
       </section>
 
       {/* ── 5. TEAM VAN DE WEEK (gradient) ─────────────────────────── */}
-      <section id="team" className="py-20 px-4" style={{ position: 'relative', background: 'linear-gradient(135deg, #1F0E84 0%, #1a1361 30%, #2D1B69 60%, rgba(0,250,97,0.25) 100%)', borderTop: '2px solid rgba(0,250,97,0.18)' }}>
-        <div style={{ position: 'absolute', inset: 0, background: 'radial-gradient(ellipse at 20% 50%, rgba(200,33,195,0.12) 0%, rgba(0,250,97,0.08) 50%, transparent 70%)', pointerEvents: 'none' }} />
-        <div className="max-w-8xl mx-auto" style={{ position: 'relative', zIndex: 1 }}>
-          <SectionLabel>{team ? `Gameweek ${team.week_number}` : 'Team'}</SectionLabel>
-          <SectionTitleDark>Team van de Week</SectionTitleDark>
-
-          {team && team.team_players.length > 0 ? (
-            <div className="mt-10 max-w-2xl mx-auto">
-              <div className="relative rounded-2xl overflow-hidden py-10 px-4 border border-white/5" style={{ background: 'linear-gradient(180deg, #0A4D23 0%, #0C5C2A 25%, #0A4D23 50%, #0C5C2A 75%, #0A4D23 100%)' }}>
-                <div className="absolute inset-0 pointer-events-none">
-                  <div className="absolute top-1/2 left-0 right-0 h-px bg-white/10" />
-                  <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-24 h-24 rounded-full border border-white/10" />
-                  <div className="absolute top-6 left-1/2 -translate-x-1/2 w-36 h-14 border border-white/10 rounded-sm" />
-                  <div className="absolute bottom-6 left-1/2 -translate-x-1/2 w-36 h-14 border border-white/10 rounded-sm" />
-                </div>
-                <div className="relative z-10 flex flex-col gap-7">
-                  {fwd.length > 0 && (
-                    <div className="flex justify-center gap-3 sm:gap-8">{fwd.map((p, i) => <PitchPlayer key={i} player={p} />)}</div>
-                  )}
-                  {mid.length > 0 && (
-                    <div className="flex justify-center gap-3 sm:gap-8">{mid.map((p, i) => <PitchPlayer key={i} player={p} />)}</div>
-                  )}
-                  {def.length > 0 && (
-                    <div className="flex justify-center gap-2 sm:gap-5">{def.map((p, i) => <PitchPlayer key={i} player={p} />)}</div>
-                  )}
-                  {gk.length > 0 && (
-                    <div className="flex justify-center">{gk.map((p, i) => <PitchPlayer key={i} player={p} />)}</div>
-                  )}
-                </div>
-              </div>
-              {team.formation && (
-                <p className="text-center mt-3 text-sm text-white/30">
-                  Formatie: <span className="text-primary font-semibold">{team.formation}</span>
-                </p>
-              )}
-            </div>
-          ) : (
-            <EmptyPlaceholderDark message="Nog geen team van de week beschikbaar." />
-          )}
-        </div>
-      </section>
+      <TeamVanDeWeekSection team={team} />
 
       {/* ── 5b. SPELER VAN DE WEEK (white) ──────────────────────────── */}
       <section id="speler-van-de-week" className="py-20 px-4 bg-white">
