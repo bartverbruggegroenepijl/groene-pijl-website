@@ -195,7 +195,7 @@ export default function HeroSection({ currentGameweek, latestEpisodeUrl }: HeroS
           left: 0,
           bottom: 0,
           width: '50%',
-          background: 'linear-gradient(to right, #1a1361 0%, #1a1361 15%, rgba(26,19,97,0.9) 40%, rgba(26,19,97,0.5) 65%, transparent 100%)',
+          background: 'linear-gradient(to right, #1a1361 0%, #1a1361 15%, rgba(26,19,97,0.85) 45%, rgba(26,19,97,0.3) 70%, transparent 100%)',
           zIndex: 3,
           pointerEvents: 'none',
         }}
@@ -208,8 +208,22 @@ export default function HeroSection({ currentGameweek, latestEpisodeUrl }: HeroS
           top: 0,
           right: 0,
           bottom: 0,
-          width: '8%',
-          background: 'linear-gradient(to left, #1F0E84 0%, transparent 100%)',
+          width: '25%',
+          background: 'linear-gradient(to left, #1a1361 0%, rgba(26,19,97,0.7) 40%, transparent 100%)',
+          zIndex: 3,
+          pointerEvents: 'none',
+        }}
+      />
+      {/* Gradient fade onder — vloeiend naar volgende sectie */}
+      <div
+        className="hero-gradient-bottom"
+        style={{
+          position: 'absolute',
+          bottom: 0,
+          left: 0,
+          right: 0,
+          height: '35%',
+          background: 'linear-gradient(to top, #1a1361 0%, rgba(26,19,97,0.8) 40%, transparent 100%)',
           zIndex: 3,
           pointerEvents: 'none',
         }}

@@ -167,6 +167,7 @@ body {
   /* Verberg alle decoratieve overlays op mobiel */
   .hero-gradient-left,
   .hero-gradient-right,
+  .hero-gradient-bottom,
   .hero-glow,
   .hero-decorative-svg {
     display: none !important;
