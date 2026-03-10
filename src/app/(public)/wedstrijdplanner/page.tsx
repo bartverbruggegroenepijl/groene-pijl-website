@@ -108,7 +108,8 @@ export default function WedstrijdplannerPage() {
 
   const sortedTeams = [...teams].sort((a, b) => a.avgDifficulty - b.avgDifficulty);
 
-  const PAGE_BG = 'linear-gradient(135deg, #1a1361 0%, #1F0E84 30%, #2D1B69 60%, #0d3d2a 85%, #0a4a1a 100%)';
+  // Gradient-bg afbeelding met donkere overlay voor leesbaarheid tabel
+  const PAGE_BG_IMAGE = "linear-gradient(rgba(0,0,0,0.3), rgba(0,0,0,0.3)), url('/gradient-bg.png')";
 
   const navBtnStyle = (disabled: boolean): React.CSSProperties => ({
     display: 'inline-flex', alignItems: 'center', gap: 4,
@@ -124,7 +125,7 @@ export default function WedstrijdplannerPage() {
   });
 
   return (
-    <main style={{ minHeight: '100vh', background: PAGE_BG }}>
+    <main style={{ minHeight: '100vh', backgroundImage: PAGE_BG_IMAGE, backgroundSize: 'cover', backgroundPosition: 'center', backgroundAttachment: 'fixed' }}>
 
       {/* Scrollbar verbergen — navigatie via knoppen */}
       <style>{`
@@ -266,7 +267,7 @@ export default function WedstrijdplannerPage() {
                 position: 'absolute',
                 right: 0, top: 0, bottom: 0,
                 width: 48,
-                background: 'linear-gradient(to right, transparent, rgba(26,19,97,0.9))',
+                background: 'linear-gradient(to right, transparent, rgba(0,0,0,0.6))',
                 pointerEvents: 'none',
                 zIndex: 5,
               }} />
