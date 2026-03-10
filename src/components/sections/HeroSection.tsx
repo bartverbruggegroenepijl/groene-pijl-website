@@ -186,60 +186,26 @@ export default function HeroSection({ currentGameweek, latestEpisodeUrl }: HeroS
         />
       </div>
 
-      {/* Gradient fade links */}
-      <div
-        className="hero-gradient-left"
-        style={{
-          position: 'absolute',
-          top: 0,
-          left: 0,
-          bottom: 0,
-          width: '50%',
-          background: 'linear-gradient(to right, #1a1361 0%, #1a1361 15%, rgba(26,19,97,0.85) 45%, rgba(26,19,97,0.3) 70%, transparent 100%)',
-          zIndex: 3,
-          pointerEvents: 'none',
-        }}
-      />
-      {/* Gradient fade rechts */}
-      <div
-        className="hero-gradient-right"
-        style={{
-          position: 'absolute',
-          top: 0,
-          right: 0,
-          bottom: 0,
-          width: '25%',
-          background: 'linear-gradient(to left, #1a1361 0%, rgba(26,19,97,0.7) 40%, transparent 100%)',
-          zIndex: 3,
-          pointerEvents: 'none',
-        }}
-      />
-      {/* Gradient fade onder — vloeiend naar volgende sectie */}
-      <div
-        className="hero-gradient-bottom"
-        style={{
-          position: 'absolute',
-          bottom: 0,
-          left: 0,
-          right: 0,
-          height: '35%',
-          background: 'linear-gradient(to top, #1a1361 0%, rgba(26,19,97,0.8) 40%, transparent 100%)',
-          zIndex: 3,
-          pointerEvents: 'none',
-        }}
-      />
-
-      {/* Groene/magenta glow */}
-      <div
-        className="hero-glow"
-        style={{
-          position: 'absolute',
-          inset: 0,
-          background: 'radial-gradient(ellipse at 80% 50%, rgba(0,250,97,0.13) 0%, rgba(200,33,195,0.09) 45%, transparent 65%)',
-          pointerEvents: 'none',
-          zIndex: 1,
-        }}
-      />
+      <div style={{
+        position: 'absolute',
+        top: 0,
+        left: 0,
+        bottom: 0,
+        width: '55%',
+        background: 'linear-gradient(to right, #1F0E84 0%, #1F0E84 20%, rgba(31,14,132,0.85) 50%, rgba(31,14,132,0.3) 75%, transparent 100%)',
+        zIndex: 3,
+        pointerEvents: 'none',
+      }} />
+      <div style={{
+        position: 'absolute',
+        bottom: 0,
+        left: 0,
+        right: 0,
+        height: '25%',
+        background: 'linear-gradient(to top, #1a1361 0%, transparent 100%)',
+        zIndex: 3,
+        pointerEvents: 'none',
+      }} />
 
       {/* Decoratieve driehoeken */}
       <svg
