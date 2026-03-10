@@ -59,7 +59,7 @@ export default function HeroSection({ currentGameweek, latestEpisodeUrl }: HeroS
             color: 'white',
             lineHeight: 1.02,
             margin: 0,
-            maxWidth: '44%',
+            maxWidth: 'fit-content',
             fontFamily: 'Montserrat, sans-serif',
           }}
         >
