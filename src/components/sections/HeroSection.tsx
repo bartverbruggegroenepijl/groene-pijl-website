@@ -63,11 +63,9 @@ export default function HeroSection({ currentGameweek, latestEpisodeUrl }: HeroS
             fontFamily: 'Montserrat, sans-serif',
           }}
         >
-          DE PLEK VOOR
-          <br />
-          NEDERLANDSE FPL
-          <br />
-          MANAGERS
+          <span style={{ display: 'block' }}>DE PLEK VOOR</span>
+          <span style={{ display: 'block' }}>NEDERLANDSE</span>
+          <span style={{ display: 'block' }}>FPL MANAGERS</span>
         </h1>
 
         {/* Groene subtitel */}
