@@ -1,6 +1,6 @@
 'use client'
 
-import { useState } from 'react'
+import { useState, useEffect } from 'react'
 
 // ─── Types ─────────────────────────────────────────────────────────────────
 
@@ -36,7 +36,7 @@ function shortName(name: string | null): string {
 
 // ─── Tooltip ───────────────────────────────────────────────────────────────
 
-function PlayerTooltip({ player }: { player: TeamPlayer }) {
+function PlayerTooltip({ player, xg }: { player: TeamPlayer; xg: string | null }) {
   return (
     <div
       style={{
@@ -133,6 +133,12 @@ function PlayerTooltip({ player }: { player: TeamPlayer }) {
             <span style={{ color: '#FFD700', fontWeight: 700, fontSize: 11 }}>★ Uitblinker</span>
           </div>
         )}
+        <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+          <span style={{ color: 'rgba(255,255,255,0.42)', fontSize: 10.5 }}>🎯 Verwachte goals</span>
+          <span style={{ color: '#fff', fontWeight: 700, fontSize: 11 }}>
+            {xg !== null ? xg : '–'}
+          </span>
+        </div>
       </div>
     </div>
   )
@@ -140,7 +146,7 @@ function PlayerTooltip({ player }: { player: TeamPlayer }) {
 
 // ─── PitchPlayer ───────────────────────────────────────────────────────────
 
-function PitchPlayer({ player }: { player: TeamPlayer }) {
+function PitchPlayer({ player, xg }: { player: TeamPlayer; xg: string | null }) {
   const [hovered, setHovered] = useState(false)
   const isCapt = player.is_captain
   const isStar = player.is_star_player
@@ -163,7 +169,7 @@ function PitchPlayer({ player }: { player: TeamPlayer }) {
       onMouseLeave={() => setHovered(false)}
     >
       {/* Tooltip */}
-      {hovered && <PlayerTooltip player={player} />}
+      {hovered && <PlayerTooltip player={player} xg={xg} />}
 
       {/* Gouden ster boven aanvoerder */}
       {isCapt && (
@@ -335,6 +341,61 @@ function PitchPlayer({ player }: { player: TeamPlayer }) {
 // ─── Main Component ────────────────────────────────────────────────────────
 
 export default function TeamVanDeWeekSection({ team }: Props) {
+  // ── xG state — { playerName: xgWaarde } ─────────────────────────────────
+  const [xgMap, setXgMap] = useState<Record<string, string>>({})
+
+  useEffect(() => {
+    if (!team || team.team_players.length === 0) return
+    let cancelled = false
+
+    async function fetchXg() {
+      try {
+        // Stap 1: haal alle FPL spelers op om web_name → id te koppelen
+        const playersRes = await fetch('/api/fpl/players')
+        if (!playersRes.ok || cancelled) return
+        const { players } = (await playersRes.json()) as {
+          players: Array<{ id: number; name: string; fullName: string }>
+        }
+
+        const nameToId: Record<string, number> = {}
+        for (const p of players) {
+          if (p.name) nameToId[p.name.toLowerCase()] = p.id
+          if (p.fullName) nameToId[p.fullName.toLowerCase()] = p.id
+        }
+
+        // Stap 2: per speler de element-summary ophalen → xG uit laatste wedstrijd
+        const players_snapshot = team?.team_players ?? []
+        await Promise.all(
+          players_snapshot.map(async (tp) => {
+            const name = tp.player_name
+            if (!name) return
+            const id = nameToId[name.toLowerCase()]
+            if (!id) return
+
+            const summaryRes = await fetch(`/api/fpl/element-summary/${id}`)
+            if (!summaryRes.ok || cancelled) return
+            const { last_match } = (await summaryRes.json()) as {
+              last_match: { expected_goals: string } | null
+            }
+
+            const xg = last_match?.expected_goals ?? null
+            if (xg !== null && !cancelled) {
+              setXgMap((prev) => ({ ...prev, [name]: xg }))
+            }
+          })
+        )
+      } catch {
+        // xG is optioneel — stilzwijgend mislukken
+      }
+    }
+
+    fetchXg()
+    return () => {
+      cancelled = true
+    }
+  }, [team])
+
+  // ── Lege staat ──────────────────────────────────────────────────────────
   if (!team || team.team_players.length === 0) {
     return (
       <section
@@ -717,7 +778,7 @@ export default function TeamVanDeWeekSection({ team }: Props) {
                 }}
               >
                 {fwd.map((p, i) => (
-                  <PitchPlayer key={i} player={p} />
+                  <PitchPlayer key={i} player={p} xg={xgMap[p.player_name ?? ''] ?? null} />
                 ))}
               </div>
             )}
@@ -731,7 +792,7 @@ export default function TeamVanDeWeekSection({ team }: Props) {
                 }}
               >
                 {mid.map((p, i) => (
-                  <PitchPlayer key={i} player={p} />
+                  <PitchPlayer key={i} player={p} xg={xgMap[p.player_name ?? ''] ?? null} />
                 ))}
               </div>
             )}
@@ -745,7 +806,7 @@ export default function TeamVanDeWeekSection({ team }: Props) {
                 }}
               >
                 {def.map((p, i) => (
-                  <PitchPlayer key={i} player={p} />
+                  <PitchPlayer key={i} player={p} xg={xgMap[p.player_name ?? ''] ?? null} />
                 ))}
               </div>
             )}
@@ -754,7 +815,7 @@ export default function TeamVanDeWeekSection({ team }: Props) {
                 style={{ display: 'flex', justifyContent: 'center', overflow: 'visible' }}
               >
                 {gk.map((p, i) => (
-                  <PitchPlayer key={i} player={p} />
+                  <PitchPlayer key={i} player={p} xg={xgMap[p.player_name ?? ''] ?? null} />
                 ))}
               </div>
             )}
