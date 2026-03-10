@@ -191,8 +191,8 @@ export default function HeroSection({ currentGameweek, latestEpisodeUrl }: HeroS
         top: 0,
         left: 0,
         bottom: 0,
-        width: '55%',
-        background: 'linear-gradient(to right, #1F0E84 0%, #1F0E84 20%, rgba(31,14,132,0.85) 50%, rgba(31,14,132,0.3) 75%, transparent 100%)',
+        width: '65%',
+        background: 'linear-gradient(to right, #1F0E84 0%, #1F0E84 30%, rgba(31,14,132,0.9) 55%, rgba(31,14,132,0.4) 80%, transparent 100%)',
         zIndex: 3,
         pointerEvents: 'none',
       }} />
