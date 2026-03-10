@@ -102,6 +102,20 @@ body {
     width: auto !important;
     height: 44px !important;
   }
+
+  /* Navbar logo: 36×36 op mobiel, meer specifiek dan algemene regel */
+  .navbar-logo {
+    overflow: visible !important;
+  }
+  .navbar-logo .logo-wrapper {
+    width: 36px !important;
+    height: 36px !important;
+    overflow: visible !important;
+  }
+  .navbar-logo .logo-img {
+    width: 36px !important;
+    height: 36px !important;
+  }
 }
 
 /* Hero section — mobiel responsive (desktop ONGEWIJZIGD) */

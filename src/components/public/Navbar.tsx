@@ -73,7 +73,9 @@ export default function Navbar({ managers = [] }: NavbarProps) {
         <div className="flex items-center justify-between h-16 lg:h-18">
 
           {/* Logo */}
-          <Logo size="md" />
+          <div className="navbar-logo">
+            <Logo size="md" />
+          </div>
 
           {/* Desktop nav — center */}
           <nav className="hidden lg:flex items-center gap-1">
