@@ -95,6 +95,13 @@ body {
 
 /* Logo — mobiel volledig zichtbaar (desktop ONGEWIJZIGD) */
 @media (max-width: 768px) {
+  /* Alle parent containers van het logo: geen clipping op mobiel */
+  header,
+  header > *,
+  header > * > * {
+    overflow: visible !important;
+  }
+
   .logo-wrapper {
     overflow: visible !important;
   }
@@ -113,7 +120,7 @@ body {
     overflow: visible !important;
   }
   .navbar-logo .logo-img {
-    width: 36px !important;
+    width: auto !important;
     height: 36px !important;
   }
 }
