@@ -13,6 +13,9 @@ interface FplApiPlayer {
   event_points: number;
   now_cost: number;
   selected_by_percent: string;  // bijv. "18.5"
+  goals_scored: number;
+  assists: number;
+  minutes: number;
 }
 
 interface FplApiTeam {
@@ -82,6 +85,9 @@ export async function GET() {
         price: p.now_cost / 10,
         imageUrl,
         ownership: p.selected_by_percent,
+        goals: p.goals_scored,
+        assists: p.assists,
+        minutes: p.minutes,
       };
     });
 

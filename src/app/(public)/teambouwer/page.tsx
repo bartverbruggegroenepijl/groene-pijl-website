@@ -23,6 +23,9 @@ interface FplPlayer {
   eventPoints: number;
   price: number;
   imageUrl: string;
+  goals: number;
+  assists: number;
+  minutes: number;
 }
 
 interface FixtureCell {
@@ -175,6 +178,15 @@ export default function TeambouwerPage() {
   // Team: slotId → player
   const [team, setTeam] = useState<Record<string, SelectedPlayer>>({});
 
+  // Extra filters
+  const [budgetFilter, setBudgetFilter] = useState<number | null>(null);
+
+  // Tooltip state (player stats on hover)
+  const [tooltip, setTooltip] = useState<{ player: FplPlayer; x: number; y: number } | null>(null);
+
+  // Team Planner GW offset
+  const [plannerOffset, setPlannerOffset] = useState(0);
+
   /* ── load FPL data ── */
   useEffect(() => {
     (async () => {
@@ -189,7 +201,7 @@ export default function TeambouwerPage() {
         setPlayers(pData.players ?? []);
         const map: Record<number, FixtureCell[]> = {};
         for (const t of (fData.teams ?? []) as TeamFDR[]) {
-          map[t.id] = t.fixtures.slice(0, 3);
+          map[t.id] = t.fixtures.slice(0, 8);
         }
         setFdrMap(map);
       } catch (e) {
@@ -344,6 +356,7 @@ export default function TeambouwerPage() {
   const filteredPlayers = useMemo(() => {
     let list = players;
     if (posFilter !== 'ALL') list = list.filter((p) => p.position === posFilter);
+    if (budgetFilter !== null) list = list.filter((p) => p.price <= budgetFilter);
     if (search.trim()) {
       const q = search.toLowerCase();
       list = list.filter(
@@ -358,11 +371,11 @@ export default function TeambouwerPage() {
       return sortDir === 'desc' ? -diff : diff;
     });
     return list;
-  }, [players, posFilter, search, sortField, sortDir]);
+  }, [players, posFilter, budgetFilter, search, sortField, sortDir]);
 
   const totalPages = Math.ceil(filteredPlayers.length / PAGE_SIZE);
   const pagePlayers = filteredPlayers.slice(page * PAGE_SIZE, (page + 1) * PAGE_SIZE);
-  useEffect(() => { setPage(0); }, [search, posFilter, sortField, sortDir]);
+  useEffect(() => { setPage(0); }, [search, posFilter, budgetFilter, sortField, sortDir]);
 
   function toggleSort(field: typeof sortField) {
     if (sortField === field) setSortDir((d) => (d === 'desc' ? 'asc' : 'desc'));
@@ -405,6 +418,33 @@ export default function TeambouwerPage() {
   const defSlots = Array.from({ length: defCount }, (_, i) => ({ pos: 'DEF' as Position, idx: i }));
   const midSlots = Array.from({ length: midCount }, (_, i) => ({ pos: 'MID' as Position, idx: i }));
   const fwdSlots = Array.from({ length: fwdCount }, (_, i) => ({ pos: 'FWD' as Position, idx: i }));
+
+  /* ── Team Planner computed ── */
+  const selectedPlayersList = useMemo(() => {
+    const allSlots = [
+      'GK-0',
+      ...Array.from({ length: defCount }, (_, i) => `DEF-${i}`),
+      ...Array.from({ length: midCount }, (_, i) => `MID-${i}`),
+      ...Array.from({ length: fwdCount }, (_, i) => `FWD-${i}`),
+      'BENCH-0', 'BENCH-1', 'BENCH-2', 'BENCH-3',
+    ];
+    return allSlots.map((s) => team[s]).filter(Boolean) as SelectedPlayer[];
+  }, [team, defCount, midCount, fwdCount]);
+
+  const plannerMaxOffset = useMemo(() => {
+    if (selectedPlayersList.length === 0) return 0;
+    const ref = fdrMap[selectedPlayersList[0].teamId] ?? [];
+    return Math.max(0, ref.length - 5);
+  }, [selectedPlayersList, fdrMap]);
+
+  const safePlannerOffset = Math.min(plannerOffset, plannerMaxOffset);
+
+  const plannerGwHeaders = useMemo(() => {
+    if (selectedPlayersList.length === 0) return [];
+    const ref = fdrMap[selectedPlayersList[0].teamId] ?? [];
+    return ref.slice(safePlannerOffset, safePlannerOffset + 5).map((f) => `GW${f.gw}`);
+  // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [selectedPlayersList, fdrMap, plannerOffset, plannerMaxOffset]);
 
   /* ─────────────── render ─────────────── */
   return (
@@ -499,7 +539,7 @@ export default function TeambouwerPage() {
                     </button>
                   )}
                 </div>
-                <div className="flex gap-1">
+                <div className="flex gap-1 flex-wrap">
                   {(['ALL', 'GK', 'DEF', 'MID', 'FWD'] as const).map((pos) => (
                     <button
                       key={pos}
@@ -513,6 +553,28 @@ export default function TeambouwerPage() {
                       {pos}
                     </button>
                   ))}
+                  {/* Budget filter */}
+                  <select
+                    value={budgetFilter ?? ''}
+                    onChange={(e) =>
+                      setBudgetFilter(e.target.value === '' ? null : parseFloat(e.target.value))
+                    }
+                    className="px-2 py-2 rounded-lg text-xs font-semibold outline-none border border-white/10 transition-all"
+                    style={{
+                      background: budgetFilter !== null ? 'rgba(0,250,97,0.12)' : 'rgba(255,255,255,0.08)',
+                      color: budgetFilter !== null ? '#00FA61' : 'rgba(255,255,255,0.5)',
+                    }}
+                  >
+                    <option value="" style={{ background: '#0d0d1a', color: '#fff' }}>Max £</option>
+                    {Array.from({ length: 22 }, (_, i) => {
+                      const val = parseFloat((15.0 - i * 0.5).toFixed(1));
+                      return (
+                        <option key={val} value={val} style={{ background: '#0d0d1a', color: '#fff' }}>
+                          £{val.toFixed(1)}m
+                        </option>
+                      );
+                    })}
+                  </select>
                 </div>
               </div>
 
@@ -554,6 +616,11 @@ export default function TeambouwerPage() {
                         key={p.id}
                         className="tb-grid-row grid items-center px-3 py-2 border-b border-white/5 last:border-b-0 hover:bg-white/5 transition-colors"
                         style={{ gridTemplateColumns: '2fr 80px 50px 110px 60px 60px 44px' }}
+                        onMouseEnter={(e) => {
+                          const rect = (e.currentTarget as HTMLElement).getBoundingClientRect();
+                          setTooltip({ player: p, x: rect.right, y: rect.top });
+                        }}
+                        onMouseLeave={() => setTooltip(null)}
                       >
                         {/* Name + photo */}
                         <div className="flex items-center gap-2 min-w-0">
@@ -792,8 +859,165 @@ export default function TeambouwerPage() {
               </div>
             </div>
           </div>
+
+          {/* ── Team Planner ── */}
+          {selectedPlayersList.length > 0 && (
+            <div
+              className="mt-6 rounded-2xl border border-white/8 overflow-hidden"
+              style={{ background: 'rgba(0,0,0,0.3)' }}
+            >
+              {/* Planner header */}
+              <div className="flex items-center justify-between px-4 py-3 border-b border-white/8">
+                <div>
+                  <h2 className="text-white font-bold text-sm">Wedstrijdplanner</h2>
+                  <p className="text-white/30 text-[10px] mt-0.5">
+                    Komende wedstrijden voor de spelers in jouw team
+                  </p>
+                </div>
+                <div className="flex gap-1.5">
+                  <button
+                    onClick={() => setPlannerOffset((o) => Math.max(0, o - 1))}
+                    disabled={plannerOffset === 0}
+                    className="w-7 h-7 rounded-lg flex items-center justify-center disabled:opacity-25 transition-all"
+                    style={{ background: 'rgba(255,255,255,0.08)' }}
+                    title="Vorige gameweeks"
+                  >
+                    <ChevronLeft size={13} className="text-white/60" />
+                  </button>
+                  <button
+                    onClick={() => setPlannerOffset((o) => Math.min(plannerMaxOffset, o + 1))}
+                    disabled={plannerOffset >= plannerMaxOffset}
+                    className="w-7 h-7 rounded-lg flex items-center justify-center disabled:opacity-25 transition-all"
+                    style={{ background: 'rgba(255,255,255,0.08)' }}
+                    title="Volgende gameweeks"
+                  >
+                    <ChevronRight size={13} className="text-white/60" />
+                  </button>
+                </div>
+              </div>
+
+              {/* Planner table */}
+              <div className="overflow-x-auto">
+                <table className="w-full min-w-[380px]">
+                  <thead>
+                    <tr className="border-b border-white/8">
+                      <th className="text-left px-4 py-2 text-white/30 text-[10px] font-semibold uppercase tracking-widest">
+                        Speler
+                      </th>
+                      {plannerGwHeaders.length > 0
+                        ? plannerGwHeaders.map((gw, i) => (
+                            <th
+                              key={i}
+                              className="px-2 py-2 text-white/30 text-[10px] font-semibold uppercase tracking-widest text-center"
+                              style={{ minWidth: 56 }}
+                            >
+                              {gw}
+                            </th>
+                          ))
+                        : Array.from({ length: 5 }, (_, i) => (
+                            <th
+                              key={i}
+                              className="px-2 py-2 text-white/20 text-[10px] text-center"
+                              style={{ minWidth: 56 }}
+                            >
+                              —
+                            </th>
+                          ))}
+                    </tr>
+                  </thead>
+                  <tbody>
+                    {selectedPlayersList.map((player) => {
+                      const fixtures = (fdrMap[player.teamId] ?? []).slice(
+                        safePlannerOffset,
+                        safePlannerOffset + 5,
+                      );
+                      return (
+                        <tr
+                          key={player.slotId}
+                          className="border-b border-white/5 last:border-0 hover:bg-white/5 transition-colors"
+                        >
+                          <td className="px-4 py-2">
+                            <div className="flex items-center gap-1.5 min-w-0">
+                              <span
+                                className="text-[9px] font-bold px-1 py-0.5 rounded shrink-0"
+                                style={{
+                                  background:
+                                    player.position === 'GK'  ? 'rgba(255,215,0,0.15)'  :
+                                    player.position === 'DEF' ? 'rgba(0,250,97,0.12)'   :
+                                    player.position === 'MID' ? 'rgba(99,102,241,0.15)' :
+                                    'rgba(239,68,68,0.15)',
+                                  color:
+                                    player.position === 'GK'  ? '#FFD700' :
+                                    player.position === 'DEF' ? '#00FA61' :
+                                    player.position === 'MID' ? '#818CF8' :
+                                    '#F87171',
+                                }}
+                              >
+                                {player.position}
+                              </span>
+                              <span className="text-white text-xs truncate">{player.name}</span>
+                            </div>
+                          </td>
+                          {Array.from({ length: 5 }, (_, i) => {
+                            const f = fixtures[i];
+                            return (
+                              <td key={i} className="px-2 py-2 text-center">
+                                {f ? (
+                                  <FdrBadge cell={f} />
+                                ) : (
+                                  <span className="text-white/15 text-[9px]">—</span>
+                                )}
+                              </td>
+                            );
+                          })}
+                        </tr>
+                      );
+                    })}
+                  </tbody>
+                </table>
+              </div>
+            </div>
+          )}
+
         </div>
       </div>
+
+      {/* ── Player stats tooltip (fixed overlay) ── */}
+      {tooltip && (
+        <div
+          style={{
+            position: 'fixed',
+            left: tooltip.x + 12,
+            top: tooltip.y,
+            zIndex: 9999,
+            pointerEvents: 'none',
+          }}
+        >
+          <div
+            className="rounded-xl px-3 py-2.5 text-xs border border-white/15"
+            style={{
+              background: 'rgba(12,8,35,0.94)',
+              backdropFilter: 'blur(16px)',
+              boxShadow: '0 8px 32px rgba(0,0,0,0.6)',
+              minWidth: 148,
+            }}
+          >
+            <div className="font-semibold text-white mb-2 text-[11px] truncate">
+              {tooltip.player.name}
+            </div>
+            <div className="grid grid-cols-2 gap-x-4 gap-y-1">
+              <span className="text-white/40 text-[10px]">Goals</span>
+              <span className="text-white font-medium text-[10px]">{tooltip.player.goals}</span>
+              <span className="text-white/40 text-[10px]">Assists</span>
+              <span className="text-white font-medium text-[10px]">{tooltip.player.assists}</span>
+              <span className="text-white/40 text-[10px]">Punten</span>
+              <span className="text-white font-medium text-[10px]">{tooltip.player.totalPoints}</span>
+              <span className="text-white/40 text-[10px]">Minuten</span>
+              <span className="text-white font-medium text-[10px]">{tooltip.player.minutes}</span>
+            </div>
+          </div>
+        </div>
+      )}
     </main>
   );
 }
