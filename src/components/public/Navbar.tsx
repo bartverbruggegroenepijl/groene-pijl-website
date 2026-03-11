@@ -229,7 +229,21 @@ export default function Navbar({ managers = [] }: NavbarProps) {
 
       {/* Mobile overlay menu */}
       {menuOpen && (
-        <div className="lg:hidden" style={{ background: '#1F0E84', borderTop: '1px solid rgba(0,250,97,0.15)' }}>
+        <div
+          className="lg:hidden"
+          style={{
+            background: '#1F0E84',
+            borderTop: '1px solid rgba(0,250,97,0.15)',
+            position: 'fixed',
+            top: 64,
+            left: 0,
+            right: 0,
+            bottom: 0,
+            overflowY: 'auto',
+            WebkitOverflowScrolling: 'touch',
+            zIndex: 49,
+          }}
+        >
           <nav className="flex flex-col px-4 py-4 gap-1">
             {navLinks.map((link) => (
               <Link

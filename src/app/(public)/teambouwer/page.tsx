@@ -417,6 +417,30 @@ export default function TeambouwerPage() {
         backgroundAttachment: 'fixed',
       }}
     >
+      {/* ── Mobiele tabel fixes ── */}
+      <style>{`
+        @media (max-width: 768px) {
+          .tb-grid-header,
+          .tb-grid-row {
+            grid-template-columns: 1fr 52px 34px 50px 36px !important;
+            padding-left: 8px !important;
+            padding-right: 8px !important;
+          }
+          .tb-grid-row {
+            padding-top: 6px !important;
+            padding-bottom: 6px !important;
+          }
+          .tb-col-wedstrijden,
+          .tb-col-ptn {
+            display: none !important;
+          }
+          .tb-grid-header span,
+          .tb-grid-row .tb-cell-name span,
+          .tb-grid-row .tb-cell-club {
+            font-size: 9px !important;
+          }
+        }
+      `}</style>
       {/* Semi-transparante overlay voor leesbaarheid */}
       <div style={{
         position: 'fixed',
@@ -499,17 +523,17 @@ export default function TeambouwerPage() {
               >
                 {/* Header */}
                 <div
-                  className="grid text-[10px] font-semibold uppercase tracking-widest text-white/30 px-3 py-2 border-b border-white/8"
+                  className="tb-grid-header grid text-[10px] font-semibold uppercase tracking-widest text-white/30 px-3 py-2 border-b border-white/8"
                   style={{ gridTemplateColumns: '2fr 80px 50px 110px 60px 60px 44px' }}
                 >
                   <span>Speler</span>
                   <span>Club</span>
                   <span>Pos</span>
-                  <span className="text-center">Wedstrijden</span>
+                  <span className="tb-col-wedstrijden text-center">Wedstrijden</span>
                   <button className="flex items-center gap-1 hover:text-white/60 transition-colors" onClick={() => toggleSort('price')}>
                     Prijs <SortIcon field="price" />
                   </button>
-                  <button className="flex items-center gap-1 hover:text-white/60 transition-colors" onClick={() => toggleSort('totalPoints')}>
+                  <button className="tb-col-ptn flex items-center gap-1 hover:text-white/60 transition-colors" onClick={() => toggleSort('totalPoints')}>
                     Ptn <SortIcon field="totalPoints" />
                   </button>
                   <span />
@@ -528,7 +552,7 @@ export default function TeambouwerPage() {
                     return (
                       <div
                         key={p.id}
-                        className="grid items-center px-3 py-2 border-b border-white/5 last:border-b-0 hover:bg-white/5 transition-colors"
+                        className="tb-grid-row grid items-center px-3 py-2 border-b border-white/5 last:border-b-0 hover:bg-white/5 transition-colors"
                         style={{ gridTemplateColumns: '2fr 80px 50px 110px 60px 60px 44px' }}
                       >
                         {/* Name + photo */}
@@ -565,7 +589,7 @@ export default function TeambouwerPage() {
                         </span>
 
                         {/* FDR badges */}
-                        <div className="flex gap-1 justify-center">
+                        <div className="tb-col-wedstrijden flex gap-1 justify-center">
                           {fixtures.length > 0
                             ? fixtures.map((f, i) => <FdrBadge key={i} cell={f} />)
                             : <span className="text-white/20 text-[9px]">—</span>}
@@ -575,7 +599,7 @@ export default function TeambouwerPage() {
                         <span className="text-white/70 text-xs font-medium">£{p.price.toFixed(1)}m</span>
 
                         {/* Points */}
-                        <span className="text-white/50 text-xs">{p.totalPoints}pt</span>
+                        <span className="tb-col-ptn text-white/50 text-xs">{p.totalPoints}pt</span>
 
                         {/* Add/Remove */}
                         <button
