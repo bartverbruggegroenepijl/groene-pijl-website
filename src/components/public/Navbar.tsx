@@ -250,8 +250,7 @@ export default function Navbar({ managers = [] }: NavbarProps) {
             width: '100vw',
             height: '100dvh',
             background: '#1F0E84',
-            overflowY: 'auto',
-            WebkitOverflowScrolling: 'touch',
+            overflow: 'hidden',
             zIndex: 999,
             fontFamily: 'Montserrat, sans-serif',
             display: 'flex',
@@ -291,7 +290,7 @@ export default function Navbar({ managers = [] }: NavbarProps) {
           </div>
 
           {/* Nav content */}
-          <nav style={{ display: 'flex', flexDirection: 'column', flex: 1 }}>
+          <nav style={{ display: 'flex', flexDirection: 'column', flex: 1, overflowY: 'auto', WebkitOverflowScrolling: 'touch', minHeight: 0 }}>
 
             {/* Hoofd links */}
             {navLinks.map((link) => (
