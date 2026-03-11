@@ -239,221 +239,198 @@ export default function Navbar({ managers = [] }: NavbarProps) {
 
       {/* ── Mobiel menu — volledig scherm overlay ─────────────────── */}
       {menuOpen && (
-        <div
-          className="lg:hidden"
-          style={{
-            position: 'fixed',
-            top: 0,
-            left: 0,
-            width: '100vw',
-            height: '100dvh',
-            background: '#1F0E84',
-            zIndex: 999,
-            display: 'flex',
-            flexDirection: 'column',
-            overflow: 'hidden',
-            fontFamily: 'Montserrat, sans-serif',
-          }}
-        >
-          {/* Menu header: logo + sluit knop */}
+        <>
+          {/* !important fallback voor scroll op iOS/Android */}
+          <style>{`.mgp-menu-overlay{overflow-y:scroll!important;-webkit-overflow-scrolling:touch!important;height:100dvh!important;}`}</style>
           <div
+            className="lg:hidden mgp-menu-overlay"
             style={{
-              display: 'flex',
-              alignItems: 'center',
-              justifyContent: 'space-between',
-              padding: '0 20px',
-              height: 64,
-              flexShrink: 0,
-              borderBottom: '1px solid rgba(0,250,97,0.15)',
+              position: 'fixed',
+              top: 0,
+              left: 0,
+              width: '100vw',
+              height: '100dvh',
+              background: '#1F0E84',
+              zIndex: 999,
+              overflowX: 'hidden',
+              overflowY: 'scroll',
+              WebkitOverflowScrolling: 'touch',
+              fontFamily: 'Montserrat, sans-serif',
             }}
           >
-            <Logo size="md" />
-            <button
-              onClick={() => setMenuOpen(false)}
+            {/* Menu header: logo + sluit knop */}
+            <div
               style={{
-                background: 'none',
-                border: 'none',
-                color: 'rgba(255,255,255,0.8)',
-                cursor: 'pointer',
-                padding: 8,
                 display: 'flex',
                 alignItems: 'center',
-                justifyContent: 'center',
-                borderRadius: 8,
+                justifyContent: 'space-between',
+                padding: '16px 20px',
+                borderBottom: '1px solid rgba(0,250,97,0.15)',
               }}
-              aria-label="Menu sluiten"
             >
-              <X size={24} />
-            </button>
-          </div>
-
-          {/* Nav content — scrollbare zone */}
-          <nav style={{ flex: 1, overflowY: 'scroll', WebkitOverflowScrolling: 'touch', padding: '24px', paddingBottom: '60px' }}>
-
-            {/* Hoofd links */}
-            {navLinks.map((link) => (
-              <Link
-                key={link.href}
-                href={link.href}
+              <Logo size="md" />
+              <button
                 onClick={() => setMenuOpen(false)}
                 style={{
-                  display: 'block',
-                  padding: '18px 24px',
-                  fontSize: 18,
-                  fontWeight: 700,
-                  color: 'rgba(255,255,255,0.9)',
-                  textDecoration: 'none',
-                  borderBottom: '1px solid rgba(255,255,255,0.06)',
-                  fontFamily: 'Montserrat, sans-serif',
-                  transition: 'color 150ms',
+                  background: 'none',
+                  border: 'none',
+                  color: 'rgba(255,255,255,0.8)',
+                  cursor: 'pointer',
+                  padding: 8,
+                  display: 'flex',
+                  alignItems: 'center',
+                  justifyContent: 'center',
+                  borderRadius: 8,
                 }}
+                aria-label="Menu sluiten"
               >
-                {link.label}
-              </Link>
-            ))}
-
-            {/* ── Transfers & Captains ── */}
-            <div
-              style={{
-                padding: '20px 24px 6px',
-                fontSize: 10,
-                fontWeight: 700,
-                letterSpacing: '0.18em',
-                textTransform: 'uppercase',
-                color: '#00FA61',
-              }}
-            >
-              Transfers &amp; Captains
+                <X size={24} />
+              </button>
             </div>
-            {transfersLinks.map((item) => (
-              <Link
-                key={item.href}
-                href={item.href}
-                onClick={() => setMenuOpen(false)}
-                style={{
-                  display: 'block',
-                  padding: '14px 24px 14px 32px',
-                  textDecoration: 'none',
-                  borderBottom: '1px solid rgba(255,255,255,0.05)',
-                  fontFamily: 'Montserrat, sans-serif',
-                }}
-              >
-                <span style={{ fontSize: 15, fontWeight: 600, color: 'rgba(255,255,255,0.85)', display: 'block' }}>
-                  {item.label}
-                </span>
-                <span style={{ fontSize: 11, color: 'rgba(255,255,255,0.35)', display: 'block', marginTop: 2 }}>
-                  {item.desc}
-                </span>
-              </Link>
-            ))}
 
-            {/* ── Teaminformatie ── */}
-            <div
-              style={{
-                padding: '20px 24px 6px',
-                fontSize: 10,
-                fontWeight: 700,
-                letterSpacing: '0.18em',
-                textTransform: 'uppercase',
-                color: '#00FA61',
-              }}
-            >
-              Teaminformatie
-            </div>
-            {teamstatusLinks.map((item) => (
-              <Link
-                key={item.href}
-                href={item.href}
-                onClick={() => setMenuOpen(false)}
-                style={{
-                  display: 'block',
-                  padding: '14px 24px 14px 32px',
-                  textDecoration: 'none',
-                  borderBottom: '1px solid rgba(255,255,255,0.05)',
-                  fontFamily: 'Montserrat, sans-serif',
-                }}
-              >
-                <span style={{ fontSize: 15, fontWeight: 600, color: 'rgba(255,255,255,0.85)', display: 'block' }}>
-                  {item.label}
-                </span>
-                <span style={{ fontSize: 11, color: 'rgba(255,255,255,0.35)', display: 'block', marginTop: 2 }}>
-                  {item.desc}
-                </span>
-              </Link>
-            ))}
+            {/* Nav content */}
+            <nav>
 
-            {/* ── Managers ── */}
-            {managers.length > 0 && (
-              <>
-                <div
+              {/* Hoofd links */}
+              {navLinks.map((link) => (
+                <Link
+                  key={link.href}
+                  href={link.href}
+                  onClick={() => setMenuOpen(false)}
                   style={{
-                    padding: '20px 24px 6px',
-                    fontSize: 10,
+                    display: 'block',
+                    padding: '10px 24px',
+                    fontSize: 15,
                     fontWeight: 700,
-                    letterSpacing: '0.18em',
-                    textTransform: 'uppercase',
-                    color: '#00FA61',
+                    color: 'rgba(255,255,255,0.9)',
+                    textDecoration: 'none',
+                    borderBottom: '1px solid rgba(255,255,255,0.06)',
+                    fontFamily: 'Montserrat, sans-serif',
                   }}
                 >
-                  Managers
-                </div>
-                {managers.map((m) => (
-                  <Link
-                    key={m.id}
-                    href={`/managers/${m.id}`}
-                    onClick={() => setMenuOpen(false)}
-                    style={{
-                      display: 'flex',
-                      alignItems: 'center',
-                      gap: 12,
-                      padding: '12px 24px 12px 32px',
-                      textDecoration: 'none',
-                      borderBottom: '1px solid rgba(255,255,255,0.05)',
-                      fontFamily: 'Montserrat, sans-serif',
-                      fontSize: 15,
-                      fontWeight: 600,
-                      color: 'rgba(255,255,255,0.85)',
-                    }}
-                  >
-                    {m.avatar_url ? (
-                      <div style={{ position: 'relative', width: 32, height: 32, borderRadius: '50%', overflow: 'hidden', flexShrink: 0 }}>
-                        <Image src={m.avatar_url} alt={m.name} fill className="object-cover" />
-                      </div>
-                    ) : (
-                      <div style={{ width: 32, height: 32, borderRadius: '50%', background: 'rgba(0,250,97,0.15)', display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0 }}>
-                        <span style={{ color: '#00FA61', fontSize: 13, fontWeight: 800 }}>{m.name.charAt(0)}</span>
-                      </div>
-                    )}
-                    {m.name}
-                  </Link>
-                ))}
-              </>
-            )}
+                  {link.label}
+                </Link>
+              ))}
 
-            {/* ── Join Mini-League CTA ── */}
-            <div style={{ paddingTop: '28px' }}>
-              <a
-                href="https://fantasy.premierleague.com/leagues/auto-join/t5mggi"
-                target="_blank"
-                rel="noopener noreferrer"
+              {/* ── Transfers & Captains ── */}
+              <div
+                style={{
+                  padding: '8px 24px 4px',
+                  fontSize: 9,
+                  fontWeight: 700,
+                  letterSpacing: '0.18em',
+                  textTransform: 'uppercase',
+                  color: '#00FA61',
+                }}
+              >
+                Transfers &amp; Captains
+              </div>
+              {transfersLinks.map((item) => (
+                <Link
+                  key={item.href}
+                  href={item.href}
+                  onClick={() => setMenuOpen(false)}
+                  style={{
+                    display: 'block',
+                    padding: '7px 24px 7px 36px',
+                    textDecoration: 'none',
+                    borderBottom: '1px solid rgba(255,255,255,0.05)',
+                    fontFamily: 'Montserrat, sans-serif',
+                  }}
+                >
+                  <span style={{ fontSize: 13, fontWeight: 600, color: 'rgba(255,255,255,0.85)', display: 'block' }}>
+                    {item.label}
+                  </span>
+                </Link>
+              ))}
+
+              {/* ── Teaminformatie ── */}
+              <div
+                style={{
+                  padding: '8px 24px 4px',
+                  fontSize: 9,
+                  fontWeight: 700,
+                  letterSpacing: '0.18em',
+                  textTransform: 'uppercase',
+                  color: '#00FA61',
+                }}
+              >
+                Teaminformatie
+              </div>
+              {teamstatusLinks.map((item) => (
+                <Link
+                  key={item.href}
+                  href={item.href}
+                  onClick={() => setMenuOpen(false)}
+                  style={{
+                    display: 'block',
+                    padding: '7px 24px 7px 36px',
+                    textDecoration: 'none',
+                    borderBottom: '1px solid rgba(255,255,255,0.05)',
+                    fontFamily: 'Montserrat, sans-serif',
+                  }}
+                >
+                  <span style={{ fontSize: 13, fontWeight: 600, color: 'rgba(255,255,255,0.85)', display: 'block' }}>
+                    {item.label}
+                  </span>
+                </Link>
+              ))}
+
+              {/* ── Managers — alleen sectielink, geen individuele namen ── */}
+              <div
+                style={{
+                  padding: '8px 24px 4px',
+                  fontSize: 9,
+                  fontWeight: 700,
+                  letterSpacing: '0.18em',
+                  textTransform: 'uppercase',
+                  color: '#00FA61',
+                }}
+              >
+                Managers
+              </div>
+              <Link
+                href="/managers"
+                onClick={() => setMenuOpen(false)}
                 style={{
                   display: 'block',
-                  textAlign: 'center',
-                  background: '#00FA61',
-                  color: '#000',
-                  fontSize: 15,
-                  fontWeight: 700,
-                  padding: '16px 24px',
-                  borderRadius: 12,
+                  padding: '7px 24px 7px 36px',
+                  fontSize: 13,
+                  fontWeight: 600,
+                  color: 'rgba(255,255,255,0.85)',
                   textDecoration: 'none',
+                  borderBottom: '1px solid rgba(255,255,255,0.05)',
                   fontFamily: 'Montserrat, sans-serif',
                 }}
               >
-                Join Mini-League
-              </a>
-            </div>
-          </nav>
-        </div>
+                Bekijk alle managers
+              </Link>
+
+              {/* ── Join Mini-League CTA ── */}
+              <div style={{ padding: '16px 24px 32px' }}>
+                <a
+                  href="https://fantasy.premierleague.com/leagues/auto-join/t5mggi"
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  style={{
+                    display: 'block',
+                    textAlign: 'center',
+                    background: '#00FA61',
+                    color: '#000',
+                    fontSize: 14,
+                    fontWeight: 700,
+                    padding: '14px 24px',
+                    borderRadius: 12,
+                    textDecoration: 'none',
+                    fontFamily: 'Montserrat, sans-serif',
+                  }}
+                >
+                  Join Mini-League
+                </a>
+              </div>
+            </nav>
+          </div>
+        </>
       )}
     </header>
   );
