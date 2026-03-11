@@ -106,6 +106,7 @@ export interface TeamOfTheWeek {
   week_number: number | null;
   season: string | null;
   formation: string | null;
+  sectie_naam: string | null;
   published: boolean;
   created_at: string;
 }

@@ -85,6 +85,7 @@ interface TeamOfTheWeek {
   id: string;
   week_number: number | null;
   formation: string | null;
+  sectie_naam: string | null;
   team_players: TeamPlayer[];
 }
 
@@ -284,8 +285,9 @@ export default async function HomePage() {
     try {
       return await supabase
         .from('team_of_the_week')
-        .select('id, week_number, formation, team_players(player_name, player_club, position, points, is_captain, is_star_player, player_image_url)')
+        .select('id, week_number, formation, sectie_naam, team_players(player_name, player_club, position, points, is_captain, is_star_player, player_image_url)')
         .eq('published', true)
+        .eq('season', '2025-26')
         .order('created_at', { ascending: false })
         .limit(1);
     } catch { return fallback; }

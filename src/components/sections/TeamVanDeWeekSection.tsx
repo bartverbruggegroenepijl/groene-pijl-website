@@ -19,6 +19,7 @@ interface TeamOfTheWeek {
   id: string
   week_number: number | null
   formation: string | null
+  sectie_naam: string | null
   team_players: TeamPlayer[]
 }
 
@@ -34,6 +35,7 @@ interface PlayerStats {
   cleanSheet: boolean
   xG: string
   ownership: string
+  minutes: number
 }
 
 // ─── Helpers ───────────────────────────────────────────────────────────────
@@ -341,6 +343,10 @@ function PitchPlayer({ player, stats }: { player: TeamPlayer; stats: PlayerStats
   )
 }
 
+// ─── Actief seizoen — verander dit bij seizoenswissel ──────────────────────
+
+const ACTIEF_SEIZOEN = '2025-26'
+
 // ─── Main Component ────────────────────────────────────────────────────────
 
 export default function TeamVanDeWeekSection({ team }: Props) {
@@ -359,6 +365,7 @@ export default function TeamVanDeWeekSection({ team }: Props) {
           .from('team_of_the_week')
           .select('week_number')
           .eq('published', true)
+          .eq('season', ACTIEF_SEIZOEN)
           .order('week_number', { ascending: true })
         const weeks = (data ?? [])
           .map((d: { week_number: number | null }) => d.week_number)
@@ -437,6 +444,7 @@ export default function TeamVanDeWeekSection({ team }: Props) {
                 goals_scored: number
                 assists: number
                 clean_sheets: number
+                minutes: number
               } | null
             }
 
@@ -449,6 +457,7 @@ export default function TeamVanDeWeekSection({ team }: Props) {
                   cleanSheet: (last_match?.clean_sheets ?? 0) === 1,
                   xG: last_match?.expected_goals ?? '–',
                   ownership,
+                  minutes: last_match?.minutes ?? 0,
                 },
               }))
             }
@@ -475,9 +484,10 @@ export default function TeamVanDeWeekSection({ team }: Props) {
       const { data } = await supabase
         .from('team_of_the_week')
         .select(
-          'id, week_number, formation, team_players(player_name, player_club, position, points, is_captain, is_star_player, player_image_url)'
+          'id, week_number, formation, sectie_naam, team_players(player_name, player_club, position, points, is_captain, is_star_player, player_image_url)'
         )
         .eq('published', true)
+        .eq('season', ACTIEF_SEIZOEN)
         .eq('week_number', weekNumber)
         .limit(1)
         .single()
@@ -652,7 +662,7 @@ export default function TeamVanDeWeekSection({ team }: Props) {
                 paddingLeft: 12,
               }}
             >
-              Team van de Week
+              {currentTeam.sectie_naam || 'Team van de Week'}
             </h2>
           </div>
 

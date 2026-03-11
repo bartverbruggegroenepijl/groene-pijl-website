@@ -51,6 +51,7 @@ export async function GET(
       goals_scored: number;
       assists: number;
       clean_sheets: number;
+      minutes: number;
     }> = data.history ?? [];
 
     // Als round meegegeven: zoek dat specifieke item; anders: laatste item
@@ -68,6 +69,7 @@ export async function GET(
               goals_scored: last.goals_scored,
               assists: last.assists,
               clean_sheets: last.clean_sheets,
+              minutes: last.minutes,
             }
           : null,
       },

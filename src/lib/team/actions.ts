@@ -14,27 +14,28 @@ interface PlayerData {
 }
 
 function parseTeamFormData(formData: FormData) {
-  const week_number = formData.get('week_number')
+  const week_number  = formData.get('week_number')
     ? parseInt(formData.get('week_number') as string, 10)
     : null;
-  const season      = (formData.get('season') as string) || null;
-  const formation   = (formData.get('formation') as string) || null;
-  const published   = formData.get('published') === 'true';
-  const playersJson = (formData.get('players') as string) || '[]';
+  const season       = (formData.get('season') as string) || null;
+  const formation    = (formData.get('formation') as string) || null;
+  const published    = formData.get('published') === 'true';
+  const sectie_naam  = (formData.get('sectie_naam') as string) || null;
+  const playersJson  = (formData.get('players') as string) || '[]';
   const players: PlayerData[] = JSON.parse(playersJson);
-  return { week_number, season, formation, published, players };
+  return { week_number, season, formation, published, sectie_naam, players };
 }
 
 // ─── Create ──────────────────────────────────────────────────
 
 export async function createTeam(formData: FormData): Promise<void> {
   const supabase = createClient();
-  const { week_number, season, formation, published, players } =
+  const { week_number, season, formation, published, sectie_naam, players } =
     parseTeamFormData(formData);
 
   const { data: team, error: teamError } = await supabase
     .from('team_of_the_week')
-    .insert({ week_number, season, formation, published })
+    .insert({ week_number, season, formation, published, sectie_naam })
     .select('id')
     .single();
 
@@ -56,12 +57,12 @@ export async function createTeam(formData: FormData): Promise<void> {
 
 export async function updateTeam(id: string, formData: FormData): Promise<void> {
   const supabase = createClient();
-  const { week_number, season, formation, published, players } =
+  const { week_number, season, formation, published, sectie_naam, players } =
     parseTeamFormData(formData);
 
   const { error: teamError } = await supabase
     .from('team_of_the_week')
-    .update({ week_number, season, formation, published })
+    .update({ week_number, season, formation, published, sectie_naam })
     .eq('id', id);
 
   if (teamError) throw new Error(teamError.message);

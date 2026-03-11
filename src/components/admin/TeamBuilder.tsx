@@ -10,11 +10,13 @@ import type { FplPlayer, TeamOfTheWeek, TeamPlayer } from '@/types';
 // ─── Formaties ───────────────────────────────────────────────
 
 const FORMATIONS: Record<string, { GK: number; DEF: number; MID: number; FWD: number }> = {
+  '3-4-3': { GK: 1, DEF: 3, MID: 4, FWD: 3 },
+  '3-5-2': { GK: 1, DEF: 3, MID: 5, FWD: 2 },
   '4-3-3': { GK: 1, DEF: 4, MID: 3, FWD: 3 },
   '4-4-2': { GK: 1, DEF: 4, MID: 4, FWD: 2 },
-  '3-5-2': { GK: 1, DEF: 3, MID: 5, FWD: 2 },
+  '4-5-1': { GK: 1, DEF: 4, MID: 5, FWD: 1 },
   '5-3-2': { GK: 1, DEF: 5, MID: 3, FWD: 2 },
-  '3-4-3': { GK: 1, DEF: 3, MID: 4, FWD: 3 },
+  '5-4-1': { GK: 1, DEF: 5, MID: 4, FWD: 1 },
 };
 
 const POSITIONS = ['GK', 'DEF', 'MID', 'FWD'] as const;
@@ -87,6 +89,7 @@ export default function TeamBuilder({
   const [fplError, setFplError]       = useState('');
   const [weekNumber, setWeekNumber]   = useState(existingTeam?.week_number?.toString() ?? '');
   const [season, setSeason]           = useState(existingTeam?.season ?? '2025-26');
+  const [sectieNaam, setSectieNaam]   = useState(existingTeam?.sectie_naam ?? '');
   const [formation, setFormation]     = useState(defaultFormation);
   const [published, setPublished]     = useState(existingTeam?.published ?? false);
   const [slots, setSlots]             = useState<SlotState[]>(() => buildSlots(defaultFormation));
@@ -343,6 +346,30 @@ export default function TeamBuilder({
               </div>
             </button>
           </div>
+        </div>
+
+        {/* Sectienaam — volle breedte onder de grid */}
+        <div className="mt-4">
+          <label className="block text-xs font-medium text-gray-400 mb-1.5">
+            Sectienaam
+            <span className="ml-2 text-gray-600 font-normal normal-case">
+              (standaard: &quot;Team van de Week&quot;)
+            </span>
+          </label>
+          <input
+            name="sectie_naam"
+            type="text"
+            value={sectieNaam}
+            onChange={(e) => setSectieNaam(e.target.value)}
+            placeholder="Team van de Week"
+            className="w-full bg-[#111111] border border-white/10 text-white
+                       placeholder-gray-600 rounded-lg px-4 py-2.5 text-sm
+                       focus:outline-none focus:ring-2 focus:ring-[#00A651]
+                       focus:border-transparent transition-all"
+          />
+          <p className="text-gray-600 text-xs mt-1.5">
+            Voorbeelden: &quot;Team van het Seizoen&quot;, &quot;Team van de Maand&quot;
+          </p>
         </div>
       </div>
 
