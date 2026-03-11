@@ -11,7 +11,7 @@ const FPL_HEADERS = {
 };
 
 export async function GET(
-  _req: Request,
+  req: Request,
   { params }: { params: { id: string } }
 ) {
   const { id } = params;
@@ -19,6 +19,11 @@ export async function GET(
   if (!id || !/^\d+$/.test(id)) {
     return NextResponse.json({ error: 'Ongeldig speler-ID' }, { status: 400 });
   }
+
+  // Optionele ?round= parameter voor historische gameweeks
+  const url = new URL(req.url);
+  const roundParam = url.searchParams.get('round');
+  const targetRound = roundParam ? parseInt(roundParam, 10) : null;
 
   try {
     const res = await fetch(
@@ -39,10 +44,13 @@ export async function GET(
 
     const data = await res.json();
 
-    // Geef alleen het laatste item uit history[] terug om bandbreedte te sparen
     const history: Array<{ expected_goals: string; round: number; total_points: number }> =
       data.history ?? [];
-    const last = history.length > 0 ? history[history.length - 1] : null;
+
+    // Als round meegegeven: zoek dat specifieke item; anders: laatste item
+    const last = targetRound !== null
+      ? (history.find((h) => h.round === targetRound) ?? null)
+      : (history.length > 0 ? history[history.length - 1] : null);
 
     return NextResponse.json(
       {

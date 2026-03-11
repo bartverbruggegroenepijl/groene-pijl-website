@@ -1,6 +1,7 @@
 'use client'
 
 import { useState, useEffect } from 'react'
+import { createClient } from '@/lib/supabase/client'
 
 // ─── Types ─────────────────────────────────────────────────────────────────
 
@@ -341,16 +342,38 @@ function PitchPlayer({ player, xg }: { player: TeamPlayer; xg: string | null }) 
 // ─── Main Component ────────────────────────────────────────────────────────
 
 export default function TeamVanDeWeekSection({ team }: Props) {
-  // ── xG state — { playerName: xgWaarde } ─────────────────────────────────
+  // ── State ─────────────────────────────────────────────────────────────
+  const [currentTeam, setCurrentTeam] = useState<TeamOfTheWeek | null>(team)
+  const [availableWeeks, setAvailableWeeks] = useState<number[]>([])
+  const [pitchOpacity, setPitchOpacity] = useState(1)
   const [xgMap, setXgMap] = useState<Record<string, string>>({})
 
+  // ── Beschikbare gameweeks ophalen bij laden ──────────────────────────
   useEffect(() => {
-    if (!team || team.team_players.length === 0) return
+    const supabase = createClient()
+    ;(async () => {
+      try {
+        const { data } = await supabase
+          .from('team_of_the_week')
+          .select('week_number')
+          .eq('published', true)
+          .order('week_number', { ascending: true })
+        const weeks = (data ?? [])
+          .map((d: { week_number: number | null }) => d.week_number)
+          .filter((w): w is number => w !== null)
+        setAvailableWeeks(weeks)
+      } catch {}
+    })()
+  }, [])
+
+  // ── xG ophalen per speler (correct round per gameweek) ──────────────
+  useEffect(() => {
+    if (!currentTeam || currentTeam.team_players.length === 0) return
+    setXgMap({})
     let cancelled = false
 
     async function fetchXg() {
       try {
-        // Stap 1: haal alle FPL spelers op om web_name → id te koppelen
         const playersRes = await fetch('/api/fpl/players')
         if (!playersRes.ok || cancelled) return
         const { players } = (await playersRes.json()) as {
@@ -363,8 +386,8 @@ export default function TeamVanDeWeekSection({ team }: Props) {
           if (p.fullName) nameToId[p.fullName.toLowerCase()] = p.id
         }
 
-        // Stap 2: per speler de element-summary ophalen → xG uit laatste wedstrijd
-        const players_snapshot = team?.team_players ?? []
+        const round = currentTeam?.week_number ?? null
+        const players_snapshot = currentTeam?.team_players ?? []
         await Promise.all(
           players_snapshot.map(async (tp) => {
             const name = tp.player_name
@@ -372,7 +395,9 @@ export default function TeamVanDeWeekSection({ team }: Props) {
             const id = nameToId[name.toLowerCase()]
             if (!id) return
 
-            const summaryRes = await fetch(`/api/fpl/element-summary/${id}`)
+            // Gebruik round-parameter voor correcte xG per gameweek
+            const roundQuery = round !== null ? `?round=${round}` : ''
+            const summaryRes = await fetch(`/api/fpl/element-summary/${id}${roundQuery}`)
             if (!summaryRes.ok || cancelled) return
             const { last_match } = (await summaryRes.json()) as {
               last_match: { expected_goals: string } | null
@@ -393,10 +418,35 @@ export default function TeamVanDeWeekSection({ team }: Props) {
     return () => {
       cancelled = true
     }
-  }, [team])
+  }, [currentTeam])
+
+  // ── Navigeer naar een gameweek ────────────────────────────────────────
+  async function navigateTo(weekNumber: number) {
+    if (weekNumber === currentTeam?.week_number) return
+    setPitchOpacity(0)
+    await new Promise((resolve) => setTimeout(resolve, 220))
+    try {
+      const supabase = createClient()
+      const { data } = await supabase
+        .from('team_of_the_week')
+        .select(
+          'id, week_number, formation, team_players(player_name, player_club, position, points, is_captain, is_star_player, player_image_url)'
+        )
+        .eq('published', true)
+        .eq('week_number', weekNumber)
+        .limit(1)
+        .single()
+      if (data) {
+        setCurrentTeam(data as unknown as TeamOfTheWeek)
+      }
+    } catch {
+      // stilzwijgend mislukken
+    }
+    setPitchOpacity(1)
+  }
 
   // ── Lege staat ──────────────────────────────────────────────────────────
-  if (!team || team.team_players.length === 0) {
+  if (!currentTeam || currentTeam.team_players.length === 0) {
     return (
       <section
         id="team"
@@ -422,15 +472,21 @@ export default function TeamVanDeWeekSection({ team }: Props) {
     )
   }
 
-  const gk = team.team_players.filter((p) => p.position === 'GK')
-  const def = team.team_players.filter((p) => p.position === 'DEF')
-  const mid = team.team_players.filter((p) => p.position === 'MID')
-  const fwd = team.team_players.filter((p) => p.position === 'FWD')
+  const gk = currentTeam.team_players.filter((p) => p.position === 'GK')
+  const def = currentTeam.team_players.filter((p) => p.position === 'DEF')
+  const mid = currentTeam.team_players.filter((p) => p.position === 'MID')
+  const fwd = currentTeam.team_players.filter((p) => p.position === 'FWD')
 
-  const totalPoints = team.team_players.reduce((sum, p) => {
+  const totalPoints = currentTeam.team_players.reduce((sum, p) => {
     const pts = p.points ?? 0
     return sum + (p.is_captain ? pts * 2 : pts)
   }, 0)
+
+  // Gameweek navigatie helpers
+  const visibleWeeks = availableWeeks.slice(-5)
+  const currentWeekIdx = availableWeeks.indexOf(currentTeam.week_number ?? -1)
+  const canPrev = currentWeekIdx > 0
+  const canNext = currentWeekIdx < availableWeeks.length - 1
 
   const rowGap = 'clamp(10px, 2.8vw, 36px)'
 
@@ -506,7 +562,14 @@ export default function TeamVanDeWeekSection({ team }: Props) {
 
       {/* ── Content ───────────────────────────────────────────────────────── */}
       <div
-        style={{ maxWidth: 760, margin: '0 auto', position: 'relative', zIndex: 1 }}
+        style={{
+          maxWidth: 760,
+          margin: '0 auto',
+          position: 'relative',
+          zIndex: 1,
+          opacity: pitchOpacity,
+          transition: 'opacity 220ms ease',
+        }}
       >
         {/* Header */}
         <div
@@ -531,7 +594,7 @@ export default function TeamVanDeWeekSection({ team }: Props) {
                 marginBottom: 6,
               }}
             >
-              GAMEWEEK {team.week_number ?? '—'}
+              GAMEWEEK {currentTeam.week_number ?? '—'}
             </span>
             <h2
               style={{
@@ -591,11 +654,11 @@ export default function TeamVanDeWeekSection({ team }: Props) {
               >
                 De Groene Pijl Selectie
               </div>
-              {team.formation && (
+              {currentTeam.formation && (
                 <div style={{ color: 'rgba(255,255,255,0.38)', fontSize: 10 }}>
                   Formatie:{' '}
                   <span style={{ color: '#00FA61', fontWeight: 700 }}>
-                    {team.formation}
+                    {currentTeam.formation}
                   </span>
                 </div>
               )}
@@ -859,7 +922,7 @@ export default function TeamVanDeWeekSection({ team }: Props) {
                 lineHeight: 1,
               }}
             >
-              {totalPoints > 0 ? `${totalPoints} pts` : `GW ${team.week_number}`}
+              {totalPoints > 0 ? `${totalPoints} pts` : `GW ${currentTeam.week_number}`}
             </p>
           </div>
 
@@ -876,11 +939,121 @@ export default function TeamVanDeWeekSection({ team }: Props) {
                 fontFamily: 'Montserrat, sans-serif',
               }}
             >
-              GW {team.week_number}
+              GW {currentTeam.week_number}
             </div>
             <ShareButton />
           </div>
         </div>
+
+        {/* ── Gameweek navigatie ──────────────────────────────────────────── */}
+        {availableWeeks.length > 1 && (
+          <div
+            style={{
+              display: 'flex',
+              alignItems: 'center',
+              justifyContent: 'center',
+              gap: 2,
+              padding: '10px 16px 14px',
+              marginTop: 12,
+            }}
+          >
+            {/* Pijl links */}
+            <button
+              type="button"
+              disabled={!canPrev}
+              onClick={() => canPrev && navigateTo(availableWeeks[currentWeekIdx - 1])}
+              style={{
+                background: 'none',
+                border: 'none',
+                color: 'white',
+                cursor: canPrev ? 'pointer' : 'default',
+                opacity: canPrev ? 0.6 : 0.2,
+                padding: '6px 10px',
+                fontSize: 18,
+                lineHeight: 1,
+                fontFamily: 'Montserrat, sans-serif',
+                transition: 'opacity 150ms ease',
+              }}
+              onMouseEnter={(e) => { if (canPrev) e.currentTarget.style.opacity = '1' }}
+              onMouseLeave={(e) => { if (canPrev) e.currentTarget.style.opacity = '0.6' }}
+              aria-label="Vorige gameweek"
+            >
+              ←
+            </button>
+
+            {/* Gameweek labels */}
+            {visibleWeeks.map((week) => {
+              const isActive = week === currentTeam.week_number
+              return (
+                <button
+                  key={week}
+                  type="button"
+                  onClick={() => navigateTo(week)}
+                  style={{
+                    position: 'relative',
+                    background: 'none',
+                    border: 'none',
+                    color: isActive ? '#00FA61' : 'rgba(255,255,255,0.4)',
+                    cursor: 'pointer',
+                    padding: '6px 10px 12px',
+                    fontSize: 11,
+                    fontWeight: isActive ? 700 : 500,
+                    fontFamily: 'Montserrat, sans-serif',
+                    transition: 'color 150ms ease',
+                    userSelect: 'none',
+                  }}
+                  onMouseEnter={(e) => {
+                    if (!isActive) e.currentTarget.style.color = 'rgba(255,255,255,0.9)'
+                  }}
+                  onMouseLeave={(e) => {
+                    if (!isActive) e.currentTarget.style.color = 'rgba(255,255,255,0.4)'
+                  }}
+                >
+                  GW{week}
+                  {isActive && (
+                    <span
+                      style={{
+                        position: 'absolute',
+                        bottom: 4,
+                        left: '50%',
+                        transform: 'translateX(-50%)',
+                        width: 4,
+                        height: 4,
+                        borderRadius: '50%',
+                        background: '#00FA61',
+                        display: 'block',
+                      }}
+                    />
+                  )}
+                </button>
+              )
+            })}
+
+            {/* Pijl rechts */}
+            <button
+              type="button"
+              disabled={!canNext}
+              onClick={() => canNext && navigateTo(availableWeeks[currentWeekIdx + 1])}
+              style={{
+                background: 'none',
+                border: 'none',
+                color: 'white',
+                cursor: canNext ? 'pointer' : 'default',
+                opacity: canNext ? 0.6 : 0.2,
+                padding: '6px 10px',
+                fontSize: 18,
+                lineHeight: 1,
+                fontFamily: 'Montserrat, sans-serif',
+                transition: 'opacity 150ms ease',
+              }}
+              onMouseEnter={(e) => { if (canNext) e.currentTarget.style.opacity = '1' }}
+              onMouseLeave={(e) => { if (canNext) e.currentTarget.style.opacity = '0.6' }}
+              aria-label="Volgende gameweek"
+            >
+              →
+            </button>
+          </div>
+        )}
       </div>
 
       {/* Fade naar volgende sectie */}
