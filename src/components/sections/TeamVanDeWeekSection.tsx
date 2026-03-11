@@ -379,20 +379,36 @@ export default function TeamVanDeWeekSection({ team }: Props) {
         const playersRes = await fetch('/api/fpl/players')
         if (!playersRes.ok || cancelled) return
         const { players } = (await playersRes.json()) as {
-          players: Array<{ id: number; name: string; fullName: string; ownership: string }>
+          players: Array<{ id: number; name: string; fullName: string; ownership: string; team: string }>
         }
 
-        // Bouw naam → id én naam → eigendom map
+        // Bouw twee lookup-maps:
+        //  1. nameClubKey = "web_name|club_short" → exacte match (bijv. "anderson|nfo")
+        //  2. nameKey     = "web_name" → fallback, first-match-wins (geen overschrijven)
+        // Dit voorkomt dat twee spelers met dezelfde web_name (bijv. "Anderson")
+        // elkaar overschrijven in de map — de verkeerde speler wordt dan gebruikt.
         const nameToId: Record<string, number> = {}
         const nameToOwnership: Record<string, string> = {}
+
         for (const p of players) {
-          if (p.name) {
-            nameToId[p.name.toLowerCase()] = p.id
-            nameToOwnership[p.name.toLowerCase()] = p.ownership ?? ''
+          const nameKey     = p.name?.toLowerCase() ?? ''
+          const nameClubKey = `${nameKey}|${p.team?.toLowerCase() ?? ''}`
+          const fullKey     = p.fullName?.toLowerCase() ?? ''
+
+          // Exacte sleutel: naam + club (altijd overschrijven — is uniek)
+          if (nameKey) {
+            nameToId[nameClubKey]  = p.id
+            nameToOwnership[nameClubKey] = p.ownership ?? ''
           }
-          if (p.fullName) {
-            nameToId[p.fullName.toLowerCase()] = p.id
-            nameToOwnership[p.fullName.toLowerCase()] = p.ownership ?? ''
+
+          // Naam-only sleutel: first-match-wins om naamconflicten te vermijden
+          if (nameKey && !(nameKey in nameToId)) {
+            nameToId[nameKey]       = p.id
+            nameToOwnership[nameKey] = p.ownership ?? ''
+          }
+          if (fullKey && !(fullKey in nameToId)) {
+            nameToId[fullKey]       = p.id
+            nameToOwnership[fullKey] = p.ownership ?? ''
           }
         }
 
@@ -402,11 +418,15 @@ export default function TeamVanDeWeekSection({ team }: Props) {
         await Promise.all(
           players_snapshot.map(async (tp) => {
             const name = tp.player_name
+            const club = tp.player_club
             if (!name) return
-            const id = nameToId[name.toLowerCase()]
+
+            // Probeer eerst exacte naam+club-sleutel, daarna naam-only fallback
+            const nameClubKey = `${name.toLowerCase()}|${club?.toLowerCase() ?? ''}`
+            const id = nameToId[nameClubKey] ?? nameToId[name.toLowerCase()]
             if (!id) return
 
-            const ownership = nameToOwnership[name.toLowerCase()] ?? ''
+            const ownership = nameToOwnership[nameClubKey] ?? nameToOwnership[name.toLowerCase()] ?? ''
             const roundQuery = round !== null ? `?round=${round}` : ''
             const summaryRes = await fetch(`/api/fpl/element-summary/${id}${roundQuery}`)
             if (!summaryRes.ok || cancelled) return
