@@ -12,6 +12,7 @@ interface FplApiPlayer {
   total_points: number;
   event_points: number;
   now_cost: number;
+  selected_by_percent: string;  // bijv. "18.5"
 }
 
 interface FplApiTeam {
@@ -80,6 +81,7 @@ export async function GET() {
         eventPoints: p.event_points,
         price: p.now_cost / 10,
         imageUrl,
+        ownership: p.selected_by_percent,
       };
     });
 

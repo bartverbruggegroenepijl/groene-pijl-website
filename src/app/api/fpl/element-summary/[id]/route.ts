@@ -44,8 +44,14 @@ export async function GET(
 
     const data = await res.json();
 
-    const history: Array<{ expected_goals: string; round: number; total_points: number }> =
-      data.history ?? [];
+    const history: Array<{
+      expected_goals: string;
+      round: number;
+      total_points: number;
+      goals_scored: number;
+      assists: number;
+      clean_sheets: number;
+    }> = data.history ?? [];
 
     // Als round meegegeven: zoek dat specifieke item; anders: laatste item
     const last = targetRound !== null
@@ -59,6 +65,9 @@ export async function GET(
               round: last.round,
               expected_goals: last.expected_goals,
               total_points: last.total_points,
+              goals_scored: last.goals_scored,
+              assists: last.assists,
+              clean_sheets: last.clean_sheets,
             }
           : null,
       },

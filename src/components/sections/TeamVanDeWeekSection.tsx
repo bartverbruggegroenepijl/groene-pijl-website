@@ -26,6 +26,16 @@ interface Props {
   team: TeamOfTheWeek | null
 }
 
+// ─── Speler Stats ──────────────────────────────────────────────────────────
+
+interface PlayerStats {
+  goals: number
+  assists: number
+  cleanSheet: boolean
+  xG: string
+  ownership: string
+}
+
 // ─── Helpers ───────────────────────────────────────────────────────────────
 
 function shortName(name: string | null): string {
@@ -37,7 +47,20 @@ function shortName(name: string | null): string {
 
 // ─── Tooltip ───────────────────────────────────────────────────────────────
 
-function PlayerTooltip({ player, xg }: { player: TeamPlayer; xg: string | null }) {
+function StatRow({ label, value, highlight }: { label: string; value: string; highlight?: boolean }) {
+  return (
+    <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+      <span style={{ color: 'rgba(255,255,255,0.42)', fontSize: 10.5 }}>{label}</span>
+      <span style={{ color: highlight ? '#00FA61' : '#fff', fontWeight: highlight ? 800 : 700, fontSize: highlight ? 12 : 11 }}>
+        {value}
+      </span>
+    </div>
+  )
+}
+
+function PlayerTooltip({ player, stats }: { player: TeamPlayer; stats: PlayerStats | null }) {
+  const showCleanSheet = player.position === 'GK' || player.position === 'DEF'
+
   return (
     <div
       style={{
@@ -45,7 +68,7 @@ function PlayerTooltip({ player, xg }: { player: TeamPlayer; xg: string | null }
         bottom: 'calc(100% + 10px)',
         left: '50%',
         transform: 'translateX(-50%)',
-        width: 178,
+        width: 192,
         background: 'rgba(7,4,28,0.94)',
         backdropFilter: 'blur(18px)',
         WebkitBackdropFilter: 'blur(18px)',
@@ -60,86 +83,65 @@ function PlayerTooltip({ player, xg }: { player: TeamPlayer; xg: string | null }
       }}
     >
       {/* Naam */}
-      <p
-        style={{
-          color: '#fff',
-          fontWeight: 700,
-          fontSize: 12.5,
-          margin: '0 0 3px',
-          lineHeight: 1.3,
-        }}
-      >
+      <p style={{ color: '#fff', fontWeight: 700, fontSize: 12.5, margin: '0 0 3px', lineHeight: 1.3 }}>
         {player.player_name ?? '—'}
       </p>
 
       {/* Club */}
       {player.player_club && (
-        <div
-          style={{
-            display: 'flex',
-            alignItems: 'center',
-            gap: 5,
-            marginBottom: 9,
-          }}
-        >
-          <span
-            style={{
-              width: 7,
-              height: 7,
-              borderRadius: '50%',
-              background: '#00FA61',
-              flexShrink: 0,
-              display: 'inline-block',
-            }}
-          />
-          <span
-            style={{ color: 'rgba(255,255,255,0.48)', fontSize: 10.5, fontWeight: 500 }}
-          >
+        <div style={{ display: 'flex', alignItems: 'center', gap: 5, marginBottom: 9 }}>
+          <span style={{ width: 7, height: 7, borderRadius: '50%', background: '#00FA61', flexShrink: 0, display: 'inline-block' }} />
+          <span style={{ color: 'rgba(255,255,255,0.48)', fontSize: 10.5, fontWeight: 500 }}>
             {player.player_club}
           </span>
         </div>
       )}
 
       {/* Stats */}
-      <div
-        style={{
-          borderTop: '1px solid rgba(255,255,255,0.07)',
-          paddingTop: 8,
-          display: 'flex',
-          flexDirection: 'column',
-          gap: 5,
-        }}
-      >
+      <div style={{ borderTop: '1px solid rgba(255,255,255,0.07)', paddingTop: 8, display: 'flex', flexDirection: 'column', gap: 5 }}>
+        {/* Punten */}
         {player.points !== null && (
-          <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
-            <span style={{ color: 'rgba(255,255,255,0.42)', fontSize: 10.5 }}>Punten gameweek</span>
-            <span style={{ color: '#00FA61', fontWeight: 800, fontSize: 12 }}>{player.points}</span>
-          </div>
+          <StatRow label="Punten gameweek" value={String(player.points)} highlight />
         )}
+        {/* Positie */}
         {player.position && (
-          <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
-            <span style={{ color: 'rgba(255,255,255,0.42)', fontSize: 10.5 }}>Positie</span>
-            <span style={{ color: '#fff', fontWeight: 600, fontSize: 11 }}>{player.position}</span>
-          </div>
+          <StatRow label="Positie" value={player.position} />
         )}
+        {/* Aanvoerder */}
         {player.is_captain && (
           <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
             <span style={{ color: 'rgba(255,255,255,0.42)', fontSize: 10.5 }}>Aanvoerder</span>
             <span style={{ color: '#FFD700', fontWeight: 700, fontSize: 11 }}>✓ Ja</span>
           </div>
         )}
+        {/* Uitblinker */}
         {player.is_star_player && (
           <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
             <span style={{ color: 'rgba(255,255,255,0.42)', fontSize: 10.5 }}>Top speler</span>
             <span style={{ color: '#FFD700', fontWeight: 700, fontSize: 11 }}>★ Uitblinker</span>
           </div>
         )}
-        <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
-          <span style={{ color: 'rgba(255,255,255,0.42)', fontSize: 10.5 }}>🎯 Verwachte goals</span>
-          <span style={{ color: '#fff', fontWeight: 700, fontSize: 11 }}>
-            {xg !== null ? xg : '–'}
-          </span>
+
+        {/* Scheidingslijn voor FPL stats */}
+        <div style={{ borderTop: '1px solid rgba(255,255,255,0.05)', marginTop: 2, paddingTop: 5 }}>
+          {/* Goals */}
+          <StatRow label="⚽ Goals" value={stats ? String(stats.goals) : '–'} />
         </div>
+        {/* Assists */}
+        <StatRow label="🅰️ Assists" value={stats ? String(stats.assists) : '–'} />
+        {/* Clean Sheet — alleen voor GK en DEF */}
+        {showCleanSheet && (
+          <StatRow
+            label="🧤 Clean Sheet"
+            value={stats ? (stats.cleanSheet ? 'Ja' : 'Nee') : '–'}
+          />
+        )}
+        {/* Verwachte goals */}
+        <StatRow label="🎯 Verwachte goals" value={stats ? stats.xG : '–'} />
+        {/* Eigendom */}
+        {stats?.ownership && (
+          <StatRow label="👥 Eigendom" value={`${stats.ownership}%`} />
+        )}
       </div>
     </div>
   )
@@ -147,7 +149,7 @@ function PlayerTooltip({ player, xg }: { player: TeamPlayer; xg: string | null }
 
 // ─── PitchPlayer ───────────────────────────────────────────────────────────
 
-function PitchPlayer({ player, xg }: { player: TeamPlayer; xg: string | null }) {
+function PitchPlayer({ player, stats }: { player: TeamPlayer; stats: PlayerStats | null }) {
   const [hovered, setHovered] = useState(false)
   const isCapt = player.is_captain
   const isStar = player.is_star_player
@@ -170,7 +172,7 @@ function PitchPlayer({ player, xg }: { player: TeamPlayer; xg: string | null }) 
       onMouseLeave={() => setHovered(false)}
     >
       {/* Tooltip */}
-      {hovered && <PlayerTooltip player={player} xg={xg} />}
+      {hovered && <PlayerTooltip player={player} stats={stats} />}
 
       {/* Gouden ster boven aanvoerder */}
       {isCapt && (
@@ -346,7 +348,7 @@ export default function TeamVanDeWeekSection({ team }: Props) {
   const [currentTeam, setCurrentTeam] = useState<TeamOfTheWeek | null>(team)
   const [availableWeeks, setAvailableWeeks] = useState<number[]>([])
   const [pitchOpacity, setPitchOpacity] = useState(1)
-  const [xgMap, setXgMap] = useState<Record<string, string>>({})
+  const [statsMap, setStatsMap] = useState<Record<string, PlayerStats>>({})
 
   // ── Beschikbare gameweeks ophalen bij laden ──────────────────────────
   useEffect(() => {
@@ -366,28 +368,37 @@ export default function TeamVanDeWeekSection({ team }: Props) {
     })()
   }, [])
 
-  // ── xG ophalen per speler (correct round per gameweek) ──────────────
+  // ── Stats ophalen per speler (goals, assists, clean sheet, xG, eigendom) ─
   useEffect(() => {
     if (!currentTeam || currentTeam.team_players.length === 0) return
-    setXgMap({})
+    setStatsMap({})
     let cancelled = false
 
-    async function fetchXg() {
+    async function fetchStats() {
       try {
         const playersRes = await fetch('/api/fpl/players')
         if (!playersRes.ok || cancelled) return
         const { players } = (await playersRes.json()) as {
-          players: Array<{ id: number; name: string; fullName: string }>
+          players: Array<{ id: number; name: string; fullName: string; ownership: string }>
         }
 
+        // Bouw naam → id én naam → eigendom map
         const nameToId: Record<string, number> = {}
+        const nameToOwnership: Record<string, string> = {}
         for (const p of players) {
-          if (p.name) nameToId[p.name.toLowerCase()] = p.id
-          if (p.fullName) nameToId[p.fullName.toLowerCase()] = p.id
+          if (p.name) {
+            nameToId[p.name.toLowerCase()] = p.id
+            nameToOwnership[p.name.toLowerCase()] = p.ownership ?? ''
+          }
+          if (p.fullName) {
+            nameToId[p.fullName.toLowerCase()] = p.id
+            nameToOwnership[p.fullName.toLowerCase()] = p.ownership ?? ''
+          }
         }
 
         const round = currentTeam?.week_number ?? null
         const players_snapshot = currentTeam?.team_players ?? []
+
         await Promise.all(
           players_snapshot.map(async (tp) => {
             const name = tp.player_name
@@ -395,26 +406,40 @@ export default function TeamVanDeWeekSection({ team }: Props) {
             const id = nameToId[name.toLowerCase()]
             if (!id) return
 
-            // Gebruik round-parameter voor correcte xG per gameweek
+            const ownership = nameToOwnership[name.toLowerCase()] ?? ''
             const roundQuery = round !== null ? `?round=${round}` : ''
             const summaryRes = await fetch(`/api/fpl/element-summary/${id}${roundQuery}`)
             if (!summaryRes.ok || cancelled) return
+
             const { last_match } = (await summaryRes.json()) as {
-              last_match: { expected_goals: string } | null
+              last_match: {
+                expected_goals: string
+                goals_scored: number
+                assists: number
+                clean_sheets: number
+              } | null
             }
 
-            const xg = last_match?.expected_goals ?? null
-            if (xg !== null && !cancelled) {
-              setXgMap((prev) => ({ ...prev, [name]: xg }))
+            if (!cancelled) {
+              setStatsMap((prev) => ({
+                ...prev,
+                [name]: {
+                  goals: last_match?.goals_scored ?? 0,
+                  assists: last_match?.assists ?? 0,
+                  cleanSheet: (last_match?.clean_sheets ?? 0) === 1,
+                  xG: last_match?.expected_goals ?? '–',
+                  ownership,
+                },
+              }))
             }
           })
         )
       } catch {
-        // xG is optioneel — stilzwijgend mislukken
+        // Stats zijn optioneel — stilzwijgend mislukken
       }
     }
 
-    fetchXg()
+    fetchStats()
     return () => {
       cancelled = true
     }
@@ -841,7 +866,7 @@ export default function TeamVanDeWeekSection({ team }: Props) {
                 }}
               >
                 {fwd.map((p, i) => (
-                  <PitchPlayer key={i} player={p} xg={xgMap[p.player_name ?? ''] ?? null} />
+                  <PitchPlayer key={i} player={p} stats={statsMap[p.player_name ?? ''] ?? null} />
                 ))}
               </div>
             )}
@@ -855,7 +880,7 @@ export default function TeamVanDeWeekSection({ team }: Props) {
                 }}
               >
                 {mid.map((p, i) => (
-                  <PitchPlayer key={i} player={p} xg={xgMap[p.player_name ?? ''] ?? null} />
+                  <PitchPlayer key={i} player={p} stats={statsMap[p.player_name ?? ''] ?? null} />
                 ))}
               </div>
             )}
@@ -869,7 +894,7 @@ export default function TeamVanDeWeekSection({ team }: Props) {
                 }}
               >
                 {def.map((p, i) => (
-                  <PitchPlayer key={i} player={p} xg={xgMap[p.player_name ?? ''] ?? null} />
+                  <PitchPlayer key={i} player={p} stats={statsMap[p.player_name ?? ''] ?? null} />
                 ))}
               </div>
             )}
@@ -878,7 +903,7 @@ export default function TeamVanDeWeekSection({ team }: Props) {
                 style={{ display: 'flex', justifyContent: 'center', overflow: 'visible' }}
               >
                 {gk.map((p, i) => (
-                  <PitchPlayer key={i} player={p} xg={xgMap[p.player_name ?? ''] ?? null} />
+                  <PitchPlayer key={i} player={p} stats={statsMap[p.player_name ?? ''] ?? null} />
                 ))}
               </div>
             )}
