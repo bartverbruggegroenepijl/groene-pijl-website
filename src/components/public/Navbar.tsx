@@ -245,16 +245,14 @@ export default function Navbar({ managers = [] }: NavbarProps) {
             position: 'fixed',
             top: 0,
             left: 0,
-            right: 0,
-            bottom: 0,
             width: '100vw',
             height: '100dvh',
             background: '#1F0E84',
-            overflow: 'hidden',
             zIndex: 999,
-            fontFamily: 'Montserrat, sans-serif',
             display: 'flex',
             flexDirection: 'column',
+            overflow: 'hidden',
+            fontFamily: 'Montserrat, sans-serif',
           }}
         >
           {/* Menu header: logo + sluit knop */}
@@ -289,8 +287,8 @@ export default function Navbar({ managers = [] }: NavbarProps) {
             </button>
           </div>
 
-          {/* Nav content */}
-          <nav style={{ display: 'flex', flexDirection: 'column', flex: 1, overflowY: 'auto', WebkitOverflowScrolling: 'touch', minHeight: 0 }}>
+          {/* Nav content — scrollbare zone */}
+          <nav style={{ flex: 1, overflowY: 'scroll', WebkitOverflowScrolling: 'touch', padding: '24px', paddingBottom: '60px' }}>
 
             {/* Hoofd links */}
             {navLinks.map((link) => (
@@ -433,7 +431,7 @@ export default function Navbar({ managers = [] }: NavbarProps) {
             )}
 
             {/* ── Join Mini-League CTA ── */}
-            <div style={{ padding: '28px 24px 40px', marginTop: 'auto' }}>
+            <div style={{ paddingTop: '28px' }}>
               <a
                 href="https://fantasy.premierleague.com/leagues/auto-join/t5mggi"
                 target="_blank"
