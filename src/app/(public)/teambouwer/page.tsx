@@ -4,7 +4,7 @@ import { useEffect, useState, useMemo, useCallback } from 'react';
 import Image from 'next/image';
 import {
   Search, X, ChevronLeft, ChevronRight, RotateCcw, Save,
-  ArrowUpDown, ArrowUp, ArrowDown, Plus, Minus, Users,
+  ArrowUpDown, ArrowUp, ArrowDown, Plus, Minus, Users, ArrowLeftRight,
 } from 'lucide-react';
 
 /* ─────────────────────────── types ─────────────────────────── */
@@ -26,6 +26,9 @@ interface FplPlayer {
   goals: number;
   assists: number;
   minutes: number;
+  cleanSheets: number;
+  ownership: string;
+  xGoals: string;
 }
 
 interface FixtureCell {
@@ -89,7 +92,7 @@ const FDR_STYLE: Record<number, { bg: string; color: string }> = {
   5: { bg: '#80072D', color: '#fff' },
 };
 
-/* ── FDR kleuren voor veldweergave (gebruikersinstructies) ── */
+/* ── FDR kleuren voor veldweergave ── */
 const FDR_PITCH_BG: Record<number, string> = {
   1: '#00FA61', 2: '#00FA61', 3: '#FFA500', 4: '#FF4444', 5: '#FF4444',
 };
@@ -141,12 +144,21 @@ function FdrBadge({ cell }: { cell: FixtureCell }) {
 /* ─────────────── PitchViewCard (veldweergave) ─────────────── */
 
 function PitchViewCard({
-  player, onRemove, fixtures3,
+  player,
+  slotId,
+  onRemove,
+  fixture1,
+  isSelected,
+  onCardClick,
+  onWisselClick,
 }: {
   player: SelectedPlayer | null;
   slotId: string;
   onRemove: () => void;
-  fixtures3: (FixtureCell | null)[];
+  fixture1: FixtureCell | null;
+  isSelected: boolean;
+  onCardClick: () => void;
+  onWisselClick: (e: React.MouseEvent) => void;
 }) {
   if (!player) {
     return (
@@ -165,23 +177,65 @@ function PitchViewCard({
 
   return (
     <div
-      className="group relative"
-      style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', gap: 2, minWidth: 52, maxWidth: 68 }}
+      className="pitch-card"
+      style={{
+        display: 'flex', flexDirection: 'column', alignItems: 'center', gap: 2,
+        minWidth: 52, maxWidth: 68,
+        cursor: 'pointer',
+        position: 'relative',
+      }}
+      onClick={onCardClick}
+      // slotId prop used by parent for key; suppress TS warning
+      data-slot={slotId}
     >
+      {/* Verwijder knop */}
       <button
-        onClick={onRemove}
-        className="absolute -top-0.5 -right-0.5 opacity-0 group-hover:opacity-100 transition-opacity"
+        onClick={(e) => { e.stopPropagation(); onRemove(); }}
+        className="remove-btn"
         style={{
+          position: 'absolute', top: -2, right: -2,
           width: 14, height: 14, borderRadius: '50%', background: '#EF4444',
           color: '#fff', display: 'flex', alignItems: 'center', justifyContent: 'center',
           zIndex: 10, border: 'none', cursor: 'pointer',
+          opacity: 0, transition: 'opacity 0.15s',
         }}
+        title="Verwijder"
       >
         <X size={7} />
       </button>
 
-      <ShirtIcon shortName={player.team} size={30} />
+      {/* Shirt + selectieglow */}
+      <div style={{ position: 'relative' }}>
+        <div style={{
+          borderRadius: '50%',
+          padding: 2,
+          boxShadow: isSelected ? '0 0 0 2px #00FA61, 0 0 14px rgba(0,250,97,0.55)' : 'none',
+          transition: 'box-shadow 0.15s',
+        }}>
+          <ShirtIcon shortName={player.team} size={30} />
+        </div>
 
+        {/* Wissel icoon: altijd zichtbaar op mobiel, hover op desktop */}
+        <button
+          onClick={onWisselClick}
+          className="swap-icon"
+          style={{
+            position: 'absolute', bottom: -5, right: -9,
+            width: 16, height: 16, borderRadius: '50%',
+            background: isSelected ? '#00FA61' : 'rgba(255,255,255,0.18)',
+            color: isSelected ? '#111' : '#fff',
+            display: 'flex', alignItems: 'center', justifyContent: 'center',
+            border: 'none', cursor: 'pointer',
+            zIndex: 5, padding: 0,
+            transition: 'background 0.15s, opacity 0.15s',
+          }}
+          title="Wissel"
+        >
+          <ArrowLeftRight size={8} />
+        </button>
+      </div>
+
+      {/* Naam */}
       <span style={{
         color: '#fff', fontSize: 9, fontWeight: 700, textAlign: 'center',
         lineHeight: 1.2, maxWidth: 62, overflow: 'hidden', textOverflow: 'ellipsis',
@@ -190,29 +244,29 @@ function PitchViewCard({
         {player.name}
       </span>
 
+      {/* Prijs */}
       <span style={{ color: '#00FA61', fontSize: 8, fontFamily: 'Montserrat, sans-serif' }}>
         £{player.price.toFixed(1)}m
       </span>
 
-      <div style={{ display: 'flex', gap: 2, flexWrap: 'wrap', justifyContent: 'center', marginTop: 1 }}>
-        {fixtures3.map((f, i) =>
-          f ? (
-            <span key={i} style={{
-              fontSize: 7, fontWeight: 700,
-              background: FDR_PITCH_BG[f.difficulty] ?? '#888',
-              color: FDR_PITCH_TEXT[f.difficulty] ?? '#fff',
-              padding: '1px 3px', borderRadius: 2,
-              lineHeight: 1.4, fontFamily: 'Montserrat, sans-serif', whiteSpace: 'nowrap',
-            }}>
-              {f.opponent}({f.location})
-            </span>
-          ) : (
-            <span key={i} style={{
-              fontSize: 7, color: 'rgba(255,255,255,0.3)',
-              background: 'rgba(255,255,255,0.06)',
-              padding: '1px 4px', borderRadius: 2, lineHeight: 1.4,
-            }}>–</span>
-          )
+      {/* Fixture badge (één per gameweek) */}
+      <div style={{ marginTop: 1 }}>
+        {fixture1 ? (
+          <span style={{
+            fontSize: 7, fontWeight: 700,
+            background: FDR_PITCH_BG[fixture1.difficulty] ?? '#888',
+            color: FDR_PITCH_TEXT[fixture1.difficulty] ?? '#fff',
+            padding: '1px 3px', borderRadius: 2,
+            lineHeight: 1.4, fontFamily: 'Montserrat, sans-serif', whiteSpace: 'nowrap',
+          }}>
+            {fixture1.opponent} {fixture1.location}
+          </span>
+        ) : (
+          <span style={{
+            fontSize: 7, color: 'rgba(255,255,255,0.3)',
+            background: 'rgba(255,255,255,0.06)',
+            padding: '1px 4px', borderRadius: 2, lineHeight: 1.4,
+          }}>–</span>
         )}
       </div>
     </div>
@@ -299,11 +353,18 @@ export default function TeambouwerPage() {
   // Extra filters
   const [budgetFilter, setBudgetFilter] = useState<number | null>(null);
 
-  // Tooltip state (player stats on hover)
+  // Tooltip state (spelerslijst hover)
   const [tooltip, setTooltip] = useState<{ player: FplPlayer; x: number; y: number } | null>(null);
 
   // Veld GW offset
   const [plannerOffset, setPlannerOffset] = useState(0);
+
+  // Wissel state: per GW een mapping van display-slot → bron-slot
+  const [selectedSlot, setSelectedSlot] = useState<string | null>(null);
+  const [gwSwaps,      setGwSwaps]      = useState<Record<number, Record<string, string>>>({});
+
+  // Speler info popup (veldweergave klik)
+  const [playerPopup, setPlayerPopup] = useState<SelectedPlayer | null>(null);
 
   /* ── load FPL data ── */
   useEffect(() => {
@@ -333,7 +394,7 @@ export default function TeambouwerPage() {
     })();
   }, []);
 
-  /* ── load from localStorage (handles old + new format) ── */
+  /* ── load from localStorage ── */
   useEffect(() => {
     try {
       const saved = localStorage.getItem(LS_KEY);
@@ -365,7 +426,7 @@ export default function TeambouwerPage() {
     }
   };
 
-  /* ── formation change: redistribute players ── */
+  /* ── formation change ── */
   const changeFormation = useCallback((newFormation: FormationKey) => {
     const { def, mid, fwd } = FORMATIONS[newFormation];
     const startingCounts: Record<Position, number> = { GK: 1, DEF: def, MID: mid, FWD: fwd };
@@ -415,7 +476,7 @@ export default function TeambouwerPage() {
     return { total, remaining, count, countByPos, countByClub };
   }, [team]);
 
-  /* ── validation ── */
+  /* ── validatie ── */
   const canAdd = useCallback((player: FplPlayer): { ok: boolean; reason?: string } => {
     const sel = Object.values(team);
     if (sel.find((p) => p.id === player.id))                          return { ok: false, reason: 'Al in team' };
@@ -427,7 +488,7 @@ export default function TeambouwerPage() {
     return { ok: true };
   }, [team, teamValues]);
 
-  /* ── add player to next free slot (formation-aware) ── */
+  /* ── speler toevoegen ── */
   const addPlayer = useCallback((player: FplPlayer) => {
     const { ok, reason } = canAdd(player);
     if (!ok) { if (reason) alert(reason); return; }
@@ -455,7 +516,7 @@ export default function TeambouwerPage() {
     setTeam((prev) => ({ ...prev, [slotId!]: { ...player, slotId: slotId! } }));
   }, [team, canAdd, formation]);
 
-  /* ── remove player ── */
+  /* ── speler verwijderen ── */
   const removePlayer = useCallback((slotId: string) => {
     setTeam((prev) => {
       const next = { ...prev };
@@ -464,7 +525,7 @@ export default function TeambouwerPage() {
     });
   }, []);
 
-  /* ── filtered & sorted player list ── */
+  /* ── gefilterde spelerslijst ── */
   const filteredPlayers = useMemo(() => {
     let list = players;
     if (posFilter !== 'ALL') list = list.filter((p) => p.position === posFilter);
@@ -499,7 +560,7 @@ export default function TeambouwerPage() {
     return sortDir === 'desc' ? <ArrowDown size={11} className="text-primary" /> : <ArrowUp size={11} className="text-primary" />;
   }
 
-  /* ── pitch rows (bestaand teambuilder veld) ── */
+  /* ── pitch rows (teambuilder rechterkolom) ── */
   function PitchRow({ positions, label }: { positions: { pos: Position; idx: number }[]; label: string }) {
     return (
       <div className="flex flex-col items-center gap-1">
@@ -525,13 +586,13 @@ export default function TeambouwerPage() {
     );
   }
 
-  /* ── compute slot arrays from active formation ── */
+  /* ── slot arrays uit actieve formatie ── */
   const { def: defCount, mid: midCount, fwd: fwdCount } = FORMATIONS[formation];
   const defSlots = Array.from({ length: defCount }, (_, i) => ({ pos: 'DEF' as Position, idx: i }));
   const midSlots = Array.from({ length: midCount }, (_, i) => ({ pos: 'MID' as Position, idx: i }));
   const fwdSlots = Array.from({ length: fwdCount }, (_, i) => ({ pos: 'FWD' as Position, idx: i }));
 
-  /* ── Veld GW navigatie: computed ── */
+  /* ── veld GW navigatie: berekeningen ── */
   const selectedPlayersList = useMemo(() => {
     const allSlots = [
       'GK-0',
@@ -546,7 +607,6 @@ export default function TeambouwerPage() {
   const plannerMaxOffset = useMemo(() => Math.max(0, gameweeks.length - 1), [gameweeks]);
   const safePlannerOffset = Math.min(plannerOffset, plannerMaxOffset);
 
-  // Huidig GW-nummer en deadline
   const currentGW = gameweeks[safePlannerOffset] ?? null;
   const currentDeadlineIso = currentGW ? (eventDeadlines[currentGW] ?? null) : null;
 
@@ -560,40 +620,103 @@ export default function TeambouwerPage() {
     } catch { return null; }
   }, [currentDeadlineIso]);
 
-  // 3 GW-nummers voor fixture badges per speler
-  const pitchGws = useMemo(() => {
-    return (
-      [gameweeks[safePlannerOffset], gameweeks[safePlannerOffset + 1], gameweeks[safePlannerOffset + 2]] as
-        (number | undefined)[]
-    ).filter((g): g is number => g !== undefined);
-  }, [gameweeks, safePlannerOffset]);
-
-  // Hulpfunctie: haal 3 fixtures op per speler op basis van pitchGws
-  const getFixtures3 = useCallback(
-    (teamId: number): (FixtureCell | null)[] => {
-      const all = fdrMap[teamId] ?? [];
-      return pitchGws.map((gw) => all.find((f) => f.gw === gw) ?? null);
+  /* ── Haal fixture op voor huidig GW ── */
+  const getFixture1 = useCallback(
+    (teamId: number): FixtureCell | null => {
+      if (!currentGW) return null;
+      return (fdrMap[teamId] ?? []).find((f) => f.gw === currentGW) ?? null;
     },
-    [fdrMap, pitchGws],
+    [fdrMap, currentGW],
   );
 
-  // Veld stats: Rating en xPts
+  /* ── Effectieve speler voor een slot (rekening houdend met wissels) ── */
+  const getEffectivePlayer = useCallback(
+    (displaySlot: string): SelectedPlayer | null => {
+      const sourceSlot = currentGW ? (gwSwaps[currentGW]?.[displaySlot] ?? displaySlot) : displaySlot;
+      const p = team[sourceSlot];
+      return p ? { ...p, slotId: sourceSlot } : null;
+    },
+    [team, gwSwaps, currentGW],
+  );
+
+  /* ── Wissel twee slots voor huidig GW ── */
+  const handleSwap = useCallback(
+    (slotA: string, slotB: string) => {
+      if (!currentGW) return;
+      setGwSwaps((prev) => {
+        const existing = { ...(prev[currentGW] ?? {}) };
+        const origA = existing[slotA] ?? slotA;
+        const origB = existing[slotB] ?? slotB;
+        existing[slotA] = origB;
+        existing[slotB] = origA;
+        if (existing[slotA] === slotA) delete existing[slotA];
+        if (existing[slotB] === slotB) delete existing[slotB];
+        return { ...prev, [currentGW]: existing };
+      });
+    },
+    [currentGW],
+  );
+
+  /* ── Reset wissels voor huidig GW ── */
+  const resetGwSwaps = useCallback(() => {
+    if (!currentGW) return;
+    setGwSwaps((prev) => {
+      const next = { ...prev };
+      delete next[currentGW];
+      return next;
+    });
+    setSelectedSlot(null);
+  }, [currentGW]);
+
+  /* ── Klik op spelerkaart ── */
+  const handleCardClick = useCallback(
+    (displaySlot: string) => {
+      const player = getEffectivePlayer(displaySlot);
+      if (!player) return;
+      if (selectedSlot === null) {
+        // Geen selectie: open popup
+        setPlayerPopup(player);
+      } else if (selectedSlot === displaySlot) {
+        // Zelfde slot: deselecteer
+        setSelectedSlot(null);
+      } else {
+        // Ander slot: wissel
+        handleSwap(selectedSlot, displaySlot);
+        setSelectedSlot(null);
+      }
+    },
+    [selectedSlot, getEffectivePlayer, handleSwap],
+  );
+
+  /* ── Klik op wissel-icoon ── */
+  const handleWisselClick = useCallback(
+    (e: React.MouseEvent, displaySlot: string) => {
+      e.stopPropagation();
+      if (selectedSlot === displaySlot) {
+        setSelectedSlot(null);
+      } else if (selectedSlot !== null) {
+        handleSwap(selectedSlot, displaySlot);
+        setSelectedSlot(null);
+      } else {
+        setSelectedSlot(displaySlot);
+      }
+    },
+    [selectedSlot, handleSwap],
+  );
+
+  /* ── Veld stats: alleen Team Rating (predicted points verwijderd) ── */
   const pitchStats = useMemo(() => {
-    if (!currentGW || selectedPlayersList.length === 0) return { rating: 0, xPts: 0 };
-    const starters    = selectedPlayersList.filter((p) => !p.slotId.startsWith('BENCH'));
-    const completedGWs = Math.max(1, (gameweeks[0] ?? 31) - 1);
+    if (!currentGW || selectedPlayersList.length === 0) return { rating: 0 };
+    const starters = selectedPlayersList.filter((p) => !p.slotId.startsWith('BENCH'));
     let ratingSum = 0;
-    let xPtsTotal = 0;
     for (const p of starters) {
       const f = (fdrMap[p.teamId] ?? []).find((fx) => fx.gw === currentGW);
       ratingSum += f ? (6 - f.difficulty) / 5 : 0;
-      xPtsTotal += p.totalPoints / completedGWs;
     }
     return {
       rating: Math.round((ratingSum / Math.max(1, starters.length)) * 100),
-      xPts:   Math.round(xPtsTotal),
     };
-  }, [selectedPlayersList, fdrMap, currentGW, gameweeks]);
+  }, [selectedPlayersList, fdrMap, currentGW]);
 
   /* ── Veldweergave rij ── */
   function PitchViewRow({ positions, label }: { positions: { pos: Position; idx: number }[]; label: string }) {
@@ -607,15 +730,19 @@ export default function TeambouwerPage() {
         </span>
         <div style={{ display: 'flex', gap: 8, justifyContent: 'center', flexWrap: 'wrap' }}>
           {positions.map(({ pos, idx }) => {
-            const slotId = `${pos}-${idx}`;
-            const player = team[slotId] ?? null;
+            const displaySlot = `${pos}-${idx}`;
+            const player = getEffectivePlayer(displaySlot);
+            const fixture1 = player ? getFixture1(player.teamId) : null;
             return (
               <PitchViewCard
-                key={slotId}
-                slotId={slotId}
+                key={displaySlot}
+                slotId={displaySlot}
                 player={player}
-                onRemove={() => removePlayer(slotId)}
-                fixtures3={player ? getFixtures3(player.teamId) : pitchGws.map(() => null)}
+                onRemove={() => { if (player) removePlayer(player.slotId); }}
+                fixture1={fixture1}
+                isSelected={selectedSlot === displaySlot}
+                onCardClick={() => handleCardClick(displaySlot)}
+                onWisselClick={(e) => handleWisselClick(e, displaySlot)}
               />
             );
           })}
@@ -625,6 +752,8 @@ export default function TeambouwerPage() {
   }
 
   /* ─────────────── render ─────────────── */
+  const hasGwSwaps = currentGW != null && Object.keys(gwSwaps[currentGW] ?? {}).length > 0;
+
   return (
     <main
       className="min-h-screen relative"
@@ -635,7 +764,7 @@ export default function TeambouwerPage() {
         backgroundAttachment: 'fixed',
       }}
     >
-      {/* ── Mobiele tabel fixes ── */}
+      {/* ── Stijlen ── */}
       <style>{`
         @media (max-width: 768px) {
           .tb-grid-header,
@@ -658,9 +787,17 @@ export default function TeambouwerPage() {
             font-size: 9px !important;
           }
         }
+        /* Wissel icoon: altijd zichtbaar op mobiel */
+        .swap-icon { opacity: 1; }
+        /* Op desktop: verborgen tenzij hover op kaart */
+        @media (min-width: 769px) {
+          .swap-icon { opacity: 0; }
+          .pitch-card:hover .swap-icon { opacity: 1; }
+          .pitch-card:hover .remove-btn { opacity: 1; }
+        }
       `}</style>
 
-      {/* Semi-transparante overlay voor leesbaarheid */}
+      {/* Semi-transparante overlay */}
       <div style={{
         position: 'fixed', inset: 0,
         background: 'rgba(0,0,0,0.35)',
@@ -695,7 +832,7 @@ export default function TeambouwerPage() {
           {/* Two-column layout */}
           <div className="flex flex-col lg:flex-row gap-6">
 
-            {/* ── LEFT: player list ── */}
+            {/* ── LEFT: spelerslijst ── */}
             <div className="flex-1 lg:w-[60%] flex flex-col gap-4">
 
               {/* Filters */}
@@ -755,7 +892,7 @@ export default function TeambouwerPage() {
                 </div>
               </div>
 
-              {/* Table */}
+              {/* Tabel */}
               <div
                 className="rounded-2xl border border-white/8 overflow-hidden"
                 style={{ background: 'rgba(0,0,0,0.3)' }}
@@ -778,7 +915,7 @@ export default function TeambouwerPage() {
                   <span />
                 </div>
 
-                {/* Rows */}
+                {/* Rijen */}
                 {loading ? (
                   <div className="py-12 text-center text-white/30 text-sm">Spelers laden…</div>
                 ) : pagePlayers.length === 0 ? (
@@ -799,7 +936,7 @@ export default function TeambouwerPage() {
                         }}
                         onMouseLeave={() => setTooltip(null)}
                       >
-                        {/* Name + photo */}
+                        {/* Naam + foto */}
                         <div className="flex items-center gap-2 min-w-0">
                           <div
                             className="relative w-7 h-7 rounded-full overflow-hidden shrink-0 border border-white/10"
@@ -813,7 +950,7 @@ export default function TeambouwerPage() {
                         {/* Club */}
                         <span className="text-white/50 text-xs truncate">{p.team}</span>
 
-                        {/* Position badge */}
+                        {/* Positie badge */}
                         <span
                           className="text-[10px] font-bold px-1.5 py-0.5 rounded-md w-fit"
                           style={{
@@ -839,13 +976,13 @@ export default function TeambouwerPage() {
                             : <span className="text-white/20 text-[9px]">—</span>}
                         </div>
 
-                        {/* Price */}
+                        {/* Prijs */}
                         <span className="text-white/70 text-xs font-medium">£{p.price.toFixed(1)}m</span>
 
-                        {/* Points */}
+                        {/* Punten */}
                         <span className="tb-col-ptn text-white/50 text-xs">{p.totalPoints}pt</span>
 
-                        {/* Add/Remove */}
+                        {/* Toevoegen/verwijderen */}
                         <button
                           onClick={() => inTeam
                             ? removePlayer(Object.values(team).find((t) => t.id === p.id)!.slotId)
@@ -866,7 +1003,7 @@ export default function TeambouwerPage() {
                 )}
               </div>
 
-              {/* Pagination */}
+              {/* Paginering */}
               <div className="flex items-center justify-between">
                 <span className="text-white/30 text-xs">
                   {filteredPlayers.length} spelers · pagina {page + 1} / {Math.max(totalPages, 1)}
@@ -892,7 +1029,7 @@ export default function TeambouwerPage() {
               </div>
             </div>
 
-            {/* ── RIGHT: pitch + controls ── */}
+            {/* ── RIGHT: veld + controls ── */}
             <div className="lg:w-[40%] flex flex-col gap-4">
 
               {/* Budget stats */}
@@ -916,7 +1053,7 @@ export default function TeambouwerPage() {
                 </div>
               </div>
 
-              {/* ── Formation selector ── */}
+              {/* Formatie selector */}
               <div
                 className="rounded-2xl p-3 border border-white/8"
                 style={{ background: 'rgba(0,0,0,0.3)' }}
@@ -949,14 +1086,11 @@ export default function TeambouwerPage() {
                 }}
               >
                 <div className="relative w-full h-full py-4 px-2">
-                  {/* Field markings */}
                   <div
                     className="absolute left-1/2 top-1/2 -translate-x-1/2 -translate-y-1/2 rounded-full border border-white/10 pointer-events-none"
                     style={{ width: 80, height: 80 }}
                   />
                   <div className="absolute left-4 right-4 border-t border-white/10 pointer-events-none" style={{ top: '50%' }} />
-
-                  {/* Rows: FWD → MID → DEF → GK */}
                   <div className="flex flex-col gap-4 relative z-10">
                     <PitchRow label="Aanval"      positions={fwdSlots} />
                     <PitchRow label="Middenveld"  positions={midSlots} />
@@ -966,7 +1100,7 @@ export default function TeambouwerPage() {
                 </div>
               </div>
 
-              {/* Bench */}
+              {/* Bank */}
               <div
                 className="rounded-2xl p-4 border border-white/8"
                 style={{ background: 'rgba(0,0,0,0.3)' }}
@@ -992,7 +1126,7 @@ export default function TeambouwerPage() {
                 </div>
               </div>
 
-              {/* Position summary */}
+              {/* Positie overzicht */}
               <div
                 className="rounded-2xl p-4 border border-white/8"
                 style={{ background: 'rgba(0,0,0,0.3)' }}
@@ -1017,7 +1151,7 @@ export default function TeambouwerPage() {
                 </div>
               </div>
 
-              {/* Actions */}
+              {/* Acties */}
               <div className="flex gap-3">
                 <button
                   onClick={saveTeam}
@@ -1051,7 +1185,7 @@ export default function TeambouwerPage() {
                 {/* Navigatie + titel */}
                 <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', gap: 12 }}>
                   <button
-                    onClick={() => setPlannerOffset((o) => Math.max(0, o - 1))}
+                    onClick={() => { setPlannerOffset((o) => Math.max(0, o - 1)); setSelectedSlot(null); }}
                     disabled={plannerOffset === 0}
                     style={{
                       width: 38, height: 38, borderRadius: 10, flexShrink: 0,
@@ -1084,7 +1218,7 @@ export default function TeambouwerPage() {
                   </div>
 
                   <button
-                    onClick={() => setPlannerOffset((o) => Math.min(plannerMaxOffset, o + 1))}
+                    onClick={() => { setPlannerOffset((o) => Math.min(plannerMaxOffset, o + 1)); setSelectedSlot(null); }}
                     disabled={plannerOffset >= plannerMaxOffset}
                     style={{
                       width: 38, height: 38, borderRadius: 10, flexShrink: 0,
@@ -1100,7 +1234,7 @@ export default function TeambouwerPage() {
                   </button>
                 </div>
 
-                {/* Stats balk */}
+                {/* Stats balk: Team Rating + In the bank (predicted points verwijderd) */}
                 <div style={{
                   display: 'flex', gap: 0, justifyContent: 'center', marginTop: 16,
                   background: 'rgba(0,0,0,0.25)', borderRadius: 10, overflow: 'hidden',
@@ -1111,14 +1245,6 @@ export default function TeambouwerPage() {
                     </div>
                     <div style={{ color: '#00FA61', fontWeight: 800, fontSize: 20, fontFamily: 'Montserrat, sans-serif', lineHeight: 1 }}>
                       {pitchStats.rating}%
-                    </div>
-                  </div>
-                  <div style={{ flex: 1, textAlign: 'center', padding: '10px 8px', borderRight: '1px solid rgba(255,255,255,0.08)' }}>
-                    <div style={{ color: 'rgba(255,255,255,0.35)', fontSize: 9, textTransform: 'uppercase', letterSpacing: '0.1em', marginBottom: 3, fontFamily: 'Montserrat, sans-serif' }}>
-                      Predicted Pts
-                    </div>
-                    <div style={{ color: '#fff', fontWeight: 800, fontSize: 20, fontFamily: 'Montserrat, sans-serif', lineHeight: 1 }}>
-                      {pitchStats.xPts}
                     </div>
                   </div>
                   <div style={{ flex: 1, textAlign: 'center', padding: '10px 8px' }}>
@@ -1134,6 +1260,51 @@ export default function TeambouwerPage() {
                   </div>
                 </div>
               </div>
+
+              {/* Wissel status + reset knop boven het veld */}
+              {(selectedSlot || hasGwSwaps) && (
+                <div style={{
+                  background: 'rgba(0,0,0,0.45)',
+                  padding: '10px 20px',
+                  display: 'flex', alignItems: 'center', justifyContent: 'space-between', gap: 12,
+                  borderBottom: '1px solid rgba(255,255,255,0.06)',
+                }}>
+                  <span style={{ color: selectedSlot ? '#00FA61' : 'rgba(255,255,255,0.4)', fontSize: 11, fontFamily: 'Montserrat, sans-serif' }}>
+                    {selectedSlot
+                      ? `Selecteer een andere speler om te wisselen…`
+                      : `GW${currentGW}: wissels actief`}
+                  </span>
+                  <div style={{ display: 'flex', gap: 8 }}>
+                    {selectedSlot && (
+                      <button
+                        onClick={() => setSelectedSlot(null)}
+                        style={{
+                          padding: '5px 12px', borderRadius: 8, fontSize: 11, fontWeight: 600,
+                          background: 'rgba(255,255,255,0.08)', color: 'rgba(255,255,255,0.6)',
+                          border: '1px solid rgba(255,255,255,0.12)', cursor: 'pointer',
+                          fontFamily: 'Montserrat, sans-serif',
+                        }}
+                      >
+                        Annuleer
+                      </button>
+                    )}
+                    {hasGwSwaps && (
+                      <button
+                        onClick={resetGwSwaps}
+                        style={{
+                          padding: '5px 12px', borderRadius: 8, fontSize: 11, fontWeight: 600,
+                          background: 'rgba(255,100,100,0.12)', color: '#F87171',
+                          border: '1px solid rgba(255,100,100,0.2)', cursor: 'pointer',
+                          display: 'flex', alignItems: 'center', gap: 5,
+                          fontFamily: 'Montserrat, sans-serif',
+                        }}
+                      >
+                        <RotateCcw size={10} /> Reset wissels
+                      </button>
+                    )}
+                  </div>
+                </div>
+              )}
 
               {/* Voetbalveld */}
               <div style={{
@@ -1165,7 +1336,7 @@ export default function TeambouwerPage() {
                 </div>
               </div>
 
-              {/* Bank */}
+              {/* Bank (veldweergave) */}
               <div style={{
                 background: '#1F0E84',
                 borderRadius: '0 0 16px 16px',
@@ -1181,7 +1352,8 @@ export default function TeambouwerPage() {
                 </p>
                 <div style={{ display: 'flex', gap: 12, justifyContent: 'space-around', flexWrap: 'wrap' }}>
                   {BENCH_SLOTS.map(({ slotId, label }) => {
-                    const player = team[slotId] ?? null;
+                    const effectivePlayer = getEffectivePlayer(slotId);
+                    const fixture1 = effectivePlayer ? getFixture1(effectivePlayer.teamId) : null;
                     return (
                       <div key={slotId} style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', gap: 4 }}>
                         <span style={{ color: 'rgba(255,255,255,0.2)', fontSize: 8, fontFamily: 'Montserrat, sans-serif' }}>
@@ -1189,9 +1361,12 @@ export default function TeambouwerPage() {
                         </span>
                         <PitchViewCard
                           slotId={slotId}
-                          player={player}
-                          onRemove={() => removePlayer(slotId)}
-                          fixtures3={player ? getFixtures3(player.teamId) : pitchGws.map(() => null)}
+                          player={effectivePlayer}
+                          onRemove={() => { if (effectivePlayer) removePlayer(effectivePlayer.slotId); }}
+                          fixture1={fixture1}
+                          isSelected={selectedSlot === slotId}
+                          onCardClick={() => handleCardClick(slotId)}
+                          onWisselClick={(e) => handleWisselClick(e, slotId)}
                         />
                       </div>
                     );
@@ -1205,7 +1380,95 @@ export default function TeambouwerPage() {
         </div>
       </div>
 
-      {/* ── Player stats tooltip (fixed overlay) ── */}
+      {/* ── Speler info popup (veldweergave klik) ── */}
+      {playerPopup && (
+        <div
+          style={{
+            position: 'fixed', inset: 0,
+            background: 'rgba(0,0,0,0.7)',
+            zIndex: 9998,
+            display: 'flex', alignItems: 'center', justifyContent: 'center',
+            padding: '16px',
+          }}
+          onClick={() => setPlayerPopup(null)}
+        >
+          <div
+            style={{
+              background: 'rgba(31,14,132,0.97)',
+              backdropFilter: 'blur(24px)',
+              WebkitBackdropFilter: 'blur(24px)',
+              borderRadius: 18,
+              padding: 24,
+              width: '100%',
+              maxWidth: 320,
+              border: '1px solid rgba(255,255,255,0.15)',
+              boxShadow: '0 24px 80px rgba(0,0,0,0.7)',
+              position: 'relative',
+              fontFamily: 'Montserrat, sans-serif',
+            }}
+            onClick={(e) => e.stopPropagation()}
+          >
+            {/* Sluitknop */}
+            <button
+              onClick={() => setPlayerPopup(null)}
+              style={{
+                position: 'absolute', top: 14, right: 14,
+                width: 28, height: 28, borderRadius: '50%',
+                background: 'rgba(255,255,255,0.08)',
+                border: '1px solid rgba(255,255,255,0.12)',
+                color: 'rgba(255,255,255,0.6)',
+                display: 'flex', alignItems: 'center', justifyContent: 'center',
+                cursor: 'pointer',
+              }}
+            >
+              <X size={14} />
+            </button>
+
+            {/* Speler naam + info */}
+            <div style={{ marginBottom: 16, paddingRight: 32 }}>
+              <div style={{ display: 'flex', alignItems: 'center', gap: 10, marginBottom: 6 }}>
+                <ShirtIcon shortName={playerPopup.team} size={36} />
+                <div>
+                  <div style={{ color: '#fff', fontWeight: 800, fontSize: 15, lineHeight: 1.2 }}>
+                    {playerPopup.name}
+                  </div>
+                  <div style={{ color: 'rgba(255,255,255,0.4)', fontSize: 11, marginTop: 2 }}>
+                    {playerPopup.team} · {playerPopup.position} · £{playerPopup.price.toFixed(1)}m
+                  </div>
+                </div>
+              </div>
+            </div>
+
+            {/* Stats */}
+            <div style={{ display: 'flex', flexDirection: 'column', gap: 0, borderRadius: 10, overflow: 'hidden' }}>
+              {[
+                { label: '⚽ Goals', value: playerPopup.goals },
+                { label: '🅰️ Assists', value: playerPopup.assists },
+                ...(playerPopup.position === 'GK' || playerPopup.position === 'DEF'
+                  ? [{ label: '🧤 Clean sheets', value: playerPopup.cleanSheets }]
+                  : []),
+                { label: '🎯 xG dit seizoen', value: parseFloat(playerPopup.xGoals || '0').toFixed(2) },
+                { label: '👥 Eigendom', value: `${playerPopup.ownership}%` },
+                { label: '⏱️ Minuten', value: playerPopup.minutes },
+              ].map((row, i) => (
+                <div
+                  key={i}
+                  style={{
+                    display: 'flex', justifyContent: 'space-between', alignItems: 'center',
+                    padding: '9px 12px',
+                    background: i % 2 === 0 ? 'rgba(255,255,255,0.04)' : 'rgba(255,255,255,0.02)',
+                  }}
+                >
+                  <span style={{ color: 'rgba(255,255,255,0.5)', fontSize: 12 }}>{row.label}</span>
+                  <span style={{ color: '#00FA61', fontWeight: 700, fontSize: 13 }}>{row.value}</span>
+                </div>
+              ))}
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* ── Spelerslijst hover tooltip ── */}
       {tooltip && (
         <div
           style={{

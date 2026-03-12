@@ -16,6 +16,8 @@ interface FplApiPlayer {
   goals_scored: number;
   assists: number;
   minutes: number;
+  clean_sheets: number;
+  expected_goals: string;       // bijv. "2.45"
 }
 
 interface FplApiTeam {
@@ -88,6 +90,8 @@ export async function GET() {
         goals: p.goals_scored,
         assists: p.assists,
         minutes: p.minutes,
+        cleanSheets: p.clean_sheets,
+        xGoals: p.expected_goals,
       };
     });
 
