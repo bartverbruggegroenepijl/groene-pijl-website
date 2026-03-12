@@ -110,6 +110,49 @@ const TEAM_PRIMARY: Record<string, string> = {
   SOU: '#D71920', TOT: '#132257', WHU: '#7A263A', WOL: '#FDB913',
 };
 
+/* ─────────────── Tactische wissel helpers ─────────────── */
+
+function isStarterSlotInFormation(slot: string, form: FormationKey): boolean {
+  if (slot === 'GK-0') return true;
+  if (slot.startsWith('BENCH')) return false;
+  const dashIdx = slot.lastIndexOf('-');
+  const pos = slot.substring(0, dashIdx);
+  const idx = parseInt(slot.substring(dashIdx + 1));
+  const { def, mid, fwd } = FORMATIONS[form];
+  if (pos === 'DEF') return idx < def;
+  if (pos === 'MID') return idx < mid;
+  if (pos === 'FWD') return idx < fwd;
+  return false;
+}
+
+function computeNewFormationAfterSwap(
+  slotA: string, playerA: { position: string },
+  slotB: string, playerB: { position: string },
+  effForm: FormationKey,
+): { newFormation: FormationKey; isValid: boolean } {
+  const { def, mid, fwd } = FORMATIONS[effForm];
+  const aIsStarter = isStarterSlotInFormation(slotA, effForm);
+  const bIsStarter = isStarterSlotInFormation(slotB, effForm);
+
+  let newDef = def, newMid = mid, newFwd = fwd;
+
+  if (aIsStarter !== bIsStarter) {
+    const goingOut = aIsStarter ? playerA : playerB;
+    const comingIn  = aIsStarter ? playerB : playerA;
+    const adj = (pos: string, delta: number) => {
+      if (pos === 'DEF') newDef += delta;
+      else if (pos === 'MID') newMid += delta;
+      else if (pos === 'FWD') newFwd += delta;
+    };
+    adj(goingOut.position, -1);
+    adj(comingIn.position, +1);
+  }
+
+  const key = `${newDef}-${newMid}-${newFwd}` as FormationKey;
+  if (FORMATIONS[key]) return { newFormation: key, isValid: true };
+  return { newFormation: effForm, isValid: false };
+}
+
 /* ─────────────── ShirtIcon ─────────────── */
 
 function ShirtIcon({ shortName, size = 30 }: { shortName: string; size?: number }) {
@@ -374,6 +417,14 @@ export default function TeambouwerPage() {
   const [customBudget,     setCustomBudget]     = useState(100.0);
   const [budgetEditing,    setBudgetEditing]    = useState(false);
   const [budgetInputValue, setBudgetInputValue] = useState('100.0');
+
+  // Tactische wissels per GW
+  const [gwTacticalFormation, setGwTacticalFormation] = useState<Record<number, FormationKey>>({});
+  const [tacticConfirm, setTacticConfirm] = useState<{
+    slotA: string; slotB: string;
+    newFormation: FormationKey;
+    playerA: SelectedPlayer; playerB: SelectedPlayer;
+  } | null>(null);
 
   /* ── load FPL data ── */
   useEffect(() => {
@@ -644,6 +695,13 @@ export default function TeambouwerPage() {
     } catch { return null; }
   }, [currentDeadlineIso]);
 
+  /* ── GW-specifieke formatie en slots (voor de planner, met tactische wissels) ── */
+  const effectiveGwFormation: FormationKey = (currentGW ? gwTacticalFormation[currentGW] : null) ?? formation;
+  const { def: gwDefCount, mid: gwMidCount, fwd: gwFwdCount } = FORMATIONS[effectiveGwFormation];
+  const gwDefSlots = Array.from({ length: gwDefCount }, (_, i) => ({ pos: 'DEF' as Position, idx: i }));
+  const gwMidSlots = Array.from({ length: gwMidCount }, (_, i) => ({ pos: 'MID' as Position, idx: i }));
+  const gwFwdSlots = Array.from({ length: gwFwdCount }, (_, i) => ({ pos: 'FWD' as Position, idx: i }));
+
   /* ── Haal fixture op voor huidig GW ── */
   const getFixture1 = useCallback(
     (teamId: number): FixtureCell | null => {
@@ -689,6 +747,11 @@ export default function TeambouwerPage() {
       delete next[currentGW];
       return next;
     });
+    setGwTacticalFormation((prev) => {
+      const next = { ...prev };
+      delete next[currentGW];
+      return next;
+    });
     setSelectedSlot(null);
   }, [currentGW]);
 
@@ -698,13 +761,75 @@ export default function TeambouwerPage() {
       const pA = getEffectivePlayer(slotA);
       const pB = getEffectivePlayer(slotB);
       if (!pA || !pB) return false;
-      if (pA.position !== pB.position) {
-        setSwapError('Je kunt alleen spelers van dezelfde positie wisselen');
+
+      // Zelfde positie: directe wissel toegestaan
+      if (pA.position === pB.position) return true;
+
+      // Keeper kan nooit van positie wisselen
+      if (pA.position === 'GK' || pB.position === 'GK') {
+        setSwapError('GK kan niet wisselen met een andere positie');
         return false;
       }
-      return true;
+
+      // Tactische wissel: bereken resulterende formatie
+      const effForm = (currentGW ? gwTacticalFormation[currentGW] : null) ?? formation;
+      const { newFormation, isValid } = computeNewFormationAfterSwap(slotA, pA, slotB, pB, effForm);
+
+      if (!isValid) {
+        setSwapError('Deze wissel resulteert in een ongeldige formatie');
+        return false;
+      }
+
+      // Toon bevestigingsdialoog (eigenlijke swap via dialog)
+      setTacticConfirm({ slotA, slotB, newFormation, playerA: pA, playerB: pB });
+      return false;
     },
-    [getEffectivePlayer],
+    [getEffectivePlayer, formation, gwTacticalFormation, currentGW],
+  );
+
+  /* ── Voer een tactische wissel uit (na bevestiging) ── */
+  const executeTacticalSwap = useCallback(
+    (slotA: string, slotB: string, newFormation: FormationKey) => {
+      if (!currentGW) return;
+
+      const effForm = gwTacticalFormation[currentGW] ?? formation;
+      const aIsStarter = isStarterSlotInFormation(slotA, effForm);
+      const bIsStarter = isStarterSlotInFormation(slotB, effForm);
+      const pA = getEffectivePlayer(slotA);
+      const pB = getEffectivePlayer(slotB);
+
+      setGwSwaps((prev) => {
+        const existing = { ...(prev[currentGW] ?? {}) };
+        const origA = existing[slotA] ?? slotA;
+        const origB = existing[slotB] ?? slotB;
+
+        existing[slotA] = origB;
+        existing[slotB] = origA;
+        if (existing[slotA] === slotA) delete existing[slotA];
+        if (existing[slotB] === slotB) delete existing[slotB];
+
+        // Als de formatie verandert (bench↔starter wissel): voeg nieuwe startslot toe
+        if (newFormation !== effForm && aIsStarter !== bIsStarter && pA && pB) {
+          const benchSource   = aIsStarter ? origB : origA;
+          const comingInPos   = (aIsStarter ? pB : pA).position as 'DEF' | 'MID' | 'FWD';
+          const posKey        = comingInPos === 'DEF' ? 'def' : comingInPos === 'MID' ? 'mid' : 'fwd';
+          const newCount      = FORMATIONS[newFormation][posKey];
+          const newStarterSlot = `${comingInPos}-${newCount - 1}`;
+          existing[newStarterSlot] = benchSource;
+          if (existing[newStarterSlot] === newStarterSlot) delete existing[newStarterSlot];
+        }
+
+        return { ...prev, [currentGW]: existing };
+      });
+
+      if (newFormation !== effForm) {
+        setGwTacticalFormation((prev) => ({ ...prev, [currentGW]: newFormation }));
+      }
+
+      setTacticConfirm(null);
+      setSelectedSlot(null);
+    },
+    [currentGW, gwTacticalFormation, formation, getEffectivePlayer],
   );
 
   /* ── Klik op spelerkaart ── */
@@ -787,7 +912,10 @@ export default function TeambouwerPage() {
   }
 
   /* ─────────────── render ─────────────── */
-  const hasGwSwaps = currentGW != null && Object.keys(gwSwaps[currentGW] ?? {}).length > 0;
+  const hasGwSwaps = currentGW != null && (
+    Object.keys(gwSwaps[currentGW] ?? {}).length > 0 ||
+    gwTacticalFormation[currentGW] != null
+  );
 
   return (
     <main
@@ -1257,7 +1385,7 @@ export default function TeambouwerPage() {
                 {/* Navigatie + titel */}
                 <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', gap: 12 }}>
                   <button
-                    onClick={() => { setPlannerOffset((o) => Math.max(0, o - 1)); setSelectedSlot(null); }}
+                    onClick={() => { setPlannerOffset((o) => Math.max(0, o - 1)); setSelectedSlot(null); setTacticConfirm(null); }}
                     disabled={plannerOffset === 0}
                     style={{
                       width: 38, height: 38, borderRadius: 10, flexShrink: 0,
@@ -1290,7 +1418,7 @@ export default function TeambouwerPage() {
                   </div>
 
                   <button
-                    onClick={() => { setPlannerOffset((o) => Math.min(plannerMaxOffset, o + 1)); setSelectedSlot(null); }}
+                    onClick={() => { setPlannerOffset((o) => Math.min(plannerMaxOffset, o + 1)); setSelectedSlot(null); setTacticConfirm(null); }}
                     disabled={plannerOffset >= plannerMaxOffset}
                     style={{
                       width: 38, height: 38, borderRadius: 10, flexShrink: 0,
@@ -1306,16 +1434,29 @@ export default function TeambouwerPage() {
                   </button>
                 </div>
 
-                {/* Stats balk: alleen In the bank */}
-                <div style={{ marginTop: 16, background: 'rgba(0,0,0,0.25)', borderRadius: 10, textAlign: 'center', padding: '10px 8px' }}>
-                  <div style={{ color: 'rgba(255,255,255,0.35)', fontSize: 9, textTransform: 'uppercase', letterSpacing: '0.1em', marginBottom: 3, fontFamily: 'Montserrat, sans-serif' }}>
-                    In the bank
+                {/* Stats balk: In the bank + formatie */}
+                <div style={{ marginTop: 16, display: 'flex', gap: 10 }}>
+                  <div style={{ flex: 1, background: 'rgba(0,0,0,0.25)', borderRadius: 10, textAlign: 'center', padding: '10px 8px' }}>
+                    <div style={{ color: 'rgba(255,255,255,0.35)', fontSize: 9, textTransform: 'uppercase', letterSpacing: '0.1em', marginBottom: 3, fontFamily: 'Montserrat, sans-serif' }}>
+                      In the bank
+                    </div>
+                    <div style={{
+                      fontWeight: 800, fontSize: 20, fontFamily: 'Montserrat, sans-serif', lineHeight: 1,
+                      color: teamValues.remaining >= 0 ? '#00FA61' : '#FF4444',
+                    }}>
+                      £{teamValues.remaining.toFixed(1)}m
+                    </div>
                   </div>
-                  <div style={{
-                    fontWeight: 800, fontSize: 20, fontFamily: 'Montserrat, sans-serif', lineHeight: 1,
-                    color: teamValues.remaining >= 0 ? '#00FA61' : '#FF4444',
-                  }}>
-                    £{teamValues.remaining.toFixed(1)}m
+                  <div style={{ background: 'rgba(0,0,0,0.25)', borderRadius: 10, textAlign: 'center', padding: '10px 16px' }}>
+                    <div style={{ color: 'rgba(255,255,255,0.35)', fontSize: 9, textTransform: 'uppercase', letterSpacing: '0.1em', marginBottom: 3, fontFamily: 'Montserrat, sans-serif' }}>
+                      Formatie
+                    </div>
+                    <div style={{
+                      fontWeight: 800, fontSize: 16, fontFamily: 'Montserrat, sans-serif', lineHeight: 1,
+                      color: gwTacticalFormation[currentGW!] ? '#00FA61' : '#fff',
+                    }}>
+                      {effectiveGwFormation}
+                    </div>
                   </div>
                 </div>
               </div>
@@ -1393,9 +1534,9 @@ export default function TeambouwerPage() {
 
                 {/* Spelersrijen: FWD → MID → DEF → GK */}
                 <div style={{ display: 'flex', flexDirection: 'column', gap: 16, position: 'relative', zIndex: 1 }}>
-                  <PitchViewRow label="Aanval"      positions={fwdSlots} />
-                  <PitchViewRow label="Middenveld"  positions={midSlots} />
-                  <PitchViewRow label="Verdediging" positions={defSlots} />
+                  <PitchViewRow label="Aanval"      positions={gwFwdSlots} />
+                  <PitchViewRow label="Middenveld"  positions={gwMidSlots} />
+                  <PitchViewRow label="Verdediging" positions={gwDefSlots} />
                   <PitchViewRow label="Keeper"      positions={[{ pos: 'GK', idx: 0 }]} />
                 </div>
               </div>
@@ -1442,9 +1583,9 @@ export default function TeambouwerPage() {
               {(() => {
                 const allSlots = [
                   'GK-0',
-                  ...Array.from({ length: defCount }, (_, i) => `DEF-${i}`),
-                  ...Array.from({ length: midCount }, (_, i) => `MID-${i}`),
-                  ...Array.from({ length: fwdCount }, (_, i) => `FWD-${i}`),
+                  ...Array.from({ length: gwDefCount }, (_, i) => `DEF-${i}`),
+                  ...Array.from({ length: gwMidCount }, (_, i) => `MID-${i}`),
+                  ...Array.from({ length: gwFwdCount }, (_, i) => `FWD-${i}`),
                   'BENCH-0', 'BENCH-1', 'BENCH-2', 'BENCH-3',
                 ];
                 const rows = allSlots
@@ -1536,6 +1677,79 @@ export default function TeambouwerPage() {
         </div>
       </div>
 
+      {/* ── Tactische wissel bevestigingsdialoog ── */}
+      {tacticConfirm && (
+        <div
+          style={{
+            position: 'fixed', inset: 0,
+            background: 'rgba(0,0,0,0.72)',
+            zIndex: 9997,
+            display: 'flex', alignItems: 'center', justifyContent: 'center',
+            padding: '16px',
+          }}
+          onClick={() => { setTacticConfirm(null); setSelectedSlot(null); }}
+        >
+          <div
+            style={{
+              background: 'rgba(31,14,132,0.97)',
+              backdropFilter: 'blur(24px)',
+              WebkitBackdropFilter: 'blur(24px)',
+              borderRadius: 18,
+              padding: 24,
+              width: '100%',
+              maxWidth: 340,
+              border: '1px solid rgba(255,255,255,0.15)',
+              boxShadow: '0 24px 80px rgba(0,0,0,0.7)',
+              fontFamily: 'Montserrat, sans-serif',
+            }}
+            onClick={(e) => e.stopPropagation()}
+          >
+            <h3 style={{ color: '#fff', fontWeight: 800, fontSize: 16, margin: '0 0 12px' }}>
+              Tactische wissel
+            </h3>
+            <p style={{ color: 'rgba(255,255,255,0.7)', fontSize: 13, lineHeight: 1.6, margin: '0 0 20px' }}>
+              Wil je{' '}
+              <strong style={{ color: '#fff' }}>{tacticConfirm.playerA.name}</strong>
+              {' '}en{' '}
+              <strong style={{ color: '#fff' }}>{tacticConfirm.playerB.name}</strong>
+              {' '}tactisch wisselen?
+              {tacticConfirm.newFormation !== effectiveGwFormation ? (
+                <> Formatie wordt{' '}
+                  <strong style={{ color: '#00FA61' }}>{tacticConfirm.newFormation}</strong>.
+                </>
+              ) : (
+                <> Formatie blijft <strong style={{ color: 'rgba(255,255,255,0.6)' }}>{effectiveGwFormation}</strong>.</>
+              )}
+            </p>
+            <div style={{ display: 'flex', gap: 10 }}>
+              <button
+                onClick={() => executeTacticalSwap(tacticConfirm.slotA, tacticConfirm.slotB, tacticConfirm.newFormation)}
+                style={{
+                  flex: 1, padding: '11px 0', borderRadius: 10,
+                  background: '#00FA61', color: '#111',
+                  fontWeight: 700, fontSize: 13, border: 'none', cursor: 'pointer',
+                  fontFamily: 'Montserrat, sans-serif',
+                }}
+              >
+                Bevestigen
+              </button>
+              <button
+                onClick={() => { setTacticConfirm(null); setSelectedSlot(null); }}
+                style={{
+                  flex: 1, padding: '11px 0', borderRadius: 10,
+                  background: 'rgba(255,255,255,0.08)', color: 'rgba(255,255,255,0.7)',
+                  fontWeight: 600, fontSize: 13,
+                  border: '1px solid rgba(255,255,255,0.12)', cursor: 'pointer',
+                  fontFamily: 'Montserrat, sans-serif',
+                }}
+              >
+                Annuleren
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
+
       {/* ── Speler info popup (veldweergave klik) ── */}
       {playerPopup && (
         <div
@@ -1601,9 +1815,8 @@ export default function TeambouwerPage() {
                 { label: '⚽ Goals', value: playerPopup.goals },
                 { label: '🅰️ Assists', value: playerPopup.assists },
                 ...(playerPopup.position === 'GK' || playerPopup.position === 'DEF'
-                  ? [{ label: '🧤 Clean sheets', value: playerPopup.cleanSheets }]
+                  ? [{ label: '🧤 Clean Sheets', value: playerPopup.cleanSheets }]
                   : []),
-                { label: '🎯 xG dit seizoen', value: parseFloat(playerPopup.xGoals || '0').toFixed(2) },
                 { label: '👥 Eigendom', value: `${playerPopup.ownership}%` },
                 { label: '⏱️ Minuten', value: playerPopup.minutes },
               ].map((row, i) => (
@@ -1652,8 +1865,14 @@ export default function TeambouwerPage() {
               <span className="text-white font-medium text-[10px]">{tooltip.player.goals}</span>
               <span className="text-white/40 text-[10px]">Assists</span>
               <span className="text-white font-medium text-[10px]">{tooltip.player.assists}</span>
-              <span className="text-white/40 text-[10px]">Punten</span>
-              <span className="text-white font-medium text-[10px]">{tooltip.player.totalPoints}</span>
+              {(tooltip.player.position === 'GK' || tooltip.player.position === 'DEF') && (
+                <>
+                  <span className="text-white/40 text-[10px]">Clean Sheets</span>
+                  <span className="text-white font-medium text-[10px]">{tooltip.player.cleanSheets}</span>
+                </>
+              )}
+              <span className="text-white/40 text-[10px]">Eigendom</span>
+              <span className="text-white font-medium text-[10px]">{tooltip.player.ownership}%</span>
               <span className="text-white/40 text-[10px]">Minuten</span>
               <span className="text-white font-medium text-[10px]">{tooltip.player.minutes}</span>
             </div>
