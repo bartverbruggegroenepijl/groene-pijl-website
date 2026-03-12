@@ -52,6 +52,7 @@ interface SelectedPlayer extends FplPlayer {
 
 /* ─────────────────────── constants ─────────────────────────── */
 
+// eslint-disable-next-line @typescript-eslint/no-unused-vars
 const BUDGET    = 100.0;
 const PAGE_SIZE = 10;
 const LS_KEY    = 'dgp_teambouwer_v1';
@@ -366,6 +367,14 @@ export default function TeambouwerPage() {
   // Speler info popup (veldweergave klik)
   const [playerPopup, setPlayerPopup] = useState<SelectedPlayer | null>(null);
 
+  // Wissel foutmelding (positie-mismatch)
+  const [swapError, setSwapError] = useState<string | null>(null);
+
+  // Aanpasbaar startbudget
+  const [customBudget,     setCustomBudget]     = useState(100.0);
+  const [budgetEditing,    setBudgetEditing]    = useState(false);
+  const [budgetInputValue, setBudgetInputValue] = useState('100.0');
+
   /* ── load FPL data ── */
   useEffect(() => {
     (async () => {
@@ -411,6 +420,13 @@ export default function TeambouwerPage() {
     } catch {}
   }, []);
 
+  // Wis wissel-foutmelding automatisch na 2 seconden
+  useEffect(() => {
+    if (!swapError) return;
+    const t = setTimeout(() => setSwapError(null), 2000);
+    return () => clearTimeout(t);
+  }, [swapError]);
+
   const saveTeam = useCallback(() => {
     try {
       localStorage.setItem(LS_KEY, JSON.stringify({ team, formation }));
@@ -424,6 +440,14 @@ export default function TeambouwerPage() {
       setFormation(DEFAULT_FORMATION);
       localStorage.removeItem(LS_KEY);
     }
+  };
+
+  const commitBudget = () => {
+    const val = parseFloat(budgetInputValue);
+    if (!isNaN(val)) {
+      setCustomBudget(Math.min(120, Math.max(50, parseFloat(val.toFixed(1)))));
+    }
+    setBudgetEditing(false);
   };
 
   /* ── formation change ── */
@@ -465,7 +489,7 @@ export default function TeambouwerPage() {
   const teamValues = useMemo(() => {
     const selected = Object.values(team);
     const total    = selected.reduce((s, p) => s + p.price, 0);
-    const remaining = BUDGET - total;
+    const remaining = customBudget - total;
     const count = selected.length;
     const countByPos: Record<Position, number> = { GK: 0, DEF: 0, MID: 0, FWD: 0 };
     const countByClub: Record<string, number> = {};
@@ -474,7 +498,7 @@ export default function TeambouwerPage() {
       countByClub[p.team] = (countByClub[p.team] ?? 0) + 1;
     }
     return { total, remaining, count, countByPos, countByClub };
-  }, [team]);
+  }, [team, customBudget]);
 
   /* ── validatie ── */
   const canAdd = useCallback((player: FplPlayer): { ok: boolean; reason?: string } => {
@@ -668,6 +692,21 @@ export default function TeambouwerPage() {
     setSelectedSlot(null);
   }, [currentGW]);
 
+  /* ── Hulpfunctie: valideer of twee slots mogen wisselen ── */
+  const canSwap = useCallback(
+    (slotA: string, slotB: string): boolean => {
+      const pA = getEffectivePlayer(slotA);
+      const pB = getEffectivePlayer(slotB);
+      if (!pA || !pB) return false;
+      if (pA.position !== pB.position) {
+        setSwapError('Je kunt alleen spelers van dezelfde positie wisselen');
+        return false;
+      }
+      return true;
+    },
+    [getEffectivePlayer],
+  );
+
   /* ── Klik op spelerkaart ── */
   const handleCardClick = useCallback(
     (displaySlot: string) => {
@@ -680,12 +719,16 @@ export default function TeambouwerPage() {
         // Zelfde slot: deselecteer
         setSelectedSlot(null);
       } else {
-        // Ander slot: wissel
+        // Positie validatie
+        if (!canSwap(selectedSlot, displaySlot)) {
+          setSelectedSlot(null);
+          return;
+        }
         handleSwap(selectedSlot, displaySlot);
         setSelectedSlot(null);
       }
     },
-    [selectedSlot, getEffectivePlayer, handleSwap],
+    [selectedSlot, getEffectivePlayer, handleSwap, canSwap],
   );
 
   /* ── Klik op wissel-icoon ── */
@@ -695,28 +738,20 @@ export default function TeambouwerPage() {
       if (selectedSlot === displaySlot) {
         setSelectedSlot(null);
       } else if (selectedSlot !== null) {
+        // Positie validatie
+        if (!canSwap(selectedSlot, displaySlot)) {
+          setSelectedSlot(null);
+          return;
+        }
         handleSwap(selectedSlot, displaySlot);
         setSelectedSlot(null);
       } else {
         setSelectedSlot(displaySlot);
       }
     },
-    [selectedSlot, handleSwap],
+    [selectedSlot, handleSwap, canSwap],
   );
 
-  /* ── Veld stats: alleen Team Rating (predicted points verwijderd) ── */
-  const pitchStats = useMemo(() => {
-    if (!currentGW || selectedPlayersList.length === 0) return { rating: 0 };
-    const starters = selectedPlayersList.filter((p) => !p.slotId.startsWith('BENCH'));
-    let ratingSum = 0;
-    for (const p of starters) {
-      const f = (fdrMap[p.teamId] ?? []).find((fx) => fx.gw === currentGW);
-      ratingSum += f ? (6 - f.difficulty) / 5 : 0;
-    }
-    return {
-      rating: Math.round((ratingSum / Math.max(1, starters.length)) * 100),
-    };
-  }, [selectedPlayersList, fdrMap, currentGW]);
 
   /* ── Veldweergave rij ── */
   function PitchViewRow({ positions, label }: { positions: { pos: Position; idx: number }[]; label: string }) {
@@ -825,7 +860,7 @@ export default function TeambouwerPage() {
               Bouw Mijn Team
             </h1>
             <p className="text-white/40 text-sm mt-2">
-              Stel jouw ideale FPL-elftal samen. Budget: £{BUDGET.toFixed(1)}m · Max 3 per club · 15 spelers totaal.
+              Stel jouw ideale FPL-elftal samen. Max 3 per club · 15 spelers totaal.
             </p>
           </div>
 
@@ -1034,22 +1069,59 @@ export default function TeambouwerPage() {
 
               {/* Budget stats */}
               <div
-                className="rounded-2xl p-4 border border-white/8 grid grid-cols-3 gap-3"
+                className="rounded-2xl p-4 border border-white/8 flex flex-col gap-3"
                 style={{ background: 'rgba(0,0,0,0.3)' }}
               >
-                <div className="text-center">
-                  <div className="text-white/40 text-[10px] uppercase tracking-widest mb-1">Waarde</div>
-                  <div className="text-white font-bold text-base">£{teamValues.total.toFixed(1)}m</div>
+                {/* Budget aanpasbaar */}
+                <div className="flex items-center justify-between pb-2 border-b border-white/5">
+                  <span className="text-white/40 text-[10px] uppercase tracking-widest">Budget</span>
+                  {budgetEditing ? (
+                    <div className="flex items-center gap-1">
+                      <span className="text-white/40 text-xs">£</span>
+                      <input
+                        type="number"
+                        value={budgetInputValue}
+                        onChange={(e) => setBudgetInputValue(e.target.value)}
+                        onBlur={commitBudget}
+                        onKeyDown={(e) => {
+                          if (e.key === 'Enter') commitBudget();
+                          if (e.key === 'Escape') setBudgetEditing(false);
+                        }}
+                        autoFocus
+                        min={50} max={120} step={0.1}
+                        className="rounded-lg text-sm font-bold text-white outline-none border border-primary/40 text-right"
+                        style={{ width: 72, background: 'rgba(0,250,97,0.08)', padding: '3px 6px' }}
+                      />
+                      <span className="text-white/40 text-xs">m</span>
+                    </div>
+                  ) : (
+                    <button
+                      onClick={() => { setBudgetEditing(true); setBudgetInputValue(customBudget.toFixed(1)); }}
+                      className="flex items-center gap-1.5 text-sm font-bold hover:opacity-80 transition-opacity"
+                      style={{ color: '#00FA61' }}
+                      title="Klik om budget aan te passen"
+                    >
+                      £{customBudget.toFixed(1)}m
+                      <span style={{ fontSize: 10, opacity: 0.6 }}>✏️</span>
+                    </button>
+                  )}
                 </div>
-                <div className="text-center">
-                  <div className="text-white/40 text-[10px] uppercase tracking-widest mb-1">Resterend</div>
-                  <div className="font-bold text-base" style={{ color: teamValues.remaining < 0 ? '#F87171' : '#00FA61' }}>
-                    £{teamValues.remaining.toFixed(1)}m
+                {/* Waarde / Resterend / Spelers */}
+                <div className="grid grid-cols-3 gap-3">
+                  <div className="text-center">
+                    <div className="text-white/40 text-[10px] uppercase tracking-widest mb-1">Waarde</div>
+                    <div className="text-white font-bold text-base">£{teamValues.total.toFixed(1)}m</div>
                   </div>
-                </div>
-                <div className="text-center">
-                  <div className="text-white/40 text-[10px] uppercase tracking-widest mb-1">Spelers</div>
-                  <div className="text-white font-bold text-base">{teamValues.count}/15</div>
+                  <div className="text-center">
+                    <div className="text-white/40 text-[10px] uppercase tracking-widest mb-1">Resterend</div>
+                    <div className="font-bold text-base" style={{ color: teamValues.remaining < 0 ? '#F87171' : '#00FA61' }}>
+                      £{teamValues.remaining.toFixed(1)}m
+                    </div>
+                  </div>
+                  <div className="text-center">
+                    <div className="text-white/40 text-[10px] uppercase tracking-widest mb-1">Spelers</div>
+                    <div className="text-white font-bold text-base">{teamValues.count}/15</div>
+                  </div>
                 </div>
               </div>
 
@@ -1234,45 +1306,37 @@ export default function TeambouwerPage() {
                   </button>
                 </div>
 
-                {/* Stats balk: Team Rating + In the bank (predicted points verwijderd) */}
-                <div style={{
-                  display: 'flex', gap: 0, justifyContent: 'center', marginTop: 16,
-                  background: 'rgba(0,0,0,0.25)', borderRadius: 10, overflow: 'hidden',
-                }}>
-                  <div style={{ flex: 1, textAlign: 'center', padding: '10px 8px', borderRight: '1px solid rgba(255,255,255,0.08)' }}>
-                    <div style={{ color: 'rgba(255,255,255,0.35)', fontSize: 9, textTransform: 'uppercase', letterSpacing: '0.1em', marginBottom: 3, fontFamily: 'Montserrat, sans-serif' }}>
-                      Team Rating
-                    </div>
-                    <div style={{ color: '#00FA61', fontWeight: 800, fontSize: 20, fontFamily: 'Montserrat, sans-serif', lineHeight: 1 }}>
-                      {pitchStats.rating}%
-                    </div>
+                {/* Stats balk: alleen In the bank */}
+                <div style={{ marginTop: 16, background: 'rgba(0,0,0,0.25)', borderRadius: 10, textAlign: 'center', padding: '10px 8px' }}>
+                  <div style={{ color: 'rgba(255,255,255,0.35)', fontSize: 9, textTransform: 'uppercase', letterSpacing: '0.1em', marginBottom: 3, fontFamily: 'Montserrat, sans-serif' }}>
+                    In the bank
                   </div>
-                  <div style={{ flex: 1, textAlign: 'center', padding: '10px 8px' }}>
-                    <div style={{ color: 'rgba(255,255,255,0.35)', fontSize: 9, textTransform: 'uppercase', letterSpacing: '0.1em', marginBottom: 3, fontFamily: 'Montserrat, sans-serif' }}>
-                      In the bank
-                    </div>
-                    <div style={{
-                      fontWeight: 800, fontSize: 20, fontFamily: 'Montserrat, sans-serif', lineHeight: 1,
-                      color: teamValues.remaining >= 0 ? '#00FA61' : '#FF4444',
-                    }}>
-                      £{teamValues.remaining.toFixed(1)}m
-                    </div>
+                  <div style={{
+                    fontWeight: 800, fontSize: 20, fontFamily: 'Montserrat, sans-serif', lineHeight: 1,
+                    color: teamValues.remaining >= 0 ? '#00FA61' : '#FF4444',
+                  }}>
+                    £{teamValues.remaining.toFixed(1)}m
                   </div>
                 </div>
               </div>
 
               {/* Wissel status + reset knop boven het veld */}
-              {(selectedSlot || hasGwSwaps) && (
+              {(selectedSlot || hasGwSwaps || swapError) && (
                 <div style={{
                   background: 'rgba(0,0,0,0.45)',
                   padding: '10px 20px',
                   display: 'flex', alignItems: 'center', justifyContent: 'space-between', gap: 12,
                   borderBottom: '1px solid rgba(255,255,255,0.06)',
                 }}>
-                  <span style={{ color: selectedSlot ? '#00FA61' : 'rgba(255,255,255,0.4)', fontSize: 11, fontFamily: 'Montserrat, sans-serif' }}>
-                    {selectedSlot
-                      ? `Selecteer een andere speler om te wisselen…`
-                      : `GW${currentGW}: wissels actief`}
+                  <span style={{
+                    color: swapError ? '#F87171' : selectedSlot ? '#00FA61' : 'rgba(255,255,255,0.4)',
+                    fontSize: 11, fontFamily: 'Montserrat, sans-serif',
+                  }}>
+                    {swapError
+                      ? swapError
+                      : selectedSlot
+                        ? `Selecteer een andere speler om te wisselen…`
+                        : `GW${currentGW}: wissels actief`}
                   </span>
                   <div style={{ display: 'flex', gap: 8 }}>
                     {selectedSlot && (
@@ -1373,6 +1437,98 @@ export default function TeambouwerPage() {
                   })}
                 </div>
               </div>
+
+              {/* ── Geselecteerde spelers lijst: wisselen + hover stats ── */}
+              {(() => {
+                const allSlots = [
+                  'GK-0',
+                  ...Array.from({ length: defCount }, (_, i) => `DEF-${i}`),
+                  ...Array.from({ length: midCount }, (_, i) => `MID-${i}`),
+                  ...Array.from({ length: fwdCount }, (_, i) => `FWD-${i}`),
+                  'BENCH-0', 'BENCH-1', 'BENCH-2', 'BENCH-3',
+                ];
+                const rows = allSlots
+                  .map((ds) => ({ displaySlot: ds, player: getEffectivePlayer(ds) }))
+                  .filter((r): r is { displaySlot: string; player: SelectedPlayer } => r.player !== null);
+                if (rows.length === 0) return null;
+                const posBg: Record<string, string> = {
+                  GK: 'rgba(255,215,0,0.15)', DEF: 'rgba(0,250,97,0.12)',
+                  MID: 'rgba(99,102,241,0.15)', FWD: 'rgba(239,68,68,0.15)',
+                };
+                const posColor: Record<string, string> = {
+                  GK: '#FFD700', DEF: '#00FA61', MID: '#818CF8', FWD: '#F87171',
+                };
+                return (
+                  <div style={{
+                    background: 'rgba(0,0,0,0.18)',
+                    borderTop: '1px solid rgba(255,255,255,0.06)',
+                    padding: '14px 20px',
+                    fontFamily: 'Montserrat, sans-serif',
+                  }}>
+                    <p style={{
+                      color: 'rgba(255,255,255,0.3)', fontSize: 9, textTransform: 'uppercase',
+                      letterSpacing: '0.12em', fontWeight: 600, marginBottom: 10,
+                    }}>
+                      Opstelling — klik ⇄ om te wisselen · hover voor stats
+                    </p>
+                    <div style={{ display: 'flex', flexDirection: 'column', gap: 2 }}>
+                      {rows.map(({ displaySlot, player }) => {
+                        const isBench = displaySlot.startsWith('BENCH');
+                        const isSelectedHere = selectedSlot === displaySlot;
+                        return (
+                          <div
+                            key={displaySlot}
+                            style={{
+                              display: 'flex', alignItems: 'center', gap: 8,
+                              padding: '5px 8px', borderRadius: 8,
+                              background: isSelectedHere ? 'rgba(0,250,97,0.08)' : 'transparent',
+                              border: isSelectedHere ? '1px solid rgba(0,250,97,0.25)' : '1px solid transparent',
+                              transition: 'background 0.15s, border 0.15s',
+                              cursor: 'pointer',
+                            }}
+                            onMouseEnter={(e) => {
+                              const rect = (e.currentTarget as HTMLElement).getBoundingClientRect();
+                              setTooltip({ player, x: rect.right, y: rect.top });
+                            }}
+                            onMouseLeave={() => setTooltip(null)}
+                            onClick={() => setPlayerPopup(player)}
+                          >
+                            <span style={{
+                              fontSize: 8, fontWeight: 700, padding: '2px 5px', borderRadius: 4,
+                              background: isBench ? 'rgba(255,255,255,0.06)' : (posBg[player.position] ?? 'rgba(255,255,255,0.06)'),
+                              color: isBench ? 'rgba(255,255,255,0.35)' : (posColor[player.position] ?? '#fff'),
+                              minWidth: 26, textAlign: 'center', flexShrink: 0,
+                            }}>
+                              {isBench ? 'BNK' : player.position}
+                            </span>
+                            <ShirtIcon shortName={player.team} size={18} />
+                            <span style={{ color: '#fff', fontSize: 11, fontWeight: 600, flex: 1, overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>
+                              {player.name}
+                            </span>
+                            <span style={{ color: '#00FA61', fontSize: 10, flexShrink: 0 }}>
+                              £{player.price.toFixed(1)}m
+                            </span>
+                            <button
+                              onClick={(e) => handleWisselClick(e, displaySlot)}
+                              style={{
+                                width: 24, height: 24, borderRadius: 6, flexShrink: 0,
+                                background: isSelectedHere ? '#00FA61' : 'rgba(255,255,255,0.08)',
+                                color: isSelectedHere ? '#111' : 'rgba(255,255,255,0.55)',
+                                border: isSelectedHere ? 'none' : '1px solid rgba(255,255,255,0.12)',
+                                display: 'flex', alignItems: 'center', justifyContent: 'center',
+                                cursor: 'pointer',
+                              }}
+                              title="Wissel"
+                            >
+                              <ArrowLeftRight size={10} />
+                            </button>
+                          </div>
+                        );
+                      })}
+                    </div>
+                  </div>
+                );
+              })()}
 
             </div>
           )}
