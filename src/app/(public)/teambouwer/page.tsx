@@ -54,7 +54,7 @@ const PAGE_SIZE = 10;
 const LS_KEY    = 'dgp_teambouwer_v1';
 
 const MAX_PER_POS: Record<Position, number> = { GK: 2, DEF: 5, MID: 5, FWD: 3 };
-const MAX_TOTAL  = 15;
+const MAX_TOTAL   = 15;
 const MAX_PER_CLUB = 3;
 
 /* ── Formaties ── */
@@ -80,8 +80,7 @@ const BENCH_SLOTS = [
   { slotId: 'BENCH-3', label: 'Bank 3',  pos: null },
 ];
 
-/* ─────────────────────── FDR helpers ───────────────────────── */
-
+/* ── FDR stijlen voor spelerslijst (bestaand) ── */
 const FDR_STYLE: Record<number, { bg: string; color: string }> = {
   1: { bg: '#375523', color: '#fff' },
   2: { bg: '#01FC7A', color: '#111' },
@@ -89,6 +88,42 @@ const FDR_STYLE: Record<number, { bg: string; color: string }> = {
   4: { bg: '#FF1751', color: '#fff' },
   5: { bg: '#80072D', color: '#fff' },
 };
+
+/* ── FDR kleuren voor veldweergave (gebruikersinstructies) ── */
+const FDR_PITCH_BG: Record<number, string> = {
+  1: '#00FA61', 2: '#00FA61', 3: '#FFA500', 4: '#FF4444', 5: '#FF4444',
+};
+const FDR_PITCH_TEXT: Record<number, string> = {
+  1: '#111', 2: '#111', 3: '#111', 4: '#fff', 5: '#fff',
+};
+
+/* ── Teamkleuren Premier League 2024-25 ── */
+const TEAM_PRIMARY: Record<string, string> = {
+  ARS: '#EF0107', AVL: '#95BFE5', BOU: '#DA291C', BRE: '#E30613',
+  BHA: '#0057B8', CHE: '#034694', CRY: '#1B458F', EVE: '#003399',
+  FUL: '#2D2D2D', IPS: '#0044A9', LEI: '#003090', LIV: '#C8102E',
+  MCI: '#6CABDD', MUN: '#DA291C', NEW: '#241F20', NFO: '#E53233',
+  SOU: '#D71920', TOT: '#132257', WHU: '#7A263A', WOL: '#FDB913',
+};
+
+/* ─────────────── ShirtIcon ─────────────── */
+
+function ShirtIcon({ shortName, size = 30 }: { shortName: string; size?: number }) {
+  const fill = TEAM_PRIMARY[shortName] ?? '#374151';
+  return (
+    <svg width={size} height={size} viewBox="0 0 60 60" fill="none">
+      <path
+        d="M22 7 L6 18 L14 27 L18 20 L18 54 L42 54 L42 20 L46 27 L54 18 L38 7 C36 11 33 13 30 13 C27 13 24 11 22 7 Z"
+        fill={fill}
+        stroke="rgba(255,255,255,0.22)"
+        strokeWidth="1.5"
+        strokeLinejoin="round"
+      />
+    </svg>
+  );
+}
+
+/* ─────────────── FdrBadge (spelerslijst) ─────────────── */
 
 function FdrBadge({ cell }: { cell: FixtureCell }) {
   const s = FDR_STYLE[cell.difficulty] ?? { bg: '#444', color: '#fff' };
@@ -103,7 +138,88 @@ function FdrBadge({ cell }: { cell: FixtureCell }) {
   );
 }
 
-/* ─────────────────────── pitch card ────────────────────────── */
+/* ─────────────── PitchViewCard (veldweergave) ─────────────── */
+
+function PitchViewCard({
+  player, onRemove, fixtures3,
+}: {
+  player: SelectedPlayer | null;
+  slotId: string;
+  onRemove: () => void;
+  fixtures3: (FixtureCell | null)[];
+}) {
+  if (!player) {
+    return (
+      <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', gap: 3, minWidth: 52 }}>
+        <div style={{
+          width: 30, height: 30, borderRadius: '50%',
+          border: '1.5px dashed rgba(255,255,255,0.12)',
+          display: 'flex', alignItems: 'center', justifyContent: 'center',
+        }}>
+          <Plus size={10} style={{ color: 'rgba(255,255,255,0.15)' }} />
+        </div>
+        <span style={{ color: 'rgba(255,255,255,0.15)', fontSize: 8, fontFamily: 'Montserrat, sans-serif' }}>—</span>
+      </div>
+    );
+  }
+
+  return (
+    <div
+      className="group relative"
+      style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', gap: 2, minWidth: 52, maxWidth: 68 }}
+    >
+      <button
+        onClick={onRemove}
+        className="absolute -top-0.5 -right-0.5 opacity-0 group-hover:opacity-100 transition-opacity"
+        style={{
+          width: 14, height: 14, borderRadius: '50%', background: '#EF4444',
+          color: '#fff', display: 'flex', alignItems: 'center', justifyContent: 'center',
+          zIndex: 10, border: 'none', cursor: 'pointer',
+        }}
+      >
+        <X size={7} />
+      </button>
+
+      <ShirtIcon shortName={player.team} size={30} />
+
+      <span style={{
+        color: '#fff', fontSize: 9, fontWeight: 700, textAlign: 'center',
+        lineHeight: 1.2, maxWidth: 62, overflow: 'hidden', textOverflow: 'ellipsis',
+        whiteSpace: 'nowrap', fontFamily: 'Montserrat, sans-serif',
+      }}>
+        {player.name}
+      </span>
+
+      <span style={{ color: '#00FA61', fontSize: 8, fontFamily: 'Montserrat, sans-serif' }}>
+        £{player.price.toFixed(1)}m
+      </span>
+
+      <div style={{ display: 'flex', gap: 2, flexWrap: 'wrap', justifyContent: 'center', marginTop: 1 }}>
+        {fixtures3.map((f, i) =>
+          f ? (
+            <span key={i} style={{
+              fontSize: 7, fontWeight: 700,
+              background: FDR_PITCH_BG[f.difficulty] ?? '#888',
+              color: FDR_PITCH_TEXT[f.difficulty] ?? '#fff',
+              padding: '1px 3px', borderRadius: 2,
+              lineHeight: 1.4, fontFamily: 'Montserrat, sans-serif', whiteSpace: 'nowrap',
+            }}>
+              {f.opponent}({f.location})
+            </span>
+          ) : (
+            <span key={i} style={{
+              fontSize: 7, color: 'rgba(255,255,255,0.3)',
+              background: 'rgba(255,255,255,0.06)',
+              padding: '1px 4px', borderRadius: 2, lineHeight: 1.4,
+            }}>–</span>
+          )
+        )}
+      </div>
+    </div>
+  );
+}
+
+/* ─────────────── PitchCard (teambuilder rechterkolom, bestaand) ─────────────── */
 
 function PitchCard({
   player, onRemove, nextFixtures,
@@ -163,10 +279,12 @@ function PitchCard({
 /* ─────────────────────── main component ────────────────────── */
 
 export default function TeambouwerPage() {
-  const [players,   setPlayers]   = useState<FplPlayer[]>([]);
-  const [fdrMap,    setFdrMap]    = useState<Record<number, FixtureCell[]>>({});
-  const [loading,   setLoading]   = useState(true);
-  const [formation, setFormation] = useState<FormationKey>(DEFAULT_FORMATION);
+  const [players,        setPlayers]        = useState<FplPlayer[]>([]);
+  const [fdrMap,         setFdrMap]         = useState<Record<number, FixtureCell[]>>({});
+  const [gameweeks,      setGameweeks]      = useState<number[]>([]);
+  const [eventDeadlines, setEventDeadlines] = useState<Record<number, string>>({});
+  const [loading,        setLoading]        = useState(true);
+  const [formation,      setFormation]      = useState<FormationKey>(DEFAULT_FORMATION);
 
   // Filters
   const [search,    setSearch]    = useState('');
@@ -184,7 +302,7 @@ export default function TeambouwerPage() {
   // Tooltip state (player stats on hover)
   const [tooltip, setTooltip] = useState<{ player: FplPlayer; x: number; y: number } | null>(null);
 
-  // Team Planner GW offset
+  // Veld GW offset
   const [plannerOffset, setPlannerOffset] = useState(0);
 
   /* ── load FPL data ── */
@@ -199,9 +317,12 @@ export default function TeambouwerPage() {
         const pData = await pRes.json();
         const fData = await fRes.json();
         setPlayers(pData.players ?? []);
+        setGameweeks(fData.gameweeks ?? []);
+        setEventDeadlines(fData.eventDeadlines ?? {});
+        // Sla ALLE wedstrijden op (geen slice) — lookup op GW-nummer
         const map: Record<number, FixtureCell[]> = {};
         for (const t of (fData.teams ?? []) as TeamFDR[]) {
-          map[t.id] = t.fixtures.slice(0, 8);
+          map[t.id] = t.fixtures;
         }
         setFdrMap(map);
       } catch (e) {
@@ -219,13 +340,11 @@ export default function TeambouwerPage() {
       if (!saved) return;
       const parsed = JSON.parse(saved);
       if (parsed && typeof parsed === 'object' && parsed.team) {
-        // New format: { team, formation }
         setTeam(parsed.team);
         if (parsed.formation && FORMATIONS[parsed.formation as FormationKey]) {
           setFormation(parsed.formation);
         }
       } else {
-        // Old format: parsed IS the team map
         setTeam(parsed);
       }
     } catch {}
@@ -251,7 +370,6 @@ export default function TeambouwerPage() {
     const { def, mid, fwd } = FORMATIONS[newFormation];
     const startingCounts: Record<Position, number> = { GK: 1, DEF: def, MID: mid, FWD: fwd };
 
-    // Collect ALL current players by position (starting + bench)
     const playersByPos: Record<Position, SelectedPlayer[]> = { GK: [], DEF: [], MID: [], FWD: [] };
     for (const player of Object.values(team)) {
       playersByPos[player.position].push(player);
@@ -263,20 +381,16 @@ export default function TeambouwerPage() {
     for (const pos of (['GK', 'DEF', 'MID', 'FWD'] as Position[])) {
       playersByPos[pos].forEach((player, i) => {
         if (i < startingCounts[pos]) {
-          // Fits in starting lineup
           const slotId = `${pos}-${i}`;
           newTeam[slotId] = { ...player, slotId };
         } else if (pos === 'GK') {
-          // Extra GK → bench GK slot
           newTeam['BENCH-0'] = { ...player, slotId: 'BENCH-0' };
         } else {
-          // Extra outfield → bench queue
           benchOutfield.push(player);
         }
       });
     }
 
-    // Fill BENCH-1/2/3 with outfield bench players (max 3)
     benchOutfield.slice(0, 3).forEach((player, i) => {
       const slotId = `BENCH-${i + 1}`;
       newTeam[slotId] = { ...player, slotId };
@@ -321,14 +435,12 @@ export default function TeambouwerPage() {
     const { def, mid, fwd } = FORMATIONS[formation];
     const startingCounts: Record<Position, number> = { GK: 1, DEF: def, MID: mid, FWD: fwd };
 
-    // First free starting slot for this position
     let slotId: string | null = null;
     for (let i = 0; i < startingCounts[player.position]; i++) {
       const id = `${player.position}-${i}`;
       if (!team[id]) { slotId = id; break; }
     }
 
-    // Try bench if starting slots are full
     if (!slotId) {
       if (player.position === 'GK') {
         if (!team['BENCH-0']) slotId = 'BENCH-0';
@@ -387,7 +499,7 @@ export default function TeambouwerPage() {
     return sortDir === 'desc' ? <ArrowDown size={11} className="text-primary" /> : <ArrowUp size={11} className="text-primary" />;
   }
 
-  /* ── pitch rows ── */
+  /* ── pitch rows (bestaand teambuilder veld) ── */
   function PitchRow({ positions, label }: { positions: { pos: Position; idx: number }[]; label: string }) {
     return (
       <div className="flex flex-col items-center gap-1">
@@ -419,7 +531,7 @@ export default function TeambouwerPage() {
   const midSlots = Array.from({ length: midCount }, (_, i) => ({ pos: 'MID' as Position, idx: i }));
   const fwdSlots = Array.from({ length: fwdCount }, (_, i) => ({ pos: 'FWD' as Position, idx: i }));
 
-  /* ── Team Planner computed ── */
+  /* ── Veld GW navigatie: computed ── */
   const selectedPlayersList = useMemo(() => {
     const allSlots = [
       'GK-0',
@@ -431,20 +543,86 @@ export default function TeambouwerPage() {
     return allSlots.map((s) => team[s]).filter(Boolean) as SelectedPlayer[];
   }, [team, defCount, midCount, fwdCount]);
 
-  const plannerMaxOffset = useMemo(() => {
-    if (selectedPlayersList.length === 0) return 0;
-    const ref = fdrMap[selectedPlayersList[0].teamId] ?? [];
-    return Math.max(0, ref.length - 5);
-  }, [selectedPlayersList, fdrMap]);
-
+  const plannerMaxOffset = useMemo(() => Math.max(0, gameweeks.length - 1), [gameweeks]);
   const safePlannerOffset = Math.min(plannerOffset, plannerMaxOffset);
 
-  const plannerGwHeaders = useMemo(() => {
-    if (selectedPlayersList.length === 0) return [];
-    const ref = fdrMap[selectedPlayersList[0].teamId] ?? [];
-    return ref.slice(safePlannerOffset, safePlannerOffset + 5).map((f) => `GW${f.gw}`);
-  // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [selectedPlayersList, fdrMap, plannerOffset, plannerMaxOffset]);
+  // Huidig GW-nummer en deadline
+  const currentGW = gameweeks[safePlannerOffset] ?? null;
+  const currentDeadlineIso = currentGW ? (eventDeadlines[currentGW] ?? null) : null;
+
+  const formattedDeadline = useMemo(() => {
+    if (!currentDeadlineIso) return null;
+    try {
+      return new Date(currentDeadlineIso).toLocaleString('nl-NL', {
+        weekday: 'short', day: 'numeric', month: 'short',
+        hour: '2-digit', minute: '2-digit',
+      });
+    } catch { return null; }
+  }, [currentDeadlineIso]);
+
+  // 3 GW-nummers voor fixture badges per speler
+  const pitchGws = useMemo(() => {
+    return (
+      [gameweeks[safePlannerOffset], gameweeks[safePlannerOffset + 1], gameweeks[safePlannerOffset + 2]] as
+        (number | undefined)[]
+    ).filter((g): g is number => g !== undefined);
+  }, [gameweeks, safePlannerOffset]);
+
+  // Hulpfunctie: haal 3 fixtures op per speler op basis van pitchGws
+  const getFixtures3 = useCallback(
+    (teamId: number): (FixtureCell | null)[] => {
+      const all = fdrMap[teamId] ?? [];
+      return pitchGws.map((gw) => all.find((f) => f.gw === gw) ?? null);
+    },
+    [fdrMap, pitchGws],
+  );
+
+  // Veld stats: Rating en xPts
+  const pitchStats = useMemo(() => {
+    if (!currentGW || selectedPlayersList.length === 0) return { rating: 0, xPts: 0 };
+    const starters    = selectedPlayersList.filter((p) => !p.slotId.startsWith('BENCH'));
+    const completedGWs = Math.max(1, (gameweeks[0] ?? 31) - 1);
+    let ratingSum = 0;
+    let xPtsTotal = 0;
+    for (const p of starters) {
+      const f = (fdrMap[p.teamId] ?? []).find((fx) => fx.gw === currentGW);
+      ratingSum += f ? (6 - f.difficulty) / 5 : 0;
+      xPtsTotal += p.totalPoints / completedGWs;
+    }
+    return {
+      rating: Math.round((ratingSum / Math.max(1, starters.length)) * 100),
+      xPts:   Math.round(xPtsTotal),
+    };
+  }, [selectedPlayersList, fdrMap, currentGW, gameweeks]);
+
+  /* ── Veldweergave rij ── */
+  function PitchViewRow({ positions, label }: { positions: { pos: Position; idx: number }[]; label: string }) {
+    return (
+      <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', gap: 4 }}>
+        <span style={{
+          color: 'rgba(255,255,255,0.3)', fontSize: 9, textTransform: 'uppercase',
+          letterSpacing: '0.12em', fontFamily: 'Montserrat, sans-serif', fontWeight: 600,
+        }}>
+          {label}
+        </span>
+        <div style={{ display: 'flex', gap: 8, justifyContent: 'center', flexWrap: 'wrap' }}>
+          {positions.map(({ pos, idx }) => {
+            const slotId = `${pos}-${idx}`;
+            const player = team[slotId] ?? null;
+            return (
+              <PitchViewCard
+                key={slotId}
+                slotId={slotId}
+                player={player}
+                onRemove={() => removePlayer(slotId)}
+                fixtures3={player ? getFixtures3(player.teamId) : pitchGws.map(() => null)}
+              />
+            );
+          })}
+        </div>
+      </div>
+    );
+  }
 
   /* ─────────────── render ─────────────── */
   return (
@@ -481,13 +659,12 @@ export default function TeambouwerPage() {
           }
         }
       `}</style>
+
       {/* Semi-transparante overlay voor leesbaarheid */}
       <div style={{
-        position: 'fixed',
-        inset: 0,
+        position: 'fixed', inset: 0,
         background: 'rgba(0,0,0,0.35)',
-        zIndex: 0,
-        pointerEvents: 'none',
+        zIndex: 0, pointerEvents: 'none',
       }} />
 
       {/* Pagina content */}
@@ -860,122 +1037,168 @@ export default function TeambouwerPage() {
             </div>
           </div>
 
-          {/* ── Team Planner ── */}
+          {/* ── Veld met GW navigatie ── */}
           {selectedPlayersList.length > 0 && (
-            <div
-              className="mt-6 rounded-2xl border border-white/8 overflow-hidden"
-              style={{ background: 'rgba(0,0,0,0.3)' }}
-            >
-              {/* Planner header */}
-              <div className="flex items-center justify-between px-4 py-3 border-b border-white/8">
-                <div>
-                  <h2 className="text-white font-bold text-sm">Wedstrijdplanner</h2>
-                  <p className="text-white/30 text-[10px] mt-0.5">
-                    Komende wedstrijden voor de spelers in jouw team
-                  </p>
-                </div>
-                <div className="flex gap-1.5">
+            <div className="mt-8" style={{ fontFamily: 'Montserrat, sans-serif' }}>
+
+              {/* GW nav header */}
+              <div style={{
+                background: '#1F0E84',
+                borderRadius: '16px 16px 0 0',
+                padding: '20px 24px',
+                borderBottom: '1px solid rgba(255,255,255,0.08)',
+              }}>
+                {/* Navigatie + titel */}
+                <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', gap: 12 }}>
                   <button
                     onClick={() => setPlannerOffset((o) => Math.max(0, o - 1))}
                     disabled={plannerOffset === 0}
-                    className="w-7 h-7 rounded-lg flex items-center justify-center disabled:opacity-25 transition-all"
-                    style={{ background: 'rgba(255,255,255,0.08)' }}
-                    title="Vorige gameweeks"
+                    style={{
+                      width: 38, height: 38, borderRadius: 10, flexShrink: 0,
+                      background: plannerOffset === 0 ? 'rgba(255,255,255,0.04)' : 'rgba(255,255,255,0.1)',
+                      border: '1px solid rgba(255,255,255,0.12)',
+                      color: plannerOffset === 0 ? 'rgba(255,255,255,0.2)' : '#fff',
+                      display: 'flex', alignItems: 'center', justifyContent: 'center',
+                      cursor: plannerOffset === 0 ? 'not-allowed' : 'pointer',
+                      transition: 'background 0.15s',
+                    }}
                   >
-                    <ChevronLeft size={13} className="text-white/60" />
+                    <ChevronLeft size={16} />
                   </button>
+
+                  <div style={{ textAlign: 'center', flex: 1 }}>
+                    <h2 style={{
+                      color: '#fff', fontWeight: 800, fontSize: 20, margin: 0,
+                      fontFamily: 'Montserrat, sans-serif', letterSpacing: '-0.01em',
+                    }}>
+                      {currentGW ? `Gameweek ${currentGW}` : '—'}
+                    </h2>
+                    {formattedDeadline && (
+                      <p style={{
+                        color: 'rgba(255,255,255,0.4)', fontSize: 11,
+                        margin: '3px 0 0', fontFamily: 'Montserrat, sans-serif',
+                      }}>
+                        Deadline: {formattedDeadline}
+                      </p>
+                    )}
+                  </div>
+
                   <button
                     onClick={() => setPlannerOffset((o) => Math.min(plannerMaxOffset, o + 1))}
                     disabled={plannerOffset >= plannerMaxOffset}
-                    className="w-7 h-7 rounded-lg flex items-center justify-center disabled:opacity-25 transition-all"
-                    style={{ background: 'rgba(255,255,255,0.08)' }}
-                    title="Volgende gameweeks"
+                    style={{
+                      width: 38, height: 38, borderRadius: 10, flexShrink: 0,
+                      background: plannerOffset >= plannerMaxOffset ? 'rgba(255,255,255,0.04)' : 'rgba(255,255,255,0.1)',
+                      border: '1px solid rgba(255,255,255,0.12)',
+                      color: plannerOffset >= plannerMaxOffset ? 'rgba(255,255,255,0.2)' : '#fff',
+                      display: 'flex', alignItems: 'center', justifyContent: 'center',
+                      cursor: plannerOffset >= plannerMaxOffset ? 'not-allowed' : 'pointer',
+                      transition: 'background 0.15s',
+                    }}
                   >
-                    <ChevronRight size={13} className="text-white/60" />
+                    <ChevronRight size={16} />
                   </button>
+                </div>
+
+                {/* Stats balk */}
+                <div style={{
+                  display: 'flex', gap: 0, justifyContent: 'center', marginTop: 16,
+                  background: 'rgba(0,0,0,0.25)', borderRadius: 10, overflow: 'hidden',
+                }}>
+                  <div style={{ flex: 1, textAlign: 'center', padding: '10px 8px', borderRight: '1px solid rgba(255,255,255,0.08)' }}>
+                    <div style={{ color: 'rgba(255,255,255,0.35)', fontSize: 9, textTransform: 'uppercase', letterSpacing: '0.1em', marginBottom: 3, fontFamily: 'Montserrat, sans-serif' }}>
+                      Team Rating
+                    </div>
+                    <div style={{ color: '#00FA61', fontWeight: 800, fontSize: 20, fontFamily: 'Montserrat, sans-serif', lineHeight: 1 }}>
+                      {pitchStats.rating}%
+                    </div>
+                  </div>
+                  <div style={{ flex: 1, textAlign: 'center', padding: '10px 8px', borderRight: '1px solid rgba(255,255,255,0.08)' }}>
+                    <div style={{ color: 'rgba(255,255,255,0.35)', fontSize: 9, textTransform: 'uppercase', letterSpacing: '0.1em', marginBottom: 3, fontFamily: 'Montserrat, sans-serif' }}>
+                      Predicted Pts
+                    </div>
+                    <div style={{ color: '#fff', fontWeight: 800, fontSize: 20, fontFamily: 'Montserrat, sans-serif', lineHeight: 1 }}>
+                      {pitchStats.xPts}
+                    </div>
+                  </div>
+                  <div style={{ flex: 1, textAlign: 'center', padding: '10px 8px' }}>
+                    <div style={{ color: 'rgba(255,255,255,0.35)', fontSize: 9, textTransform: 'uppercase', letterSpacing: '0.1em', marginBottom: 3, fontFamily: 'Montserrat, sans-serif' }}>
+                      In the bank
+                    </div>
+                    <div style={{
+                      fontWeight: 800, fontSize: 20, fontFamily: 'Montserrat, sans-serif', lineHeight: 1,
+                      color: teamValues.remaining >= 0 ? '#00FA61' : '#FF4444',
+                    }}>
+                      £{teamValues.remaining.toFixed(1)}m
+                    </div>
+                  </div>
                 </div>
               </div>
 
-              {/* Planner table */}
-              <div className="overflow-x-auto">
-                <table className="w-full min-w-[380px]">
-                  <thead>
-                    <tr className="border-b border-white/8">
-                      <th className="text-left px-4 py-2 text-white/30 text-[10px] font-semibold uppercase tracking-widest">
-                        Speler
-                      </th>
-                      {plannerGwHeaders.length > 0
-                        ? plannerGwHeaders.map((gw, i) => (
-                            <th
-                              key={i}
-                              className="px-2 py-2 text-white/30 text-[10px] font-semibold uppercase tracking-widest text-center"
-                              style={{ minWidth: 56 }}
-                            >
-                              {gw}
-                            </th>
-                          ))
-                        : Array.from({ length: 5 }, (_, i) => (
-                            <th
-                              key={i}
-                              className="px-2 py-2 text-white/20 text-[10px] text-center"
-                              style={{ minWidth: 56 }}
-                            >
-                              —
-                            </th>
-                          ))}
-                    </tr>
-                  </thead>
-                  <tbody>
-                    {selectedPlayersList.map((player) => {
-                      const fixtures = (fdrMap[player.teamId] ?? []).slice(
-                        safePlannerOffset,
-                        safePlannerOffset + 5,
-                      );
-                      return (
-                        <tr
-                          key={player.slotId}
-                          className="border-b border-white/5 last:border-0 hover:bg-white/5 transition-colors"
-                        >
-                          <td className="px-4 py-2">
-                            <div className="flex items-center gap-1.5 min-w-0">
-                              <span
-                                className="text-[9px] font-bold px-1 py-0.5 rounded shrink-0"
-                                style={{
-                                  background:
-                                    player.position === 'GK'  ? 'rgba(255,215,0,0.15)'  :
-                                    player.position === 'DEF' ? 'rgba(0,250,97,0.12)'   :
-                                    player.position === 'MID' ? 'rgba(99,102,241,0.15)' :
-                                    'rgba(239,68,68,0.15)',
-                                  color:
-                                    player.position === 'GK'  ? '#FFD700' :
-                                    player.position === 'DEF' ? '#00FA61' :
-                                    player.position === 'MID' ? '#818CF8' :
-                                    '#F87171',
-                                }}
-                              >
-                                {player.position}
-                              </span>
-                              <span className="text-white text-xs truncate">{player.name}</span>
-                            </div>
-                          </td>
-                          {Array.from({ length: 5 }, (_, i) => {
-                            const f = fixtures[i];
-                            return (
-                              <td key={i} className="px-2 py-2 text-center">
-                                {f ? (
-                                  <FdrBadge cell={f} />
-                                ) : (
-                                  <span className="text-white/15 text-[9px]">—</span>
-                                )}
-                              </td>
-                            );
-                          })}
-                        </tr>
-                      );
-                    })}
-                  </tbody>
-                </table>
+              {/* Voetbalveld */}
+              <div style={{
+                background: 'linear-gradient(180deg, #1a5c20 0%, #2d7a35 35%, #2d7a35 65%, #1a5c20 100%)',
+                padding: '20px 12px',
+                position: 'relative',
+                overflow: 'hidden',
+              }}>
+                {/* Veldlijnen */}
+                <div style={{
+                  position: 'absolute', left: '50%', top: '50%',
+                  transform: 'translate(-50%,-50%)',
+                  width: 80, height: 80, borderRadius: '50%',
+                  border: '1px solid rgba(255,255,255,0.08)',
+                  pointerEvents: 'none',
+                }} />
+                <div style={{
+                  position: 'absolute', left: 16, right: 16, top: '50%',
+                  borderTop: '1px solid rgba(255,255,255,0.08)',
+                  pointerEvents: 'none',
+                }} />
+
+                {/* Spelersrijen: FWD → MID → DEF → GK */}
+                <div style={{ display: 'flex', flexDirection: 'column', gap: 16, position: 'relative', zIndex: 1 }}>
+                  <PitchViewRow label="Aanval"      positions={fwdSlots} />
+                  <PitchViewRow label="Middenveld"  positions={midSlots} />
+                  <PitchViewRow label="Verdediging" positions={defSlots} />
+                  <PitchViewRow label="Keeper"      positions={[{ pos: 'GK', idx: 0 }]} />
+                </div>
               </div>
+
+              {/* Bank */}
+              <div style={{
+                background: '#1F0E84',
+                borderRadius: '0 0 16px 16px',
+                padding: '14px 20px',
+                borderTop: '1px solid rgba(255,255,255,0.08)',
+              }}>
+                <p style={{
+                  color: 'rgba(255,255,255,0.3)', fontSize: 9, textTransform: 'uppercase',
+                  letterSpacing: '0.12em', fontWeight: 600, marginBottom: 12,
+                  fontFamily: 'Montserrat, sans-serif',
+                }}>
+                  Bank
+                </p>
+                <div style={{ display: 'flex', gap: 12, justifyContent: 'space-around', flexWrap: 'wrap' }}>
+                  {BENCH_SLOTS.map(({ slotId, label }) => {
+                    const player = team[slotId] ?? null;
+                    return (
+                      <div key={slotId} style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', gap: 4 }}>
+                        <span style={{ color: 'rgba(255,255,255,0.2)', fontSize: 8, fontFamily: 'Montserrat, sans-serif' }}>
+                          {label}
+                        </span>
+                        <PitchViewCard
+                          slotId={slotId}
+                          player={player}
+                          onRemove={() => removePlayer(slotId)}
+                          fixtures3={player ? getFixtures3(player.teamId) : pitchGws.map(() => null)}
+                        />
+                      </div>
+                    );
+                  })}
+                </div>
+              </div>
+
             </div>
           )}
 

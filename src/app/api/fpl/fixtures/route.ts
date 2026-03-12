@@ -27,6 +27,7 @@ interface FplTeam {
 
 interface FplEvent {
   id: number;
+  deadline_time: string;
   is_current: boolean;
   is_next: boolean;
 }
@@ -109,6 +110,12 @@ export async function GET() {
         });
       });
 
+    // Deadline per GW
+    const eventDeadlines: Record<number, string> = {};
+    (events as FplEvent[]).forEach((e) => {
+      if (gwRange.includes(e.id)) eventDeadlines[e.id] = e.deadline_time;
+    });
+
     const result: TeamFDR[] = teams.map((t) => {
       const fixtures = (teamFixturesMap[t.id] ?? []).sort((a, b) => a.gw - b.gw);
       const avgDifficulty =
@@ -119,7 +126,7 @@ export async function GET() {
     });
 
     return NextResponse.json(
-      { teams: result, gameweeks: gwRange },
+      { teams: result, gameweeks: gwRange, eventDeadlines },
       {
         headers: {
           'Cache-Control': 'public, s-maxage=3600, stale-while-revalidate=7200',
