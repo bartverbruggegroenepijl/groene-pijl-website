@@ -56,6 +56,7 @@ interface SelectedPlayer extends FplPlayer {
 const BUDGET    = 100.0;
 const PAGE_SIZE = 10;
 const LS_KEY    = 'dgp_teambouwer_v1';
+const PLAN_KEY  = 'gp_teambouwer_plan';
 
 const MAX_PER_POS: Record<Position, number> = { GK: 2, DEF: 5, MID: 5, FWD: 3 };
 const MAX_TOTAL   = 15;
@@ -374,15 +375,38 @@ export default function TeambouwerPage() {
   useEffect(() => {
     try {
       const saved = localStorage.getItem(LS_KEY);
-      if (!saved) return;
-      const parsed = JSON.parse(saved);
-      if (parsed && typeof parsed === 'object' && parsed.team) {
-        setTeam(parsed.team);
-        if (parsed.formation && FORMATIONS[parsed.formation as FormationKey]) {
-          setFormation(parsed.formation);
+      if (saved) {
+        const parsed = JSON.parse(saved);
+        if (parsed && typeof parsed === 'object' && parsed.team) {
+          setTeam(parsed.team);
+          if (parsed.formation && FORMATIONS[parsed.formation as FormationKey]) {
+            setFormation(parsed.formation);
+          }
+        } else if (parsed) {
+          setTeam(parsed);
         }
-      } else {
-        setTeam(parsed);
+      }
+    } catch {}
+
+    // Herstel GW-plan (wissels per GW) vanuit PLAN_KEY
+    try {
+      const savedPlan = localStorage.getItem(PLAN_KEY);
+      if (!savedPlan) return;
+      const plan = JSON.parse(savedPlan);
+      if (plan.gameweeks && typeof plan.gameweeks === 'object') {
+        const bankState: Record<number, Record<number, boolean>> = {};
+        for (const [gwStr, gwData] of Object.entries(
+          plan.gameweeks as Record<string, { spelers?: Array<{ id: number; isBank: boolean }> }>,
+        )) {
+          const gw = parseInt(gwStr, 10);
+          if (Array.isArray(gwData.spelers)) {
+            bankState[gw] = {};
+            for (const s of gwData.spelers) {
+              bankState[gw][s.id] = s.isBank;
+            }
+          }
+        }
+        if (Object.keys(bankState).length > 0) setGwPlayerBank(bankState);
       }
     } catch {}
   }, []);
@@ -393,6 +417,38 @@ export default function TeambouwerPage() {
     const t = setTimeout(() => setSwapError(null), 2000);
     return () => clearTimeout(t);
   }, [swapError]);
+
+  /* ── Auto-sla GW-plan op zodra gwPlayerBank wijzigt ── */
+  useEffect(() => {
+    if (Object.keys(gwPlayerBank).length === 0) return;
+    try {
+      const existing = localStorage.getItem(PLAN_KEY);
+      const plan: {
+        baseTeam: unknown;
+        gameweeks: Record<string, { spelers: Array<{ id: number; isBank: boolean }>; transfers: unknown[]; formatie: string }>;
+      } = existing ? JSON.parse(existing) : { baseTeam: null, gameweeks: {} };
+      for (const [gwStr, playerBank] of Object.entries(gwPlayerBank)) {
+        plan.gameweeks[gwStr] = {
+          ...(plan.gameweeks[gwStr] ?? {}),
+          spelers: Object.entries(playerBank).map(([id, isBank]) => ({ id: parseInt(id, 10), isBank })),
+          transfers: plan.gameweeks[gwStr]?.transfers ?? [],
+          formatie: formation,
+        };
+      }
+      localStorage.setItem(PLAN_KEY, JSON.stringify(plan));
+    } catch {}
+  }, [gwPlayerBank, formation]);
+
+  /* ── Auto-sla baseTeam op zodra team 11+ spelers heeft ── */
+  useEffect(() => {
+    if (Object.values(team).length < 11) return;
+    try {
+      const existing = localStorage.getItem(PLAN_KEY);
+      const plan = existing ? JSON.parse(existing) : { baseTeam: null, gameweeks: {} };
+      plan.baseTeam = { team, formation };
+      localStorage.setItem(PLAN_KEY, JSON.stringify(plan));
+    } catch {}
+  }, [team, formation]);
 
   const saveTeam = useCallback(() => {
     try {
@@ -977,8 +1033,21 @@ export default function TeambouwerPage() {
                   </button>
 
                   <div style={{ textAlign: 'center', flex: 1 }}>
-                    <div style={{ color: '#00FA61', fontWeight: 800, fontSize: 14, fontFamily: 'Montserrat, sans-serif', letterSpacing: '-0.01em' }}>
+                    <div style={{ color: '#00FA61', fontWeight: 800, fontSize: 14, fontFamily: 'Montserrat, sans-serif', letterSpacing: '-0.01em', display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 6 }}>
                       {currentGW ? `Gameweek ${currentGW}` : '—'}
+                      {hasGwSwaps && (
+                        <span
+                          title="Wissels opgeslagen voor deze gameweek"
+                          style={{
+                            display: 'inline-block',
+                            width: 7, height: 7,
+                            borderRadius: '50%',
+                            background: '#00FA61',
+                            flexShrink: 0,
+                            boxShadow: '0 0 6px rgba(0,250,97,0.85)',
+                          }}
+                        />
+                      )}
                     </div>
                     {formattedDeadline && (
                       <div style={{ color: 'rgba(255,255,255,0.35)', fontSize: 10, marginTop: 1, fontFamily: 'Montserrat, sans-serif' }}>
@@ -988,7 +1057,20 @@ export default function TeambouwerPage() {
                   </div>
 
                   <button
-                    onClick={() => { setPlannerOffset((o) => Math.min(plannerMaxOffset, o + 1)); setSelectedPlayerId(null); }}
+                    onClick={() => {
+                      const nextOffset = Math.min(plannerMaxOffset, plannerOffset + 1);
+                      const nextGW     = gameweeks[nextOffset];
+                      // Kopieer huidige GW-staat naar volgende GW als die nog geen staat heeft
+                      if (nextGW && currentGW) {
+                        const nextHasState = gwPlayerBank[nextGW] && Object.keys(gwPlayerBank[nextGW]).length > 0;
+                        const currHasState = gwPlayerBank[currentGW] && Object.keys(gwPlayerBank[currentGW]).length > 0;
+                        if (!nextHasState && currHasState) {
+                          setGwPlayerBank((prev) => ({ ...prev, [nextGW]: { ...prev[currentGW] } }));
+                        }
+                      }
+                      setPlannerOffset(nextOffset);
+                      setSelectedPlayerId(null);
+                    }}
                     disabled={plannerOffset >= plannerMaxOffset}
                     style={{
                       width: 32, height: 32, borderRadius: 8, flexShrink: 0,
