@@ -28,20 +28,29 @@ export async function fetchGameweekInfo(): Promise<GameweekInfo> {
   try {
     const res = await fetch(
       'https://fantasy.premierleague.com/api/bootstrap-static/',
-      { next: { revalidate: 1800 }, headers: FPL_HEADERS }
+      { next: { revalidate: 300 }, headers: FPL_HEADERS }
     );
     if (!res.ok) return { currentGW: null, nextGW: null, nextDeadline: null };
 
-    const data  = await res.json();
+    const data   = await res.json();
     const events = data.events as FplEvent[];
 
     const current = events.find((e) => e.is_current);
-    const next    = events.find((e) => e.is_next);
+
+    // Eerstvolgende deadline: filter op deadline_time in de toekomst,
+    // sorteer oplopend, pak de eerste. Dit werkt altijd — ook als is_next
+    // nog niet gezet is door FPL tussen twee gameweeks in.
+    const now = new Date().toISOString();
+    const upcoming = events
+      .filter((e) => e.deadline_time > now)
+      .sort((a, b) => a.deadline_time.localeCompare(b.deadline_time));
+
+    const next = upcoming[0] ?? null;
 
     return {
-      currentGW:    current?.id            ?? null,
-      nextGW:       next?.id               ?? null,
-      nextDeadline: next?.deadline_time    ?? null,
+      currentGW:    current?.id         ?? null,
+      nextGW:       next?.id            ?? null,
+      nextDeadline: next?.deadline_time ?? null,
     };
   } catch {
     return { currentGW: null, nextGW: null, nextDeadline: null };
