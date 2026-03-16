@@ -77,7 +77,7 @@ const FORMATIONS: Record<FormationKey, { def: number; mid: number; fwd: number }
 const FORMATION_KEYS = Object.keys(FORMATIONS) as FormationKey[];
 const DEFAULT_FORMATION: FormationKey = '4-4-2';
 
-/* ── FDR stijlen voor spelerslijst (bestaand) ── */
+/* ── FDR stijlen voor spelerslijst ── */
 const FDR_STYLE: Record<number, { bg: string; color: string }> = {
   1: { bg: '#375523', color: '#fff' },
   2: { bg: '#01FC7A', color: '#111' },
@@ -135,6 +135,170 @@ function FdrBadge({ cell }: { cell: FixtureCell }) {
   );
 }
 
+/* ─────────────── PitchCard (veldweergave spelerkaart) ─────────────── */
+
+function PitchCard({
+  player,
+  isSelected,
+  fixture,
+  onSwapClick,
+  onCardClick,
+  onHoverEnter,
+  onHoverLeave,
+}: {
+  player: SelectedPlayer & { isBank: boolean };
+  isSelected: boolean;
+  fixture: FixtureCell | null;
+  onSwapClick: (e: React.MouseEvent) => void;
+  onCardClick: () => void;
+  onHoverEnter: (e: React.MouseEvent<HTMLDivElement>) => void;
+  onHoverLeave: () => void;
+}) {
+  const [hovered, setHovered] = useState(false);
+
+  return (
+    <div
+      className="pitch-card"
+      style={{
+        position: 'relative',
+        display: 'flex',
+        flexDirection: 'column',
+        alignItems: 'center',
+        gap: 3,
+        cursor: 'pointer',
+        transform: hovered ? 'translateY(-4px)' : 'translateY(0)',
+        transition: 'transform 180ms ease',
+      }}
+      onClick={onCardClick}
+      onMouseEnter={(e) => { setHovered(true); onHoverEnter(e); }}
+      onMouseLeave={() => { setHovered(false); onHoverLeave(); }}
+    >
+      {/* Avatar cirkel */}
+      <div
+        style={{
+          width: 44,
+          height: 44,
+          borderRadius: '50%',
+          flexShrink: 0,
+          border: isSelected ? '2.5px solid #00FA61' : '2px solid rgba(255,255,255,0.22)',
+          boxShadow: isSelected
+            ? '0 0 18px rgba(0,250,97,0.65), 0 0 36px rgba(0,250,97,0.25)'
+            : hovered
+            ? '0 0 12px rgba(0,250,97,0.35)'
+            : undefined,
+          overflow: 'hidden',
+          background: 'linear-gradient(135deg, rgba(0,250,97,0.15) 0%, rgba(31,14,132,0.55) 100%)',
+          position: 'relative',
+        }}
+      >
+        {player.imageUrl ? (
+          // eslint-disable-next-line @next/next/no-img-element
+          <img
+            src={player.imageUrl}
+            alt={player.name}
+            style={{ width: '100%', height: '100%', objectFit: 'cover', objectPosition: '50% 10%' }}
+          />
+        ) : (
+          <div
+            style={{
+              width: '100%',
+              height: '100%',
+              display: 'flex',
+              alignItems: 'center',
+              justifyContent: 'center',
+              background: 'linear-gradient(135deg, rgba(0,250,97,0.22) 0%, rgba(123,47,255,0.32) 100%)',
+            }}
+          >
+            <span
+              style={{
+                color: '#00FA61',
+                fontWeight: 800,
+                fontSize: 16,
+                fontFamily: 'Montserrat, sans-serif',
+                userSelect: 'none',
+              }}
+            >
+              {player.name.charAt(0)}
+            </span>
+          </div>
+        )}
+      </div>
+
+      {/* Naam badge */}
+      <span
+        style={{
+          background: isSelected ? '#00FA61' : 'rgba(0,0,0,0.72)',
+          color: isSelected ? '#111' : '#fff',
+          fontSize: 9,
+          fontWeight: 700,
+          padding: '2px 6px',
+          borderRadius: 4,
+          maxWidth: 72,
+          textAlign: 'center' as const,
+          overflow: 'hidden',
+          textOverflow: 'ellipsis',
+          whiteSpace: 'nowrap' as const,
+          fontFamily: 'Montserrat, sans-serif',
+          display: 'block',
+          lineHeight: 1.4,
+          flexShrink: 0,
+          textShadow: 'none',
+        }}
+      >
+        {player.name}
+      </span>
+
+      {/* Fixture badge */}
+      {fixture ? (
+        <span
+          style={{
+            fontSize: 7.5,
+            fontWeight: 700,
+            background: FDR_PITCH_BG[fixture.difficulty] ?? '#888',
+            color: FDR_PITCH_TEXT[fixture.difficulty] ?? '#fff',
+            padding: '1px 4px',
+            borderRadius: 3,
+            lineHeight: 1.4,
+            fontFamily: 'Montserrat, sans-serif',
+            whiteSpace: 'nowrap' as const,
+          }}
+        >
+          {fixture.opponent}({fixture.location})
+        </span>
+      ) : (
+        <span style={{ fontSize: 7.5, color: 'rgba(255,255,255,0.3)', fontFamily: 'Montserrat, sans-serif' }}>
+          —
+        </span>
+      )}
+
+      {/* Wissel icoon (altijd op mobiel, hover op desktop) */}
+      <button
+        className="swap-icon"
+        onClick={onSwapClick}
+        style={{
+          position: 'absolute',
+          top: -6,
+          right: -6,
+          width: 20,
+          height: 20,
+          borderRadius: '50%',
+          background: isSelected ? '#00FA61' : 'rgba(0,0,0,0.65)',
+          color: isSelected ? '#111' : 'rgba(255,255,255,0.8)',
+          border: `1.5px solid ${isSelected ? '#00FA61' : 'rgba(255,255,255,0.25)'}`,
+          display: 'flex',
+          alignItems: 'center',
+          justifyContent: 'center',
+          cursor: 'pointer',
+          boxShadow: isSelected ? '0 0 8px rgba(0,250,97,0.5)' : undefined,
+        }}
+        title="Wissel"
+      >
+        <ArrowLeftRight size={9} />
+      </button>
+    </div>
+  );
+}
+
 /* ─────────────────────── main component ────────────────────── */
 
 export default function TeambouwerPage() {
@@ -158,17 +322,17 @@ export default function TeambouwerPage() {
   // Extra filters
   const [budgetFilter, setBudgetFilter] = useState<number | null>(null);
 
-  // Tooltip state (spelerslijst hover) — side: 'right' = tooltip rechts van element, 'left' = links
+  // Tooltip state (hover in spelerslijst en veld)
   const [tooltip, setTooltip] = useState<{ player: FplPlayer; x: number; y: number; side?: 'left' | 'right' } | null>(null);
 
   // Veld GW offset
   const [plannerOffset, setPlannerOffset] = useState(0);
 
-  // Wissel state: geselecteerde speler (ID) + isBank override per GW per speler
+  // Wissel state
   const [selectedPlayerId, setSelectedPlayerId] = useState<number | null>(null);
   const [gwPlayerBank,     setGwPlayerBank]     = useState<Record<number, Record<number, boolean>>>({});
 
-  // Speler info popup (veldweergave klik)
+  // Speler info popup (klik op veldkaart)
   const [playerPopup, setPlayerPopup] = useState<SelectedPlayer | null>(null);
 
   // Wissel foutmelding
@@ -193,7 +357,6 @@ export default function TeambouwerPage() {
         setPlayers(pData.players ?? []);
         setGameweeks(fData.gameweeks ?? []);
         setEventDeadlines(fData.eventDeadlines ?? {});
-        // Sla ALLE wedstrijden op (geen slice) — lookup op GW-nummer
         const map: Record<number, FixtureCell[]> = {};
         for (const t of (fData.teams ?? []) as TeamFDR[]) {
           map[t.id] = t.fixtures;
@@ -389,10 +552,8 @@ export default function TeambouwerPage() {
   }
 
   /* ── veld GW navigatie: berekeningen ── */
-
   const plannerMaxOffset = useMemo(() => Math.max(0, gameweeks.length - 1), [gameweeks]);
   const safePlannerOffset = Math.min(plannerOffset, plannerMaxOffset);
-
   const currentGW = gameweeks[safePlannerOffset] ?? null;
   const currentDeadlineIso = currentGW ? (eventDeadlines[currentGW] ?? null) : null;
 
@@ -415,7 +576,7 @@ export default function TeambouwerPage() {
     });
   }, [team, gwPlayerBank, currentGW]);
 
-  /* ── GW starter/bench rijen (altijd directe filter — nooit dubbel) ── */
+  /* ── GW starter/bench rijen ── */
   const gwStarters = gwTeamPlayers.filter((p) => !p.isBank);
   const gwGkRow    = gwStarters.filter((p) => p.position === 'GK');
   const gwDefRow   = gwStarters.filter((p) => p.position === 'DEF');
@@ -428,7 +589,7 @@ export default function TeambouwerPage() {
       return ord[a.position] - ord[b.position];
     });
 
-  /* ── GW effectieve formatie (berekend uit starters, altijd correct) ── */
+  /* ── GW effectieve formatie ── */
   const gwFormKey = `${gwDefRow.length}-${gwMidRow.length}-${gwFwdRow.length}` as FormationKey;
   const effectiveGwFormation: FormationKey = FORMATIONS[gwFormKey] ? gwFormKey : formation;
 
@@ -449,14 +610,12 @@ export default function TeambouwerPage() {
       const pB = gwTeamPlayers.find((p) => p.id === playerIdB);
       if (!pA || !pB) return;
 
-      // Simuleer de wissel
       const simulated = gwTeamPlayers.map((p) => {
         if (p.id === playerIdA) return { ...p, isBank: pB.isBank };
         if (p.id === playerIdB) return { ...p, isBank: pA.isBank };
         return p;
       });
 
-      // Valideer: exact 1 GK in basis + geldige DEF-MID-FWD formatie
       const simStarters = simulated.filter((p) => !p.isBank);
       const gkCount  = simStarters.filter((p) => p.position === 'GK').length;
       const defCount = simStarters.filter((p) => p.position === 'DEF').length;
@@ -470,7 +629,6 @@ export default function TeambouwerPage() {
         return;
       }
 
-      // Voer de wissel uit: sla isBank override op per GW
       setGwPlayerBank((prev) => ({
         ...prev,
         [currentGW]: {
@@ -512,6 +670,7 @@ export default function TeambouwerPage() {
 
   /* ─────────────── render ─────────────── */
   const hasGwSwaps = currentGW != null && Object.keys(gwPlayerBank[currentGW] ?? {}).length > 0;
+  const rowGap = 'clamp(6px, 2.8vw, 28px)';
 
   return (
     <main
@@ -523,8 +682,12 @@ export default function TeambouwerPage() {
         backgroundAttachment: 'fixed',
       }}
     >
-      {/* ── Stijlen ── */}
+      {/* ── CSS Keyframes + stijlen ── */}
       <style>{`
+        @keyframes gpCaptainRing {
+          0%, 100% { box-shadow: 0 0 0 4px rgba(0,250,97,0.18), 0 0 20px rgba(0,250,97,0.28); }
+          50%       { box-shadow: 0 0 0 7px rgba(0,250,97,0.36), 0 0 34px rgba(0,250,97,0.52); }
+        }
         @media (max-width: 768px) {
           .tb-grid-header,
           .tb-grid-row {
@@ -532,17 +695,9 @@ export default function TeambouwerPage() {
             padding-left: 8px !important;
             padding-right: 8px !important;
           }
-          .tb-grid-row {
-            padding-top: 6px !important;
-            padding-bottom: 6px !important;
-          }
-          .tb-col-wedstrijden,
-          .tb-col-ptn {
-            display: none !important;
-          }
-          .tb-grid-header span,
-          .tb-grid-row .tb-cell-name span,
-          .tb-grid-row .tb-cell-club {
+          .tb-grid-row { padding-top: 6px !important; padding-bottom: 6px !important; }
+          .tb-col-wedstrijden, .tb-col-ptn { display: none !important; }
+          .tb-grid-header span, .tb-grid-row .tb-cell-name span, .tb-grid-row .tb-cell-club {
             font-size: 9px !important;
           }
         }
@@ -552,7 +707,6 @@ export default function TeambouwerPage() {
         @media (min-width: 769px) {
           .swap-icon { opacity: 0; }
           .pitch-card:hover .swap-icon { opacity: 1; }
-          .pitch-card:hover .remove-btn { opacity: 1; }
         }
       `}</style>
 
@@ -788,103 +942,117 @@ export default function TeambouwerPage() {
               </div>
             </div>
 
-            {/* ── RIGHT: GW planner paneel ── */}
+            {/* ── RIGHT: Veld met GW navigatie ── */}
             <div className="lg:w-[40%] flex flex-col gap-4" style={{ fontFamily: 'Montserrat, sans-serif' }}>
 
-              {/* GW navigatie + spelerslijst */}
-              <div style={{ background: '#1F0E84', borderRadius: 16, overflow: 'hidden', border: '1px solid rgba(255,255,255,0.1)' }}>
+              {/* ── PITCH BOX ── */}
+              <div style={{ borderRadius: 16, overflow: 'hidden', border: '1px solid rgba(255,255,255,0.08)', background: '#050312' }}>
 
-                {/* Header: navigatie + deadline + stats */}
-                <div style={{ padding: '16px 20px', borderBottom: '1px solid rgba(255,255,255,0.08)' }}>
+                {/* GW navigatie balk */}
+                <div style={{
+                  background: 'rgba(10,6,45,0.97)',
+                  backdropFilter: 'blur(12px)',
+                  WebkitBackdropFilter: 'blur(12px)',
+                  padding: '10px 16px',
+                  display: 'flex', alignItems: 'center', justifyContent: 'space-between', gap: 8,
+                  borderBottom: '1px solid rgba(255,255,255,0.07)',
+                }}>
+                  <button
+                    onClick={() => { setPlannerOffset((o) => Math.max(0, o - 1)); setSelectedPlayerId(null); }}
+                    disabled={plannerOffset === 0}
+                    style={{
+                      width: 32, height: 32, borderRadius: 8, flexShrink: 0,
+                      background: plannerOffset === 0 ? 'rgba(255,255,255,0.04)' : 'rgba(255,255,255,0.1)',
+                      border: '1px solid rgba(255,255,255,0.1)',
+                      color: plannerOffset === 0 ? 'rgba(255,255,255,0.2)' : 'rgba(255,255,255,0.85)',
+                      cursor: plannerOffset === 0 ? 'not-allowed' : 'pointer',
+                      display: 'flex', alignItems: 'center', justifyContent: 'center',
+                      transition: 'background 0.15s',
+                    }}
+                    onMouseEnter={(e) => { if (plannerOffset !== 0) e.currentTarget.style.background = 'rgba(255,255,255,0.18)'; }}
+                    onMouseLeave={(e) => { if (plannerOffset !== 0) e.currentTarget.style.background = 'rgba(255,255,255,0.1)'; }}
+                    aria-label="Vorige gameweek"
+                  >
+                    <ChevronLeft size={14} />
+                  </button>
 
-                  {/* Navigatie rij */}
-                  <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', gap: 8 }}>
-                    <button
-                      onClick={() => { setPlannerOffset((o) => Math.max(0, o - 1)); setSelectedPlayerId(null); }}
-                      disabled={plannerOffset === 0}
-                      style={{
-                        width: 34, height: 34, borderRadius: 9, flexShrink: 0,
-                        background: plannerOffset === 0 ? 'rgba(255,255,255,0.04)' : 'rgba(255,255,255,0.1)',
-                        border: '1px solid rgba(255,255,255,0.12)',
-                        color: plannerOffset === 0 ? 'rgba(255,255,255,0.2)' : '#fff',
-                        display: 'flex', alignItems: 'center', justifyContent: 'center',
-                        cursor: plannerOffset === 0 ? 'not-allowed' : 'pointer',
-                        transition: 'background 0.15s',
-                      }}
-                    >
-                      <ChevronLeft size={15} />
-                    </button>
-
-                    <div style={{ textAlign: 'center', flex: 1 }}>
-                      <div style={{ color: '#fff', fontWeight: 800, fontSize: 16, fontFamily: 'Montserrat, sans-serif', letterSpacing: '-0.01em' }}>
-                        {currentGW ? `Gameweek ${currentGW}` : '—'}
-                      </div>
-                      {formattedDeadline && (
-                        <div style={{ color: 'rgba(255,255,255,0.4)', fontSize: 11, marginTop: 2, fontFamily: 'Montserrat, sans-serif' }}>
-                          Deadline: {formattedDeadline}
-                        </div>
-                      )}
+                  <div style={{ textAlign: 'center', flex: 1 }}>
+                    <div style={{ color: '#00FA61', fontWeight: 800, fontSize: 14, fontFamily: 'Montserrat, sans-serif', letterSpacing: '-0.01em' }}>
+                      {currentGW ? `Gameweek ${currentGW}` : '—'}
                     </div>
-
-                    <button
-                      onClick={() => { setPlannerOffset((o) => Math.min(plannerMaxOffset, o + 1)); setSelectedPlayerId(null); }}
-                      disabled={plannerOffset >= plannerMaxOffset}
-                      style={{
-                        width: 34, height: 34, borderRadius: 9, flexShrink: 0,
-                        background: plannerOffset >= plannerMaxOffset ? 'rgba(255,255,255,0.04)' : 'rgba(255,255,255,0.1)',
-                        border: '1px solid rgba(255,255,255,0.12)',
-                        color: plannerOffset >= plannerMaxOffset ? 'rgba(255,255,255,0.2)' : '#fff',
-                        display: 'flex', alignItems: 'center', justifyContent: 'center',
-                        cursor: plannerOffset >= plannerMaxOffset ? 'not-allowed' : 'pointer',
-                        transition: 'background 0.15s',
-                      }}
-                    >
-                      <ChevronRight size={15} />
-                    </button>
-                  </div>
-
-                  {/* Stats: in the bank + formatie + reset wissels */}
-                  <div style={{ marginTop: 12, display: 'flex', gap: 8, alignItems: 'center' }}>
-                    <div style={{ flex: 1, background: 'rgba(0,0,0,0.25)', borderRadius: 8, textAlign: 'center', padding: '8px 6px' }}>
-                      <div style={{ color: 'rgba(255,255,255,0.35)', fontSize: 9, textTransform: 'uppercase', letterSpacing: '0.1em', marginBottom: 2, fontFamily: 'Montserrat, sans-serif' }}>
-                        In the bank
+                    {formattedDeadline && (
+                      <div style={{ color: 'rgba(255,255,255,0.35)', fontSize: 10, marginTop: 1, fontFamily: 'Montserrat, sans-serif' }}>
+                        Deadline: {formattedDeadline}
                       </div>
-                      <div style={{ fontWeight: 800, fontSize: 17, fontFamily: 'Montserrat, sans-serif', lineHeight: 1, color: teamValues.remaining >= 0 ? '#00FA61' : '#FF4444' }}>
-                        £{teamValues.remaining.toFixed(1)}m
-                      </div>
-                    </div>
-                    <div style={{ background: 'rgba(0,0,0,0.25)', borderRadius: 8, textAlign: 'center', padding: '8px 14px' }}>
-                      <div style={{ color: 'rgba(255,255,255,0.35)', fontSize: 9, textTransform: 'uppercase', letterSpacing: '0.1em', marginBottom: 2, fontFamily: 'Montserrat, sans-serif' }}>
-                        Formatie
-                      </div>
-                      <div style={{ fontWeight: 800, fontSize: 14, fontFamily: 'Montserrat, sans-serif', lineHeight: 1, color: hasGwSwaps ? '#00FA61' : '#fff' }}>
-                        {effectiveGwFormation}
-                      </div>
-                    </div>
-                    {hasGwSwaps && (
-                      <button
-                        onClick={resetGwSwaps}
-                        style={{
-                          padding: '6px 10px', borderRadius: 8, fontSize: 10, fontWeight: 600,
-                          background: 'rgba(255,100,100,0.12)', color: '#F87171',
-                          border: '1px solid rgba(255,100,100,0.2)', cursor: 'pointer',
-                          display: 'flex', alignItems: 'center', gap: 4,
-                          fontFamily: 'Montserrat, sans-serif', flexShrink: 0,
-                        }}
-                      >
-                        <RotateCcw size={9} /> Reset
-                      </button>
                     )}
                   </div>
+
+                  <button
+                    onClick={() => { setPlannerOffset((o) => Math.min(plannerMaxOffset, o + 1)); setSelectedPlayerId(null); }}
+                    disabled={plannerOffset >= plannerMaxOffset}
+                    style={{
+                      width: 32, height: 32, borderRadius: 8, flexShrink: 0,
+                      background: plannerOffset >= plannerMaxOffset ? 'rgba(255,255,255,0.04)' : 'rgba(255,255,255,0.1)',
+                      border: '1px solid rgba(255,255,255,0.1)',
+                      color: plannerOffset >= plannerMaxOffset ? 'rgba(255,255,255,0.2)' : 'rgba(255,255,255,0.85)',
+                      cursor: plannerOffset >= plannerMaxOffset ? 'not-allowed' : 'pointer',
+                      display: 'flex', alignItems: 'center', justifyContent: 'center',
+                      transition: 'background 0.15s',
+                    }}
+                    onMouseEnter={(e) => { if (plannerOffset < plannerMaxOffset) e.currentTarget.style.background = 'rgba(255,255,255,0.18)'; }}
+                    onMouseLeave={(e) => { if (plannerOffset < plannerMaxOffset) e.currentTarget.style.background = 'rgba(255,255,255,0.1)'; }}
+                    aria-label="Volgende gameweek"
+                  >
+                    <ChevronRight size={14} />
+                  </button>
+                </div>
+
+                {/* Stats bar: in the bank + formatie + reset wissels */}
+                <div style={{
+                  background: 'rgba(0,0,0,0.5)',
+                  padding: '8px 16px',
+                  display: 'flex', gap: 8, alignItems: 'center',
+                  borderBottom: '1px solid rgba(255,255,255,0.04)',
+                }}>
+                  <div style={{ flex: 1, textAlign: 'center' }}>
+                    <div style={{ color: 'rgba(255,255,255,0.28)', fontSize: 8, textTransform: 'uppercase', letterSpacing: '0.12em', marginBottom: 2, fontFamily: 'Montserrat, sans-serif' }}>
+                      In the bank
+                    </div>
+                    <div style={{ fontWeight: 800, fontSize: 15, fontFamily: 'Montserrat, sans-serif', lineHeight: 1, color: teamValues.remaining >= 0 ? '#00FA61' : '#FF4444' }}>
+                      £{teamValues.remaining.toFixed(1)}m
+                    </div>
+                  </div>
+                  <div style={{ textAlign: 'center', padding: '0 10px' }}>
+                    <div style={{ color: 'rgba(255,255,255,0.28)', fontSize: 8, textTransform: 'uppercase', letterSpacing: '0.12em', marginBottom: 2, fontFamily: 'Montserrat, sans-serif' }}>
+                      Formatie
+                    </div>
+                    <div style={{ fontWeight: 800, fontSize: 15, fontFamily: 'Montserrat, sans-serif', lineHeight: 1, color: hasGwSwaps ? '#00FA61' : '#fff' }}>
+                      {effectiveGwFormation}
+                    </div>
+                  </div>
+                  {hasGwSwaps && (
+                    <button
+                      onClick={resetGwSwaps}
+                      style={{
+                        padding: '5px 10px', borderRadius: 7, fontSize: 10, fontWeight: 600,
+                        background: 'rgba(255,100,100,0.12)', color: '#F87171',
+                        border: '1px solid rgba(255,100,100,0.2)', cursor: 'pointer',
+                        display: 'flex', alignItems: 'center', gap: 4,
+                        fontFamily: 'Montserrat, sans-serif', flexShrink: 0,
+                      }}
+                    >
+                      <RotateCcw size={9} /> Reset
+                    </button>
+                  )}
                 </div>
 
                 {/* Wissel status bar */}
                 {(selectedPlayerId !== null || swapError) && (
                   <div style={{
-                    background: 'rgba(0,0,0,0.3)',
-                    padding: '8px 16px',
+                    background: 'rgba(0,0,0,0.35)',
+                    padding: '7px 16px',
                     display: 'flex', alignItems: 'center', justifyContent: 'space-between', gap: 8,
-                    borderBottom: '1px solid rgba(255,255,255,0.06)',
+                    borderBottom: '1px solid rgba(255,255,255,0.04)',
                   }}>
                     <span style={{ color: swapError ? '#F87171' : '#00FA61', fontSize: 11, fontFamily: 'Montserrat, sans-serif' }}>
                       {swapError ?? 'Selecteer een andere speler om te wisselen…'}
@@ -893,8 +1061,8 @@ export default function TeambouwerPage() {
                       <button
                         onClick={() => setSelectedPlayerId(null)}
                         style={{
-                          padding: '4px 10px', borderRadius: 6, fontSize: 10, fontWeight: 600,
-                          background: 'rgba(255,255,255,0.08)', color: 'rgba(255,255,255,0.6)',
+                          padding: '3px 10px', borderRadius: 6, fontSize: 10, fontWeight: 600,
+                          background: 'rgba(255,255,255,0.07)', color: 'rgba(255,255,255,0.55)',
                           border: '1px solid rgba(255,255,255,0.12)', cursor: 'pointer',
                           fontFamily: 'Montserrat, sans-serif', flexShrink: 0,
                         }}
@@ -905,118 +1073,221 @@ export default function TeambouwerPage() {
                   </div>
                 )}
 
-                {/* Spelers lijst */}
+                {/* ── VELD ── */}
                 {gwTeamPlayers.length === 0 ? (
-                  <div style={{
-                    padding: '28px 20px', textAlign: 'center',
-                    color: 'rgba(255,255,255,0.22)', fontSize: 13,
-                    fontFamily: 'Montserrat, sans-serif',
-                  }}>
-                    Voeg spelers toe uit de lijst om te beginnen
-                  </div>
-                ) : (() => {
-                  const sorted = [...gwGkRow, ...gwDefRow, ...gwMidRow, ...gwFwdRow, ...gwBenchRow];
-                  const posBg: Record<string, string> = {
-                    GK: 'rgba(255,215,0,0.15)', DEF: 'rgba(0,250,97,0.12)',
-                    MID: 'rgba(99,102,241,0.15)', FWD: 'rgba(239,68,68,0.15)',
-                  };
-                  const posColor: Record<string, string> = {
-                    GK: '#FFD700', DEF: '#00FA61', MID: '#818CF8', FWD: '#F87171',
-                  };
-                  return (
-                    <div style={{ padding: '4px 0' }}>
-                      {sorted.map((player) => {
-                        const fixture1   = getFixture1(player.teamId);
-                        const isSelected = selectedPlayerId === player.id;
-                        return (
-                          <div
-                            key={player.id}
-                            style={{
-                              display: 'flex', alignItems: 'center', gap: 7,
-                              padding: '6px 16px',
-                              background: isSelected ? 'rgba(0,250,97,0.07)' : 'transparent',
-                              borderLeft: `3px solid ${isSelected ? '#00FA61' : 'transparent'}`,
-                              transition: 'background 0.15s',
-                              cursor: 'pointer',
-                            }}
-                            onMouseEnter={(e) => {
-                              const rect = (e.currentTarget as HTMLElement).getBoundingClientRect();
-                              setTooltip({ player, x: rect.left, y: rect.top, side: 'left' });
-                            }}
-                            onMouseLeave={() => setTooltip(null)}
-                            onClick={() => setPlayerPopup(player)}
-                          >
-                            {/* Positie badge */}
-                            <span style={{
-                              fontSize: 8, fontWeight: 700, padding: '2px 5px', borderRadius: 3,
-                              background: player.isBank
-                                ? 'rgba(255,255,255,0.06)'
-                                : (posBg[player.position] ?? 'rgba(255,255,255,0.06)'),
-                              color: player.isBank
-                                ? 'rgba(255,255,255,0.35)'
-                                : (posColor[player.position] ?? '#fff'),
-                              minWidth: 26, textAlign: 'center' as const, flexShrink: 0,
-                            }}>
-                              {player.isBank ? 'BNK' : player.position}
-                            </span>
-
-                            {/* Shirt icoon */}
-                            <ShirtIcon shortName={player.team} size={18} />
-
-                            {/* Naam */}
-                            <span style={{
-                              color: '#fff', fontSize: 11, fontWeight: 600, flex: 1,
-                              overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap',
-                            }}>
-                              {player.name}
-                            </span>
-
-                            {/* Fixture badge voor actieve GW */}
-                            {fixture1 ? (
-                              <span style={{
-                                fontSize: 8, fontWeight: 700,
-                                background: FDR_PITCH_BG[fixture1.difficulty] ?? '#888',
-                                color: FDR_PITCH_TEXT[fixture1.difficulty] ?? '#fff',
-                                padding: '2px 4px', borderRadius: 3,
-                                lineHeight: 1.4, whiteSpace: 'nowrap' as const, flexShrink: 0,
-                              }}>
-                                {fixture1.opponent}({fixture1.location})
-                              </span>
-                            ) : (
-                              <span style={{
-                                fontSize: 8, color: 'rgba(255,255,255,0.25)',
-                                background: 'rgba(255,255,255,0.05)',
-                                padding: '2px 5px', borderRadius: 3,
-                                lineHeight: 1.4, flexShrink: 0,
-                              }}>–</span>
-                            )}
-
-                            {/* Prijs */}
-                            <span style={{ color: '#00FA61', fontSize: 10, flexShrink: 0 }}>
-                              £{player.price.toFixed(1)}m
-                            </span>
-
-                            {/* Wissel knop */}
-                            <button
-                              onClick={(e) => handleWisselClick(e, player.id)}
-                              style={{
-                                width: 24, height: 24, borderRadius: 6, flexShrink: 0,
-                                background: isSelected ? '#00FA61' : 'rgba(255,255,255,0.07)',
-                                color: isSelected ? '#111' : 'rgba(255,255,255,0.5)',
-                                border: isSelected ? 'none' : '1px solid rgba(255,255,255,0.1)',
-                                display: 'flex', alignItems: 'center', justifyContent: 'center',
-                                cursor: 'pointer',
-                              }}
-                              title="Wissel"
-                            >
-                              <ArrowLeftRight size={10} />
-                            </button>
-                          </div>
-                        );
-                      })}
+                  /* Leeg veld met achtergrond en bericht */
+                  <div style={{ position: 'relative', minHeight: 340 }}>
+                    {/* Pitch achtergrond */}
+                    <div style={{ position: 'absolute', inset: 0, overflow: 'hidden', zIndex: 0 }}>
+                      <div style={{ position: 'absolute', inset: 0, background: 'repeating-linear-gradient(180deg, #1b5f2e 0px, #1b5f2e 42px, #1f6c34 42px, #1f6c34 84px)' }} />
+                      <svg style={{ position: 'absolute', inset: 0, width: '100%', height: '100%' }} viewBox="0 0 400 340" preserveAspectRatio="none" aria-hidden="true">
+                        <rect x="16" y="16" width="368" height="308" rx="3" fill="none" stroke="rgba(255,255,255,0.12)" strokeWidth="1.5" />
+                        <line x1="16" y1="170" x2="384" y2="170" stroke="rgba(255,255,255,0.12)" strokeWidth="1.5" />
+                        <circle cx="200" cy="170" r="48" fill="none" stroke="rgba(255,255,255,0.11)" strokeWidth="1.5" />
+                        <circle cx="200" cy="170" r="3" fill="rgba(255,255,255,0.2)" />
+                      </svg>
+                      <div style={{ position: 'absolute', inset: 0, boxShadow: 'inset 0 0 90px rgba(3,1,18,0.82)' }} />
                     </div>
-                  );
-                })()}
+                    {/* Bericht */}
+                    <div style={{
+                      position: 'relative', zIndex: 1,
+                      display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center',
+                      height: 340, textAlign: 'center', padding: '20px 24px',
+                    }}>
+                      <Users size={32} style={{ color: 'rgba(255,255,255,0.12)', marginBottom: 12 }} />
+                      <p style={{ color: 'rgba(255,255,255,0.28)', fontSize: 13, fontFamily: 'Montserrat, sans-serif', margin: 0, lineHeight: 1.6 }}>
+                        Voeg spelers toe uit de lijst<br />om je team op het veld te zien
+                      </p>
+                    </div>
+                  </div>
+                ) : (
+                  <>
+                    {/* Gevuld veld */}
+                    <div style={{ position: 'relative' }}>
+                      {/* Pitch achtergrond (identiek aan Team van de Week) */}
+                      <div style={{ position: 'absolute', inset: 0, overflow: 'hidden', zIndex: 0 }}>
+                        {/* Maaibanen */}
+                        <div style={{
+                          position: 'absolute', inset: 0,
+                          background: 'repeating-linear-gradient(180deg, #1b5f2e 0px, #1b5f2e 42px, #1f6c34 42px, #1f6c34 84px)',
+                        }} />
+
+                        {/* Veldlijnen SVG */}
+                        <svg
+                          style={{ position: 'absolute', inset: 0, width: '100%', height: '100%' }}
+                          viewBox="0 0 400 540"
+                          preserveAspectRatio="none"
+                          aria-hidden="true"
+                        >
+                          {/* Buitengrens */}
+                          <rect x="16" y="16" width="368" height="508" rx="3" fill="none" stroke="rgba(255,255,255,0.15)" strokeWidth="1.5" />
+                          {/* Middenlijn */}
+                          <line x1="16" y1="270" x2="384" y2="270" stroke="rgba(255,255,255,0.15)" strokeWidth="1.5" />
+                          {/* Middencirkel */}
+                          <circle cx="200" cy="270" r="54" fill="none" stroke="rgba(255,255,255,0.14)" strokeWidth="1.5" />
+                          {/* Middenstip */}
+                          <circle cx="200" cy="270" r="3" fill="rgba(255,255,255,0.24)" />
+                          {/* Strafschopgebied boven */}
+                          <rect x="106" y="16" width="188" height="98" fill="none" stroke="rgba(255,255,255,0.11)" strokeWidth="1.5" />
+                          {/* Doelgebied boven */}
+                          <rect x="150" y="16" width="100" height="36" fill="none" stroke="rgba(255,255,255,0.08)" strokeWidth="1.5" />
+                          {/* Strafschopstip boven */}
+                          <circle cx="200" cy="80" r="3" fill="rgba(255,255,255,0.19)" />
+                          {/* Strafschopgebied onder */}
+                          <rect x="106" y="426" width="188" height="98" fill="none" stroke="rgba(255,255,255,0.11)" strokeWidth="1.5" />
+                          {/* Doelgebied onder */}
+                          <rect x="150" y="488" width="100" height="36" fill="none" stroke="rgba(255,255,255,0.08)" strokeWidth="1.5" />
+                          {/* Strafschopstip onder */}
+                          <circle cx="200" cy="460" r="3" fill="rgba(255,255,255,0.19)" />
+                          {/* Hoekbogen */}
+                          <path d="M16,16 Q26,16 26,26"   fill="none" stroke="rgba(255,255,255,0.10)" strokeWidth="1.5" />
+                          <path d="M384,16 Q374,16 374,26" fill="none" stroke="rgba(255,255,255,0.10)" strokeWidth="1.5" />
+                          <path d="M16,524 Q16,514 26,514" fill="none" stroke="rgba(255,255,255,0.10)" strokeWidth="1.5" />
+                          <path d="M384,524 Q384,514 374,514" fill="none" stroke="rgba(255,255,255,0.10)" strokeWidth="1.5" />
+                        </svg>
+
+                        {/* Vignette */}
+                        <div style={{ position: 'absolute', inset: 0, boxShadow: 'inset 0 0 90px rgba(3,1,18,0.70)' }} />
+                        {/* Rand highlight */}
+                        <div style={{ position: 'absolute', inset: 0, boxShadow: 'inset 0 0 0 1px rgba(255,255,255,0.07)' }} />
+                      </div>
+
+                      {/* Spelers (positie: relative + z-index 10 → tooltips kunnen overlopen) */}
+                      <div style={{
+                        position: 'relative',
+                        zIndex: 10,
+                        padding: '28px 12px 24px',
+                        display: 'flex',
+                        flexDirection: 'column',
+                        gap: 'clamp(14px, 2.4vw, 28px)',
+                      }}>
+                        {/* FWD rij — bovenaan */}
+                        {gwFwdRow.length > 0 && (
+                          <div style={{ display: 'flex', justifyContent: 'center', gap: rowGap, overflow: 'visible' }}>
+                            {gwFwdRow.map((p) => (
+                              <PitchCard
+                                key={p.id}
+                                player={p}
+                                isSelected={selectedPlayerId === p.id}
+                                fixture={getFixture1(p.teamId)}
+                                onSwapClick={(e) => handleWisselClick(e, p.id)}
+                                onCardClick={() => setPlayerPopup(p)}
+                                onHoverEnter={(e) => {
+                                  const rect = (e.currentTarget as HTMLElement).getBoundingClientRect();
+                                  setTooltip({ player: p, x: rect.left, y: rect.top, side: 'left' });
+                                }}
+                                onHoverLeave={() => setTooltip(null)}
+                              />
+                            ))}
+                          </div>
+                        )}
+
+                        {/* MID rij */}
+                        {gwMidRow.length > 0 && (
+                          <div style={{ display: 'flex', justifyContent: 'center', gap: 'clamp(4px, 2vw, 20px)', overflow: 'visible' }}>
+                            {gwMidRow.map((p) => (
+                              <PitchCard
+                                key={p.id}
+                                player={p}
+                                isSelected={selectedPlayerId === p.id}
+                                fixture={getFixture1(p.teamId)}
+                                onSwapClick={(e) => handleWisselClick(e, p.id)}
+                                onCardClick={() => setPlayerPopup(p)}
+                                onHoverEnter={(e) => {
+                                  const rect = (e.currentTarget as HTMLElement).getBoundingClientRect();
+                                  setTooltip({ player: p, x: rect.left, y: rect.top, side: 'left' });
+                                }}
+                                onHoverLeave={() => setTooltip(null)}
+                              />
+                            ))}
+                          </div>
+                        )}
+
+                        {/* DEF rij */}
+                        {gwDefRow.length > 0 && (
+                          <div style={{ display: 'flex', justifyContent: 'center', gap: 'clamp(3px, 1.8vw, 16px)', overflow: 'visible' }}>
+                            {gwDefRow.map((p) => (
+                              <PitchCard
+                                key={p.id}
+                                player={p}
+                                isSelected={selectedPlayerId === p.id}
+                                fixture={getFixture1(p.teamId)}
+                                onSwapClick={(e) => handleWisselClick(e, p.id)}
+                                onCardClick={() => setPlayerPopup(p)}
+                                onHoverEnter={(e) => {
+                                  const rect = (e.currentTarget as HTMLElement).getBoundingClientRect();
+                                  setTooltip({ player: p, x: rect.left, y: rect.top, side: 'left' });
+                                }}
+                                onHoverLeave={() => setTooltip(null)}
+                              />
+                            ))}
+                          </div>
+                        )}
+
+                        {/* GK rij — onderaan */}
+                        {gwGkRow.length > 0 && (
+                          <div style={{ display: 'flex', justifyContent: 'center', overflow: 'visible' }}>
+                            {gwGkRow.map((p) => (
+                              <PitchCard
+                                key={p.id}
+                                player={p}
+                                isSelected={selectedPlayerId === p.id}
+                                fixture={getFixture1(p.teamId)}
+                                onSwapClick={(e) => handleWisselClick(e, p.id)}
+                                onCardClick={() => setPlayerPopup(p)}
+                                onHoverEnter={(e) => {
+                                  const rect = (e.currentTarget as HTMLElement).getBoundingClientRect();
+                                  setTooltip({ player: p, x: rect.left, y: rect.top, side: 'left' });
+                                }}
+                                onHoverLeave={() => setTooltip(null)}
+                              />
+                            ))}
+                          </div>
+                        )}
+                      </div>
+                    </div>
+
+                    {/* Bank sectie */}
+                    <div style={{
+                      background: 'rgba(5,3,16,0.92)',
+                      borderTop: '1px solid rgba(255,255,255,0.06)',
+                      padding: '12px 12px 16px',
+                    }}>
+                      <div style={{
+                        fontSize: 8, fontWeight: 700,
+                        color: 'rgba(255,255,255,0.22)',
+                        textTransform: 'uppercase', letterSpacing: '0.18em',
+                        textAlign: 'center', marginBottom: 12,
+                        fontFamily: 'Montserrat, sans-serif',
+                      }}>
+                        Bank
+                      </div>
+                      {gwBenchRow.length > 0 ? (
+                        <div style={{ display: 'flex', justifyContent: 'center', gap: rowGap, overflow: 'visible' }}>
+                          {gwBenchRow.map((p) => (
+                            <PitchCard
+                              key={p.id}
+                              player={p}
+                              isSelected={selectedPlayerId === p.id}
+                              fixture={getFixture1(p.teamId)}
+                              onSwapClick={(e) => handleWisselClick(e, p.id)}
+                              onCardClick={() => setPlayerPopup(p)}
+                              onHoverEnter={(e) => {
+                                const rect = (e.currentTarget as HTMLElement).getBoundingClientRect();
+                                setTooltip({ player: p, x: rect.left, y: rect.top, side: 'left' });
+                              }}
+                              onHoverLeave={() => setTooltip(null)}
+                            />
+                          ))}
+                        </div>
+                      ) : (
+                        <div style={{ textAlign: 'center', color: 'rgba(255,255,255,0.18)', fontSize: 11, fontFamily: 'Montserrat, sans-serif' }}>
+                          Geen bankspelers
+                        </div>
+                      )}
+                    </div>
+                  </>
+                )}
               </div>
 
               {/* Budget stats */}
@@ -1148,7 +1419,7 @@ export default function TeambouwerPage() {
         </div>
       </div>
 
-      {/* ── Speler info popup (veldweergave klik) ── */}
+      {/* ── Speler info popup (klik op veldkaart) ── */}
       {playerPopup && (
         <div
           style={{
@@ -1213,7 +1484,7 @@ export default function TeambouwerPage() {
                 { label: '⚽ Goals', value: playerPopup.goals },
                 { label: '🅰️ Assists', value: playerPopup.assists },
                 ...(playerPopup.position === 'GK' || playerPopup.position === 'DEF'
-                  ? [{ label: '🧤 Clean Sheets', value: playerPopup.cleanSheets }]
+                  ? [{ label: '🧤 Clean Sheets', value: playerPopup.cleanSheets ?? 0 }]
                   : []),
                 { label: '👥 Eigendom', value: `${playerPopup.ownership}%` },
                 { label: '⏱️ Minuten', value: playerPopup.minutes },
