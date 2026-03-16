@@ -77,13 +77,6 @@ const FORMATIONS: Record<FormationKey, { def: number; mid: number; fwd: number }
 const FORMATION_KEYS = Object.keys(FORMATIONS) as FormationKey[];
 const DEFAULT_FORMATION: FormationKey = '4-4-2';
 
-const BENCH_SLOTS = [
-  { slotId: 'BENCH-0', label: 'Bank GK', pos: 'GK' as Position },
-  { slotId: 'BENCH-1', label: 'Bank 1',  pos: null },
-  { slotId: 'BENCH-2', label: 'Bank 2',  pos: null },
-  { slotId: 'BENCH-3', label: 'Bank 3',  pos: null },
-];
-
 /* ── FDR stijlen voor spelerslijst (bestaand) ── */
 const FDR_STYLE: Record<number, { bg: string; color: string }> = {
   1: { bg: '#375523', color: '#fff' },
@@ -142,195 +135,6 @@ function FdrBadge({ cell }: { cell: FixtureCell }) {
   );
 }
 
-/* ─────────────── PitchViewCard (veldweergave) ─────────────── */
-
-function PitchViewCard({
-  player,
-  slotId,
-  onRemove,
-  fixture1,
-  isSelected,
-  onCardClick,
-  onWisselClick,
-}: {
-  player: SelectedPlayer | null;
-  slotId: string;
-  onRemove: () => void;
-  fixture1: FixtureCell | null;
-  isSelected: boolean;
-  onCardClick: () => void;
-  onWisselClick: (e: React.MouseEvent) => void;
-}) {
-  if (!player) {
-    return (
-      <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', gap: 3, minWidth: 52 }}>
-        <div style={{
-          width: 30, height: 30, borderRadius: '50%',
-          border: '1.5px dashed rgba(255,255,255,0.12)',
-          display: 'flex', alignItems: 'center', justifyContent: 'center',
-        }}>
-          <Plus size={10} style={{ color: 'rgba(255,255,255,0.15)' }} />
-        </div>
-        <span style={{ color: 'rgba(255,255,255,0.15)', fontSize: 8, fontFamily: 'Montserrat, sans-serif' }}>—</span>
-      </div>
-    );
-  }
-
-  return (
-    <div
-      className="pitch-card"
-      style={{
-        display: 'flex', flexDirection: 'column', alignItems: 'center', gap: 2,
-        minWidth: 52, maxWidth: 68,
-        cursor: 'pointer',
-        position: 'relative',
-      }}
-      onClick={onCardClick}
-      // slotId prop used by parent for key; suppress TS warning
-      data-slot={slotId}
-    >
-      {/* Verwijder knop */}
-      <button
-        onClick={(e) => { e.stopPropagation(); onRemove(); }}
-        className="remove-btn"
-        style={{
-          position: 'absolute', top: -2, right: -2,
-          width: 14, height: 14, borderRadius: '50%', background: '#EF4444',
-          color: '#fff', display: 'flex', alignItems: 'center', justifyContent: 'center',
-          zIndex: 10, border: 'none', cursor: 'pointer',
-          opacity: 0, transition: 'opacity 0.15s',
-        }}
-        title="Verwijder"
-      >
-        <X size={7} />
-      </button>
-
-      {/* Shirt + selectieglow */}
-      <div style={{ position: 'relative' }}>
-        <div style={{
-          borderRadius: '50%',
-          padding: 2,
-          boxShadow: isSelected ? '0 0 0 2px #00FA61, 0 0 14px rgba(0,250,97,0.55)' : 'none',
-          transition: 'box-shadow 0.15s',
-        }}>
-          <ShirtIcon shortName={player.team} size={30} />
-        </div>
-
-        {/* Wissel icoon: altijd zichtbaar op mobiel, hover op desktop */}
-        <button
-          onClick={onWisselClick}
-          className="swap-icon"
-          style={{
-            position: 'absolute', bottom: -5, right: -9,
-            width: 16, height: 16, borderRadius: '50%',
-            background: isSelected ? '#00FA61' : 'rgba(255,255,255,0.18)',
-            color: isSelected ? '#111' : '#fff',
-            display: 'flex', alignItems: 'center', justifyContent: 'center',
-            border: 'none', cursor: 'pointer',
-            zIndex: 5, padding: 0,
-            transition: 'background 0.15s, opacity 0.15s',
-          }}
-          title="Wissel"
-        >
-          <ArrowLeftRight size={8} />
-        </button>
-      </div>
-
-      {/* Naam */}
-      <span style={{
-        color: '#fff', fontSize: 9, fontWeight: 700, textAlign: 'center',
-        lineHeight: 1.2, maxWidth: 62, overflow: 'hidden', textOverflow: 'ellipsis',
-        whiteSpace: 'nowrap', fontFamily: 'Montserrat, sans-serif',
-      }}>
-        {player.name}
-      </span>
-
-      {/* Prijs */}
-      <span style={{ color: '#00FA61', fontSize: 8, fontFamily: 'Montserrat, sans-serif' }}>
-        £{player.price.toFixed(1)}m
-      </span>
-
-      {/* Fixture badge (één per gameweek) */}
-      <div style={{ marginTop: 1 }}>
-        {fixture1 ? (
-          <span style={{
-            fontSize: 7, fontWeight: 700,
-            background: FDR_PITCH_BG[fixture1.difficulty] ?? '#888',
-            color: FDR_PITCH_TEXT[fixture1.difficulty] ?? '#fff',
-            padding: '1px 3px', borderRadius: 2,
-            lineHeight: 1.4, fontFamily: 'Montserrat, sans-serif', whiteSpace: 'nowrap',
-          }}>
-            {fixture1.opponent} {fixture1.location}
-          </span>
-        ) : (
-          <span style={{
-            fontSize: 7, color: 'rgba(255,255,255,0.3)',
-            background: 'rgba(255,255,255,0.06)',
-            padding: '1px 4px', borderRadius: 2, lineHeight: 1.4,
-          }}>–</span>
-        )}
-      </div>
-    </div>
-  );
-}
-
-/* ─────────────── PitchCard (teambuilder rechterkolom, bestaand) ─────────────── */
-
-function PitchCard({
-  player, onRemove, nextFixtures,
-}: {
-  player: SelectedPlayer | null;
-  slotId: string;
-  posLabel: string;
-  onRemove: () => void;
-  nextFixtures: FixtureCell[];
-}) {
-  if (!player) {
-    return (
-      <div className="flex flex-col items-center gap-1 w-14 sm:w-16">
-        <div
-          className="w-10 h-10 sm:w-12 sm:h-12 rounded-full border-2 border-dashed border-white/20 flex items-center justify-center"
-          style={{ background: 'rgba(0,0,0,0.25)' }}
-        >
-          <Plus size={14} className="text-white/30" />
-        </div>
-        <span className="text-white/20 text-[9px] text-center leading-tight">—</span>
-      </div>
-    );
-  }
-
-  const fdr = nextFixtures[0];
-
-  return (
-    <div className="flex flex-col items-center gap-0.5 w-14 sm:w-16 group relative">
-      <button
-        onClick={onRemove}
-        className="absolute -top-1 -right-1 w-4 h-4 rounded-full bg-red-500 text-white flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity z-10"
-      >
-        <X size={8} />
-      </button>
-      <div
-        className="relative w-10 h-10 sm:w-12 sm:h-12 rounded-full overflow-hidden border-2 border-white/20 shrink-0"
-        style={{ background: 'rgba(0,0,0,0.3)' }}
-      >
-        <Image
-          src={player.imageUrl}
-          alt={player.name}
-          fill
-          className="object-cover"
-          style={{ objectPosition: '50% 10%' }}
-          unoptimized
-        />
-      </div>
-      <span className="text-white text-[9px] sm:text-[10px] font-semibold text-center leading-tight line-clamp-1 max-w-full px-0.5">
-        {player.name}
-      </span>
-      <span className="text-primary text-[8px] font-medium">£{player.price.toFixed(1)}m</span>
-      {fdr && <FdrBadge cell={fdr} />}
-    </div>
-  );
-}
-
 /* ─────────────────────── main component ────────────────────── */
 
 export default function TeambouwerPage() {
@@ -354,8 +158,8 @@ export default function TeambouwerPage() {
   // Extra filters
   const [budgetFilter, setBudgetFilter] = useState<number | null>(null);
 
-  // Tooltip state (spelerslijst hover)
-  const [tooltip, setTooltip] = useState<{ player: FplPlayer; x: number; y: number } | null>(null);
+  // Tooltip state (spelerslijst hover) — side: 'right' = tooltip rechts van element, 'left' = links
+  const [tooltip, setTooltip] = useState<{ player: FplPlayer; x: number; y: number; side?: 'left' | 'right' } | null>(null);
 
   // Veld GW offset
   const [plannerOffset, setPlannerOffset] = useState(0);
@@ -584,40 +388,7 @@ export default function TeambouwerPage() {
     return sortDir === 'desc' ? <ArrowDown size={11} className="text-primary" /> : <ArrowUp size={11} className="text-primary" />;
   }
 
-  /* ── pitch rows (teambuilder rechterkolom) ── */
-  function PitchRow({ positions, label }: { positions: { pos: Position; idx: number }[]; label: string }) {
-    return (
-      <div className="flex flex-col items-center gap-1">
-        <span className="text-white/25 text-[9px] uppercase tracking-widest font-semibold">{label}</span>
-        <div className="flex gap-2 sm:gap-3 justify-center flex-wrap">
-          {positions.map(({ pos, idx }) => {
-            const slotId  = `${pos}-${idx}`;
-            const player  = team[slotId] ?? null;
-            const fixtures = player ? (fdrMap[player.teamId] ?? []).slice(0, 1) : [];
-            return (
-              <PitchCard
-                key={slotId}
-                slotId={slotId}
-                posLabel={pos}
-                player={player}
-                onRemove={() => removePlayer(slotId)}
-                nextFixtures={fixtures}
-              />
-            );
-          })}
-        </div>
-      </div>
-    );
-  }
-
-  /* ── slot arrays uit actieve formatie ── */
-  const { def: defCount, mid: midCount, fwd: fwdCount } = FORMATIONS[formation];
-  const defSlots = Array.from({ length: defCount }, (_, i) => ({ pos: 'DEF' as Position, idx: i }));
-  const midSlots = Array.from({ length: midCount }, (_, i) => ({ pos: 'MID' as Position, idx: i }));
-  const fwdSlots = Array.from({ length: fwdCount }, (_, i) => ({ pos: 'FWD' as Position, idx: i }));
-
   /* ── veld GW navigatie: berekeningen ── */
-  const selectedPlayersList = useMemo(() => Object.values(team), [team]);
 
   const plannerMaxOffset = useMemo(() => Math.max(0, gameweeks.length - 1), [gameweeks]);
   const safePlannerOffset = Math.min(plannerOffset, plannerMaxOffset);
@@ -724,21 +495,6 @@ export default function TeambouwerPage() {
     setSelectedPlayerId(null);
   }, [currentGW]);
 
-  /* ── Klik op spelerkaart ── */
-  const handleCardClick = useCallback(
-    (playerId: number) => {
-      if (selectedPlayerId === null) {
-        const player = gwTeamPlayers.find((p) => p.id === playerId);
-        if (player) setPlayerPopup(player);
-      } else if (selectedPlayerId === playerId) {
-        setSelectedPlayerId(null);
-      } else {
-        performGwSwap(selectedPlayerId, playerId);
-      }
-    },
-    [selectedPlayerId, gwTeamPlayers, performGwSwap],
-  );
-
   /* ── Klik op wissel-icoon ── */
   const handleWisselClick = useCallback(
     (e: React.MouseEvent, playerId: number) => {
@@ -753,38 +509,6 @@ export default function TeambouwerPage() {
     },
     [selectedPlayerId, performGwSwap],
   );
-
-  /* ── Veldweergave rij (GW planner) ── */
-  function PitchViewRow({ players, label }: { players: Array<SelectedPlayer & { isBank: boolean }>; label: string }) {
-    return (
-      <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', gap: 4 }}>
-        <span style={{
-          color: 'rgba(255,255,255,0.3)', fontSize: 9, textTransform: 'uppercase',
-          letterSpacing: '0.12em', fontFamily: 'Montserrat, sans-serif', fontWeight: 600,
-        }}>
-          {label}
-        </span>
-        <div style={{ display: 'flex', gap: 8, justifyContent: 'center', flexWrap: 'wrap' }}>
-          {players.map((player) => {
-            const fixture1   = getFixture1(player.teamId);
-            const isSelected = selectedPlayerId === player.id;
-            return (
-              <PitchViewCard
-                key={player.id}
-                slotId={`${player.position}-${player.id}`}
-                player={player}
-                onRemove={() => removePlayer(player.slotId)}
-                fixture1={fixture1}
-                isSelected={isSelected}
-                onCardClick={() => handleCardClick(player.id)}
-                onWisselClick={(e) => handleWisselClick(e, player.id)}
-              />
-            );
-          })}
-        </div>
-      </div>
-    );
-  }
 
   /* ─────────────── render ─────────────── */
   const hasGwSwaps = currentGW != null && Object.keys(gwPlayerBank[currentGW] ?? {}).length > 0;
@@ -967,7 +691,7 @@ export default function TeambouwerPage() {
                         style={{ gridTemplateColumns: '2fr 80px 50px 110px 60px 60px 44px' }}
                         onMouseEnter={(e) => {
                           const rect = (e.currentTarget as HTMLElement).getBoundingClientRect();
-                          setTooltip({ player: p, x: rect.right, y: rect.top });
+                          setTooltip({ player: p, x: rect.right, y: rect.top, side: 'right' });
                         }}
                         onMouseLeave={() => setTooltip(null)}
                       >
@@ -1064,15 +788,242 @@ export default function TeambouwerPage() {
               </div>
             </div>
 
-            {/* ── RIGHT: veld + controls ── */}
-            <div className="lg:w-[40%] flex flex-col gap-4">
+            {/* ── RIGHT: GW planner paneel ── */}
+            <div className="lg:w-[40%] flex flex-col gap-4" style={{ fontFamily: 'Montserrat, sans-serif' }}>
+
+              {/* GW navigatie + spelerslijst */}
+              <div style={{ background: '#1F0E84', borderRadius: 16, overflow: 'hidden', border: '1px solid rgba(255,255,255,0.1)' }}>
+
+                {/* Header: navigatie + deadline + stats */}
+                <div style={{ padding: '16px 20px', borderBottom: '1px solid rgba(255,255,255,0.08)' }}>
+
+                  {/* Navigatie rij */}
+                  <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', gap: 8 }}>
+                    <button
+                      onClick={() => { setPlannerOffset((o) => Math.max(0, o - 1)); setSelectedPlayerId(null); }}
+                      disabled={plannerOffset === 0}
+                      style={{
+                        width: 34, height: 34, borderRadius: 9, flexShrink: 0,
+                        background: plannerOffset === 0 ? 'rgba(255,255,255,0.04)' : 'rgba(255,255,255,0.1)',
+                        border: '1px solid rgba(255,255,255,0.12)',
+                        color: plannerOffset === 0 ? 'rgba(255,255,255,0.2)' : '#fff',
+                        display: 'flex', alignItems: 'center', justifyContent: 'center',
+                        cursor: plannerOffset === 0 ? 'not-allowed' : 'pointer',
+                        transition: 'background 0.15s',
+                      }}
+                    >
+                      <ChevronLeft size={15} />
+                    </button>
+
+                    <div style={{ textAlign: 'center', flex: 1 }}>
+                      <div style={{ color: '#fff', fontWeight: 800, fontSize: 16, fontFamily: 'Montserrat, sans-serif', letterSpacing: '-0.01em' }}>
+                        {currentGW ? `Gameweek ${currentGW}` : '—'}
+                      </div>
+                      {formattedDeadline && (
+                        <div style={{ color: 'rgba(255,255,255,0.4)', fontSize: 11, marginTop: 2, fontFamily: 'Montserrat, sans-serif' }}>
+                          Deadline: {formattedDeadline}
+                        </div>
+                      )}
+                    </div>
+
+                    <button
+                      onClick={() => { setPlannerOffset((o) => Math.min(plannerMaxOffset, o + 1)); setSelectedPlayerId(null); }}
+                      disabled={plannerOffset >= plannerMaxOffset}
+                      style={{
+                        width: 34, height: 34, borderRadius: 9, flexShrink: 0,
+                        background: plannerOffset >= plannerMaxOffset ? 'rgba(255,255,255,0.04)' : 'rgba(255,255,255,0.1)',
+                        border: '1px solid rgba(255,255,255,0.12)',
+                        color: plannerOffset >= plannerMaxOffset ? 'rgba(255,255,255,0.2)' : '#fff',
+                        display: 'flex', alignItems: 'center', justifyContent: 'center',
+                        cursor: plannerOffset >= plannerMaxOffset ? 'not-allowed' : 'pointer',
+                        transition: 'background 0.15s',
+                      }}
+                    >
+                      <ChevronRight size={15} />
+                    </button>
+                  </div>
+
+                  {/* Stats: in the bank + formatie + reset wissels */}
+                  <div style={{ marginTop: 12, display: 'flex', gap: 8, alignItems: 'center' }}>
+                    <div style={{ flex: 1, background: 'rgba(0,0,0,0.25)', borderRadius: 8, textAlign: 'center', padding: '8px 6px' }}>
+                      <div style={{ color: 'rgba(255,255,255,0.35)', fontSize: 9, textTransform: 'uppercase', letterSpacing: '0.1em', marginBottom: 2, fontFamily: 'Montserrat, sans-serif' }}>
+                        In the bank
+                      </div>
+                      <div style={{ fontWeight: 800, fontSize: 17, fontFamily: 'Montserrat, sans-serif', lineHeight: 1, color: teamValues.remaining >= 0 ? '#00FA61' : '#FF4444' }}>
+                        £{teamValues.remaining.toFixed(1)}m
+                      </div>
+                    </div>
+                    <div style={{ background: 'rgba(0,0,0,0.25)', borderRadius: 8, textAlign: 'center', padding: '8px 14px' }}>
+                      <div style={{ color: 'rgba(255,255,255,0.35)', fontSize: 9, textTransform: 'uppercase', letterSpacing: '0.1em', marginBottom: 2, fontFamily: 'Montserrat, sans-serif' }}>
+                        Formatie
+                      </div>
+                      <div style={{ fontWeight: 800, fontSize: 14, fontFamily: 'Montserrat, sans-serif', lineHeight: 1, color: hasGwSwaps ? '#00FA61' : '#fff' }}>
+                        {effectiveGwFormation}
+                      </div>
+                    </div>
+                    {hasGwSwaps && (
+                      <button
+                        onClick={resetGwSwaps}
+                        style={{
+                          padding: '6px 10px', borderRadius: 8, fontSize: 10, fontWeight: 600,
+                          background: 'rgba(255,100,100,0.12)', color: '#F87171',
+                          border: '1px solid rgba(255,100,100,0.2)', cursor: 'pointer',
+                          display: 'flex', alignItems: 'center', gap: 4,
+                          fontFamily: 'Montserrat, sans-serif', flexShrink: 0,
+                        }}
+                      >
+                        <RotateCcw size={9} /> Reset
+                      </button>
+                    )}
+                  </div>
+                </div>
+
+                {/* Wissel status bar */}
+                {(selectedPlayerId !== null || swapError) && (
+                  <div style={{
+                    background: 'rgba(0,0,0,0.3)',
+                    padding: '8px 16px',
+                    display: 'flex', alignItems: 'center', justifyContent: 'space-between', gap: 8,
+                    borderBottom: '1px solid rgba(255,255,255,0.06)',
+                  }}>
+                    <span style={{ color: swapError ? '#F87171' : '#00FA61', fontSize: 11, fontFamily: 'Montserrat, sans-serif' }}>
+                      {swapError ?? 'Selecteer een andere speler om te wisselen…'}
+                    </span>
+                    {selectedPlayerId !== null && (
+                      <button
+                        onClick={() => setSelectedPlayerId(null)}
+                        style={{
+                          padding: '4px 10px', borderRadius: 6, fontSize: 10, fontWeight: 600,
+                          background: 'rgba(255,255,255,0.08)', color: 'rgba(255,255,255,0.6)',
+                          border: '1px solid rgba(255,255,255,0.12)', cursor: 'pointer',
+                          fontFamily: 'Montserrat, sans-serif', flexShrink: 0,
+                        }}
+                      >
+                        Annuleer
+                      </button>
+                    )}
+                  </div>
+                )}
+
+                {/* Spelers lijst */}
+                {gwTeamPlayers.length === 0 ? (
+                  <div style={{
+                    padding: '28px 20px', textAlign: 'center',
+                    color: 'rgba(255,255,255,0.22)', fontSize: 13,
+                    fontFamily: 'Montserrat, sans-serif',
+                  }}>
+                    Voeg spelers toe uit de lijst om te beginnen
+                  </div>
+                ) : (() => {
+                  const sorted = [...gwGkRow, ...gwDefRow, ...gwMidRow, ...gwFwdRow, ...gwBenchRow];
+                  const posBg: Record<string, string> = {
+                    GK: 'rgba(255,215,0,0.15)', DEF: 'rgba(0,250,97,0.12)',
+                    MID: 'rgba(99,102,241,0.15)', FWD: 'rgba(239,68,68,0.15)',
+                  };
+                  const posColor: Record<string, string> = {
+                    GK: '#FFD700', DEF: '#00FA61', MID: '#818CF8', FWD: '#F87171',
+                  };
+                  return (
+                    <div style={{ padding: '4px 0' }}>
+                      {sorted.map((player) => {
+                        const fixture1   = getFixture1(player.teamId);
+                        const isSelected = selectedPlayerId === player.id;
+                        return (
+                          <div
+                            key={player.id}
+                            style={{
+                              display: 'flex', alignItems: 'center', gap: 7,
+                              padding: '6px 16px',
+                              background: isSelected ? 'rgba(0,250,97,0.07)' : 'transparent',
+                              borderLeft: `3px solid ${isSelected ? '#00FA61' : 'transparent'}`,
+                              transition: 'background 0.15s',
+                              cursor: 'pointer',
+                            }}
+                            onMouseEnter={(e) => {
+                              const rect = (e.currentTarget as HTMLElement).getBoundingClientRect();
+                              setTooltip({ player, x: rect.left, y: rect.top, side: 'left' });
+                            }}
+                            onMouseLeave={() => setTooltip(null)}
+                            onClick={() => setPlayerPopup(player)}
+                          >
+                            {/* Positie badge */}
+                            <span style={{
+                              fontSize: 8, fontWeight: 700, padding: '2px 5px', borderRadius: 3,
+                              background: player.isBank
+                                ? 'rgba(255,255,255,0.06)'
+                                : (posBg[player.position] ?? 'rgba(255,255,255,0.06)'),
+                              color: player.isBank
+                                ? 'rgba(255,255,255,0.35)'
+                                : (posColor[player.position] ?? '#fff'),
+                              minWidth: 26, textAlign: 'center' as const, flexShrink: 0,
+                            }}>
+                              {player.isBank ? 'BNK' : player.position}
+                            </span>
+
+                            {/* Shirt icoon */}
+                            <ShirtIcon shortName={player.team} size={18} />
+
+                            {/* Naam */}
+                            <span style={{
+                              color: '#fff', fontSize: 11, fontWeight: 600, flex: 1,
+                              overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap',
+                            }}>
+                              {player.name}
+                            </span>
+
+                            {/* Fixture badge voor actieve GW */}
+                            {fixture1 ? (
+                              <span style={{
+                                fontSize: 8, fontWeight: 700,
+                                background: FDR_PITCH_BG[fixture1.difficulty] ?? '#888',
+                                color: FDR_PITCH_TEXT[fixture1.difficulty] ?? '#fff',
+                                padding: '2px 4px', borderRadius: 3,
+                                lineHeight: 1.4, whiteSpace: 'nowrap' as const, flexShrink: 0,
+                              }}>
+                                {fixture1.opponent}({fixture1.location})
+                              </span>
+                            ) : (
+                              <span style={{
+                                fontSize: 8, color: 'rgba(255,255,255,0.25)',
+                                background: 'rgba(255,255,255,0.05)',
+                                padding: '2px 5px', borderRadius: 3,
+                                lineHeight: 1.4, flexShrink: 0,
+                              }}>–</span>
+                            )}
+
+                            {/* Prijs */}
+                            <span style={{ color: '#00FA61', fontSize: 10, flexShrink: 0 }}>
+                              £{player.price.toFixed(1)}m
+                            </span>
+
+                            {/* Wissel knop */}
+                            <button
+                              onClick={(e) => handleWisselClick(e, player.id)}
+                              style={{
+                                width: 24, height: 24, borderRadius: 6, flexShrink: 0,
+                                background: isSelected ? '#00FA61' : 'rgba(255,255,255,0.07)',
+                                color: isSelected ? '#111' : 'rgba(255,255,255,0.5)',
+                                border: isSelected ? 'none' : '1px solid rgba(255,255,255,0.1)',
+                                display: 'flex', alignItems: 'center', justifyContent: 'center',
+                                cursor: 'pointer',
+                              }}
+                              title="Wissel"
+                            >
+                              <ArrowLeftRight size={10} />
+                            </button>
+                          </div>
+                        );
+                      })}
+                    </div>
+                  );
+                })()}
+              </div>
 
               {/* Budget stats */}
               <div
                 className="rounded-2xl p-4 border border-white/8 flex flex-col gap-3"
                 style={{ background: 'rgba(0,0,0,0.3)' }}
               >
-                {/* Budget aanpasbaar */}
                 <div className="flex items-center justify-between pb-2 border-b border-white/5">
                   <span className="text-white/40 text-[10px] uppercase tracking-widest">Budget</span>
                   {budgetEditing ? (
@@ -1106,7 +1057,6 @@ export default function TeambouwerPage() {
                     </button>
                   )}
                 </div>
-                {/* Waarde / Resterend / Spelers */}
                 <div className="grid grid-cols-3 gap-3">
                   <div className="text-center">
                     <div className="text-white/40 text-[10px] uppercase tracking-widest mb-1">Waarde</div>
@@ -1146,55 +1096,6 @@ export default function TeambouwerPage() {
                       {f}
                     </button>
                   ))}
-                </div>
-              </div>
-
-              {/* Pitch */}
-              <div
-                className="rounded-2xl overflow-hidden border border-white/8"
-                style={{
-                  background: 'linear-gradient(180deg, #1a5c20 0%, #2d7a35 30%, #2d7a35 70%, #1a5c20 100%)',
-                  minHeight: 440,
-                }}
-              >
-                <div className="relative w-full h-full py-4 px-2">
-                  <div
-                    className="absolute left-1/2 top-1/2 -translate-x-1/2 -translate-y-1/2 rounded-full border border-white/10 pointer-events-none"
-                    style={{ width: 80, height: 80 }}
-                  />
-                  <div className="absolute left-4 right-4 border-t border-white/10 pointer-events-none" style={{ top: '50%' }} />
-                  <div className="flex flex-col gap-4 relative z-10">
-                    <PitchRow label="Aanval"      positions={fwdSlots} />
-                    <PitchRow label="Middenveld"  positions={midSlots} />
-                    <PitchRow label="Verdediging" positions={defSlots} />
-                    <PitchRow label="Keeper"      positions={[{ pos: 'GK', idx: 0 }]} />
-                  </div>
-                </div>
-              </div>
-
-              {/* Bank */}
-              <div
-                className="rounded-2xl p-4 border border-white/8"
-                style={{ background: 'rgba(0,0,0,0.3)' }}
-              >
-                <p className="text-white/30 text-[10px] uppercase tracking-widest font-semibold mb-3">Bank</p>
-                <div className="flex gap-3 justify-around">
-                  {BENCH_SLOTS.map(({ slotId, label }) => {
-                    const player   = team[slotId] ?? null;
-                    const fixtures = player ? (fdrMap[player.teamId] ?? []).slice(0, 1) : [];
-                    return (
-                      <div key={slotId} className="flex flex-col items-center gap-1">
-                        <span className="text-white/20 text-[9px] mb-1">{label}</span>
-                        <PitchCard
-                          slotId={slotId}
-                          posLabel={label}
-                          player={player}
-                          onRemove={() => removePlayer(slotId)}
-                          nextFixtures={fixtures}
-                        />
-                      </div>
-                    );
-                  })}
                 </div>
               </div>
 
@@ -1243,298 +1144,6 @@ export default function TeambouwerPage() {
             </div>
           </div>
 
-          {/* ── Veld met GW navigatie ── */}
-          {selectedPlayersList.length > 0 && (
-            <div className="mt-8" style={{ fontFamily: 'Montserrat, sans-serif' }}>
-
-              {/* GW nav header */}
-              <div style={{
-                background: '#1F0E84',
-                borderRadius: '16px 16px 0 0',
-                padding: '20px 24px',
-                borderBottom: '1px solid rgba(255,255,255,0.08)',
-              }}>
-                {/* Navigatie + titel */}
-                <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', gap: 12 }}>
-                  <button
-                    onClick={() => { setPlannerOffset((o) => Math.max(0, o - 1)); setSelectedPlayerId(null); }}
-                    disabled={plannerOffset === 0}
-                    style={{
-                      width: 38, height: 38, borderRadius: 10, flexShrink: 0,
-                      background: plannerOffset === 0 ? 'rgba(255,255,255,0.04)' : 'rgba(255,255,255,0.1)',
-                      border: '1px solid rgba(255,255,255,0.12)',
-                      color: plannerOffset === 0 ? 'rgba(255,255,255,0.2)' : '#fff',
-                      display: 'flex', alignItems: 'center', justifyContent: 'center',
-                      cursor: plannerOffset === 0 ? 'not-allowed' : 'pointer',
-                      transition: 'background 0.15s',
-                    }}
-                  >
-                    <ChevronLeft size={16} />
-                  </button>
-
-                  <div style={{ textAlign: 'center', flex: 1 }}>
-                    <h2 style={{
-                      color: '#fff', fontWeight: 800, fontSize: 20, margin: 0,
-                      fontFamily: 'Montserrat, sans-serif', letterSpacing: '-0.01em',
-                    }}>
-                      {currentGW ? `Gameweek ${currentGW}` : '—'}
-                    </h2>
-                    {formattedDeadline && (
-                      <p style={{
-                        color: 'rgba(255,255,255,0.4)', fontSize: 11,
-                        margin: '3px 0 0', fontFamily: 'Montserrat, sans-serif',
-                      }}>
-                        Deadline: {formattedDeadline}
-                      </p>
-                    )}
-                  </div>
-
-                  <button
-                    onClick={() => { setPlannerOffset((o) => Math.min(plannerMaxOffset, o + 1)); setSelectedPlayerId(null); }}
-                    disabled={plannerOffset >= plannerMaxOffset}
-                    style={{
-                      width: 38, height: 38, borderRadius: 10, flexShrink: 0,
-                      background: plannerOffset >= plannerMaxOffset ? 'rgba(255,255,255,0.04)' : 'rgba(255,255,255,0.1)',
-                      border: '1px solid rgba(255,255,255,0.12)',
-                      color: plannerOffset >= plannerMaxOffset ? 'rgba(255,255,255,0.2)' : '#fff',
-                      display: 'flex', alignItems: 'center', justifyContent: 'center',
-                      cursor: plannerOffset >= plannerMaxOffset ? 'not-allowed' : 'pointer',
-                      transition: 'background 0.15s',
-                    }}
-                  >
-                    <ChevronRight size={16} />
-                  </button>
-                </div>
-
-                {/* Stats balk: In the bank + formatie */}
-                <div style={{ marginTop: 16, display: 'flex', gap: 10 }}>
-                  <div style={{ flex: 1, background: 'rgba(0,0,0,0.25)', borderRadius: 10, textAlign: 'center', padding: '10px 8px' }}>
-                    <div style={{ color: 'rgba(255,255,255,0.35)', fontSize: 9, textTransform: 'uppercase', letterSpacing: '0.1em', marginBottom: 3, fontFamily: 'Montserrat, sans-serif' }}>
-                      In the bank
-                    </div>
-                    <div style={{
-                      fontWeight: 800, fontSize: 20, fontFamily: 'Montserrat, sans-serif', lineHeight: 1,
-                      color: teamValues.remaining >= 0 ? '#00FA61' : '#FF4444',
-                    }}>
-                      £{teamValues.remaining.toFixed(1)}m
-                    </div>
-                  </div>
-                  <div style={{ background: 'rgba(0,0,0,0.25)', borderRadius: 10, textAlign: 'center', padding: '10px 16px' }}>
-                    <div style={{ color: 'rgba(255,255,255,0.35)', fontSize: 9, textTransform: 'uppercase', letterSpacing: '0.1em', marginBottom: 3, fontFamily: 'Montserrat, sans-serif' }}>
-                      Formatie
-                    </div>
-                    <div style={{
-                      fontWeight: 800, fontSize: 16, fontFamily: 'Montserrat, sans-serif', lineHeight: 1,
-                      color: Object.keys(gwPlayerBank[currentGW!] ?? {}).length > 0 ? '#00FA61' : '#fff',
-                    }}>
-                      {effectiveGwFormation}
-                    </div>
-                  </div>
-                </div>
-              </div>
-
-              {/* Wissel status + reset knop boven het veld */}
-              {(selectedPlayerId !== null || hasGwSwaps || swapError) && (
-                <div style={{
-                  background: 'rgba(0,0,0,0.45)',
-                  padding: '10px 20px',
-                  display: 'flex', alignItems: 'center', justifyContent: 'space-between', gap: 12,
-                  borderBottom: '1px solid rgba(255,255,255,0.06)',
-                }}>
-                  <span style={{
-                    color: swapError ? '#F87171' : selectedPlayerId !== null ? '#00FA61' : 'rgba(255,255,255,0.4)',
-                    fontSize: 11, fontFamily: 'Montserrat, sans-serif',
-                  }}>
-                    {swapError
-                      ? swapError
-                      : selectedPlayerId !== null
-                        ? `Selecteer een andere speler om te wisselen…`
-                        : `GW${currentGW}: wissels actief`}
-                  </span>
-                  <div style={{ display: 'flex', gap: 8 }}>
-                    {selectedPlayerId !== null && (
-                      <button
-                        onClick={() => setSelectedPlayerId(null)}
-                        style={{
-                          padding: '5px 12px', borderRadius: 8, fontSize: 11, fontWeight: 600,
-                          background: 'rgba(255,255,255,0.08)', color: 'rgba(255,255,255,0.6)',
-                          border: '1px solid rgba(255,255,255,0.12)', cursor: 'pointer',
-                          fontFamily: 'Montserrat, sans-serif',
-                        }}
-                      >
-                        Annuleer
-                      </button>
-                    )}
-                    {hasGwSwaps && (
-                      <button
-                        onClick={resetGwSwaps}
-                        style={{
-                          padding: '5px 12px', borderRadius: 8, fontSize: 11, fontWeight: 600,
-                          background: 'rgba(255,100,100,0.12)', color: '#F87171',
-                          border: '1px solid rgba(255,100,100,0.2)', cursor: 'pointer',
-                          display: 'flex', alignItems: 'center', gap: 5,
-                          fontFamily: 'Montserrat, sans-serif',
-                        }}
-                      >
-                        <RotateCcw size={10} /> Reset wissels
-                      </button>
-                    )}
-                  </div>
-                </div>
-              )}
-
-              {/* Voetbalveld */}
-              <div style={{
-                background: 'linear-gradient(180deg, #1a5c20 0%, #2d7a35 35%, #2d7a35 65%, #1a5c20 100%)',
-                padding: '20px 12px',
-                position: 'relative',
-                overflow: 'hidden',
-              }}>
-                {/* Veldlijnen */}
-                <div style={{
-                  position: 'absolute', left: '50%', top: '50%',
-                  transform: 'translate(-50%,-50%)',
-                  width: 80, height: 80, borderRadius: '50%',
-                  border: '1px solid rgba(255,255,255,0.08)',
-                  pointerEvents: 'none',
-                }} />
-                <div style={{
-                  position: 'absolute', left: 16, right: 16, top: '50%',
-                  borderTop: '1px solid rgba(255,255,255,0.08)',
-                  pointerEvents: 'none',
-                }} />
-
-                {/* Spelersrijen: FWD → MID → DEF → GK */}
-                <div style={{ display: 'flex', flexDirection: 'column', gap: 16, position: 'relative', zIndex: 1 }}>
-                  <PitchViewRow label="Aanval"      players={gwFwdRow} />
-                  <PitchViewRow label="Middenveld"  players={gwMidRow} />
-                  <PitchViewRow label="Verdediging" players={gwDefRow} />
-                  <PitchViewRow label="Keeper"      players={gwGkRow} />
-                </div>
-              </div>
-
-              {/* Bank (veldweergave) */}
-              <div style={{
-                background: '#1F0E84',
-                borderRadius: '0 0 16px 16px',
-                padding: '14px 20px',
-                borderTop: '1px solid rgba(255,255,255,0.08)',
-              }}>
-                <p style={{
-                  color: 'rgba(255,255,255,0.3)', fontSize: 9, textTransform: 'uppercase',
-                  letterSpacing: '0.12em', fontWeight: 600, marginBottom: 12,
-                  fontFamily: 'Montserrat, sans-serif',
-                }}>
-                  Bank
-                </p>
-                <div style={{ display: 'flex', gap: 12, justifyContent: 'space-around', flexWrap: 'wrap' }}>
-                  {gwBenchRow.map((player) => {
-                    const fixture1 = getFixture1(player.teamId);
-                    return (
-                      <div key={player.id} style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', gap: 4 }}>
-                        <span style={{ color: 'rgba(255,255,255,0.2)', fontSize: 8, fontFamily: 'Montserrat, sans-serif' }}>
-                          {player.position}
-                        </span>
-                        <PitchViewCard
-                          slotId={`BENCH-${player.id}`}
-                          player={player}
-                          onRemove={() => removePlayer(player.slotId)}
-                          fixture1={fixture1}
-                          isSelected={selectedPlayerId === player.id}
-                          onCardClick={() => handleCardClick(player.id)}
-                          onWisselClick={(e) => handleWisselClick(e, player.id)}
-                        />
-                      </div>
-                    );
-                  })}
-                </div>
-              </div>
-
-              {/* ── Geselecteerde spelers lijst: wisselen + hover stats ── */}
-              {(() => {
-                // Starters (GK, DEF, MID, FWD) gevolgd door bank — altijd correct via isBank filter
-                const sorted = [...gwGkRow, ...gwDefRow, ...gwMidRow, ...gwFwdRow, ...gwBenchRow];
-                if (sorted.length === 0) return null;
-                const posBg: Record<string, string> = {
-                  GK: 'rgba(255,215,0,0.15)', DEF: 'rgba(0,250,97,0.12)',
-                  MID: 'rgba(99,102,241,0.15)', FWD: 'rgba(239,68,68,0.15)',
-                };
-                const posColor: Record<string, string> = {
-                  GK: '#FFD700', DEF: '#00FA61', MID: '#818CF8', FWD: '#F87171',
-                };
-                return (
-                  <div style={{
-                    background: 'rgba(0,0,0,0.18)',
-                    borderTop: '1px solid rgba(255,255,255,0.06)',
-                    padding: '14px 20px',
-                    fontFamily: 'Montserrat, sans-serif',
-                  }}>
-                    <p style={{
-                      color: 'rgba(255,255,255,0.3)', fontSize: 9, textTransform: 'uppercase',
-                      letterSpacing: '0.12em', fontWeight: 600, marginBottom: 10,
-                    }}>
-                      Opstelling — klik ⇄ om te wisselen · hover voor stats
-                    </p>
-                    <div style={{ display: 'flex', flexDirection: 'column', gap: 2 }}>
-                      {sorted.map((player) => {
-                        const isSelectedHere = selectedPlayerId === player.id;
-                        return (
-                          <div
-                            key={player.id}
-                            style={{
-                              display: 'flex', alignItems: 'center', gap: 8,
-                              padding: '5px 8px', borderRadius: 8,
-                              background: isSelectedHere ? 'rgba(0,250,97,0.08)' : 'transparent',
-                              border: isSelectedHere ? '1px solid rgba(0,250,97,0.25)' : '1px solid transparent',
-                              transition: 'background 0.15s, border 0.15s',
-                              cursor: 'pointer',
-                            }}
-                            onMouseEnter={(e) => {
-                              const rect = (e.currentTarget as HTMLElement).getBoundingClientRect();
-                              setTooltip({ player, x: rect.right, y: rect.top });
-                            }}
-                            onMouseLeave={() => setTooltip(null)}
-                            onClick={() => setPlayerPopup(player)}
-                          >
-                            <span style={{
-                              fontSize: 8, fontWeight: 700, padding: '2px 5px', borderRadius: 4,
-                              background: player.isBank ? 'rgba(255,255,255,0.06)' : (posBg[player.position] ?? 'rgba(255,255,255,0.06)'),
-                              color: player.isBank ? 'rgba(255,255,255,0.35)' : (posColor[player.position] ?? '#fff'),
-                              minWidth: 26, textAlign: 'center', flexShrink: 0,
-                            }}>
-                              {player.isBank ? 'BNK' : player.position}
-                            </span>
-                            <ShirtIcon shortName={player.team} size={18} />
-                            <span style={{ color: '#fff', fontSize: 11, fontWeight: 600, flex: 1, overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>
-                              {player.name}
-                            </span>
-                            <span style={{ color: '#00FA61', fontSize: 10, flexShrink: 0 }}>
-                              £{player.price.toFixed(1)}m
-                            </span>
-                            <button
-                              onClick={(e) => handleWisselClick(e, player.id)}
-                              style={{
-                                width: 24, height: 24, borderRadius: 6, flexShrink: 0,
-                                background: isSelectedHere ? '#00FA61' : 'rgba(255,255,255,0.08)',
-                                color: isSelectedHere ? '#111' : 'rgba(255,255,255,0.55)',
-                                border: isSelectedHere ? 'none' : '1px solid rgba(255,255,255,0.12)',
-                                display: 'flex', alignItems: 'center', justifyContent: 'center',
-                                cursor: 'pointer',
-                              }}
-                              title="Wissel"
-                            >
-                              <ArrowLeftRight size={10} />
-                            </button>
-                          </div>
-                        );
-                      })}
-                    </div>
-                  </div>
-                );
-              })()}
-
-            </div>
-          )}
 
         </div>
       </div>
@@ -1631,7 +1240,9 @@ export default function TeambouwerPage() {
         <div
           style={{
             position: 'fixed',
-            left: tooltip.x + 12,
+            ...(tooltip.side === 'left'
+              ? { right: `calc(100vw - ${tooltip.x}px + 12px)` }
+              : { left: tooltip.x + 12 }),
             top: tooltip.y,
             zIndex: 9999,
             pointerEvents: 'none',
@@ -1657,7 +1268,7 @@ export default function TeambouwerPage() {
               {(tooltip.player.position === 'GK' || tooltip.player.position === 'DEF') && (
                 <>
                   <span className="text-white/40 text-[10px]">Clean Sheets</span>
-                  <span className="text-white font-medium text-[10px]">{tooltip.player.cleanSheets}</span>
+                  <span className="text-white font-medium text-[10px]">{tooltip.player.cleanSheets ?? 0}</span>
                 </>
               )}
               <span className="text-white/40 text-[10px]">Eigendom</span>

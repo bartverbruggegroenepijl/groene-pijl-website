@@ -90,7 +90,7 @@ export async function GET() {
         goals: p.goals_scored,
         assists: p.assists,
         minutes: p.minutes,
-        cleanSheets: p.clean_sheets,
+        cleanSheets: p.clean_sheets ?? 0,
         xGoals: p.expected_goals,
       };
     });
