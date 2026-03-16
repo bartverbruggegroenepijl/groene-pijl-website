@@ -3,7 +3,7 @@
 import { useEffect, useState, useMemo, useCallback } from 'react';
 import Image from 'next/image';
 import {
-  Search, X, ChevronLeft, ChevronRight, RotateCcw, Save,
+  Search, X, ChevronLeft, ChevronRight, ChevronDown, RotateCcw, Save,
   ArrowUpDown, ArrowUp, ArrowDown, Plus, Minus, Users, ArrowLeftRight,
 } from 'lucide-react';
 
@@ -48,6 +48,15 @@ interface TeamFDR {
 
 interface SelectedPlayer extends FplPlayer {
   slotId: string;
+}
+
+interface GwTransfer {
+  outId: number;
+  outName: string;
+  outPrice: number;
+  slotId: string;
+  inPlayer: FplPlayer;
+  timestamp: number;
 }
 
 /* ─────────────────────── constants ─────────────────────────── */
@@ -95,32 +104,6 @@ const FDR_PITCH_TEXT: Record<number, string> = {
   1: '#111', 2: '#111', 3: '#111', 4: '#fff', 5: '#fff',
 };
 
-/* ── Teamkleuren Premier League 2024-25 ── */
-const TEAM_PRIMARY: Record<string, string> = {
-  ARS: '#EF0107', AVL: '#95BFE5', BOU: '#DA291C', BRE: '#E30613',
-  BHA: '#0057B8', CHE: '#034694', CRY: '#1B458F', EVE: '#003399',
-  FUL: '#2D2D2D', IPS: '#0044A9', LEI: '#003090', LIV: '#C8102E',
-  MCI: '#6CABDD', MUN: '#DA291C', NEW: '#241F20', NFO: '#E53233',
-  SOU: '#D71920', TOT: '#132257', WHU: '#7A263A', WOL: '#FDB913',
-};
-
-/* ─────────────── ShirtIcon ─────────────── */
-
-function ShirtIcon({ shortName, size = 30 }: { shortName: string; size?: number }) {
-  const fill = TEAM_PRIMARY[shortName] ?? '#374151';
-  return (
-    <svg width={size} height={size} viewBox="0 0 60 60" fill="none">
-      <path
-        d="M22 7 L6 18 L14 27 L18 20 L18 54 L42 54 L42 20 L46 27 L54 18 L38 7 C36 11 33 13 30 13 C27 13 24 11 22 7 Z"
-        fill={fill}
-        stroke="rgba(255,255,255,0.22)"
-        strokeWidth="1.5"
-        strokeLinejoin="round"
-      />
-    </svg>
-  );
-}
-
 /* ─────────────── FdrBadge (spelerslijst) ─────────────── */
 
 function FdrBadge({ cell }: { cell: FixtureCell }) {
@@ -141,6 +124,9 @@ function FdrBadge({ cell }: { cell: FixtureCell }) {
 function PitchCard({
   player,
   isSelected,
+  isTransferTarget,
+  isNewTransfer,
+  isOutNext,
   fixture,
   onSwapClick,
   onCardClick,
@@ -149,6 +135,9 @@ function PitchCard({
 }: {
   player: SelectedPlayer & { isBank: boolean };
   isSelected: boolean;
+  isTransferTarget: boolean;
+  isNewTransfer: boolean;
+  isOutNext: boolean;
   fixture: FixtureCell | null;
   onSwapClick: (e: React.MouseEvent) => void;
   onCardClick: () => void;
@@ -156,6 +145,14 @@ function PitchCard({
   onHoverLeave: () => void;
 }) {
   const [hovered, setHovered] = useState(false);
+
+  const boxShadow = isTransferTarget
+    ? '0 0 18px rgba(255,68,68,0.65), 0 0 36px rgba(255,68,68,0.25)'
+    : isSelected
+    ? '0 0 18px rgba(0,250,97,0.65), 0 0 36px rgba(0,250,97,0.25)'
+    : hovered
+    ? '0 0 12px rgba(0,250,97,0.35)'
+    : undefined;
 
   return (
     <div
@@ -174,6 +171,32 @@ function PitchCard({
       onMouseEnter={(e) => { setHovered(true); onHoverEnter(e); }}
       onMouseLeave={() => { setHovered(false); onHoverLeave(); }}
     >
+      {/* Incoming badge ↑ */}
+      {isNewTransfer && (
+        <span style={{
+          position: 'absolute', top: -8, left: '50%', transform: 'translateX(-50%)',
+          background: '#00FA61', color: '#111',
+          fontSize: 8, fontWeight: 800,
+          padding: '1px 4px', borderRadius: 3,
+          fontFamily: 'Montserrat, sans-serif',
+          whiteSpace: 'nowrap' as const,
+          zIndex: 2,
+        }}>↑ IN</span>
+      )}
+
+      {/* Outgoing badge ↓ */}
+      {isOutNext && !isNewTransfer && (
+        <span style={{
+          position: 'absolute', top: -8, left: '50%', transform: 'translateX(-50%)',
+          background: '#FF4444', color: '#fff',
+          fontSize: 8, fontWeight: 800,
+          padding: '1px 4px', borderRadius: 3,
+          fontFamily: 'Montserrat, sans-serif',
+          whiteSpace: 'nowrap' as const,
+          zIndex: 2,
+        }}>↓ UIT</span>
+      )}
+
       {/* Avatar cirkel */}
       <div
         style={{
@@ -181,12 +204,12 @@ function PitchCard({
           height: 44,
           borderRadius: '50%',
           flexShrink: 0,
-          border: isSelected ? '2.5px solid #00FA61' : '2px solid rgba(255,255,255,0.22)',
-          boxShadow: isSelected
-            ? '0 0 18px rgba(0,250,97,0.65), 0 0 36px rgba(0,250,97,0.25)'
-            : hovered
-            ? '0 0 12px rgba(0,250,97,0.35)'
-            : undefined,
+          border: isTransferTarget
+            ? '2.5px solid #FF4444'
+            : isSelected
+            ? '2.5px solid #00FA61'
+            : '2px solid rgba(255,255,255,0.22)',
+          boxShadow,
           overflow: 'hidden',
           background: 'linear-gradient(135deg, rgba(0,250,97,0.15) 0%, rgba(31,14,132,0.55) 100%)',
           position: 'relative',
@@ -228,8 +251,8 @@ function PitchCard({
       {/* Naam badge */}
       <span
         style={{
-          background: isSelected ? '#00FA61' : 'rgba(0,0,0,0.72)',
-          color: isSelected ? '#111' : '#fff',
+          background: isTransferTarget ? '#FF4444' : isSelected ? '#00FA61' : 'rgba(0,0,0,0.72)',
+          color: isTransferTarget || isSelected ? (isTransferTarget ? '#fff' : '#111') : '#fff',
           fontSize: 9,
           fontWeight: 700,
           padding: '2px 6px',
@@ -333,8 +356,11 @@ export default function TeambouwerPage() {
   const [selectedPlayerId, setSelectedPlayerId] = useState<number | null>(null);
   const [gwPlayerBank,     setGwPlayerBank]     = useState<Record<number, Record<number, boolean>>>({});
 
-  // Speler info popup (klik op veldkaart)
-  const [playerPopup, setPlayerPopup] = useState<SelectedPlayer | null>(null);
+  // Transfer state
+  const [gwTransfers,     setGwTransfers]     = useState<Record<number, GwTransfer[]>>({});
+  const [transferTarget,  setTransferTarget]  = useState<{ id: number; slotId: string; name: string; price: number; position: Position } | null>(null);
+  const [transferConfirm, setTransferConfirm] = useState<{ outId: number; outName: string; outPrice: number; slotId: string; inPlayer: FplPlayer } | null>(null);
+  const [transferLogOpen, setTransferLogOpen] = useState(false);
 
   // Wissel foutmelding
   const [swapError, setSwapError] = useState<string | null>(null);
@@ -388,15 +414,20 @@ export default function TeambouwerPage() {
       }
     } catch {}
 
-    // Herstel GW-plan (wissels per GW) vanuit PLAN_KEY
+    // Herstel GW-plan (wissels + transfers per GW) vanuit PLAN_KEY
     try {
       const savedPlan = localStorage.getItem(PLAN_KEY);
       if (!savedPlan) return;
       const plan = JSON.parse(savedPlan);
       if (plan.gameweeks && typeof plan.gameweeks === 'object') {
         const bankState: Record<number, Record<number, boolean>> = {};
+        const transferState: Record<number, GwTransfer[]> = {};
+
         for (const [gwStr, gwData] of Object.entries(
-          plan.gameweeks as Record<string, { spelers?: Array<{ id: number; isBank: boolean }> }>,
+          plan.gameweeks as Record<string, {
+            spelers?: Array<{ id: number; isBank: boolean }>;
+            transfersFull?: GwTransfer[];
+          }>,
         )) {
           const gw = parseInt(gwStr, 10);
           if (Array.isArray(gwData.spelers)) {
@@ -405,8 +436,12 @@ export default function TeambouwerPage() {
               bankState[gw][s.id] = s.isBank;
             }
           }
+          if (Array.isArray(gwData.transfersFull)) {
+            transferState[gw] = gwData.transfersFull;
+          }
         }
-        if (Object.keys(bankState).length > 0) setGwPlayerBank(bankState);
+        if (Object.keys(bankState).length > 0)    setGwPlayerBank(bankState);
+        if (Object.keys(transferState).length > 0) setGwTransfers(transferState);
       }
     } catch {}
   }, []);
@@ -418,26 +453,46 @@ export default function TeambouwerPage() {
     return () => clearTimeout(t);
   }, [swapError]);
 
-  /* ── Auto-sla GW-plan op zodra gwPlayerBank wijzigt ── */
+  /* ── Auto-sla GW-plan op zodra gwPlayerBank of gwTransfers wijzigt ── */
   useEffect(() => {
-    if (Object.keys(gwPlayerBank).length === 0) return;
+    if (Object.keys(gwPlayerBank).length === 0 && Object.keys(gwTransfers).length === 0) return;
     try {
       const existing = localStorage.getItem(PLAN_KEY);
       const plan: {
         baseTeam: unknown;
-        gameweeks: Record<string, { spelers: Array<{ id: number; isBank: boolean }>; transfers: unknown[]; formatie: string }>;
+        gameweeks: Record<string, {
+          spelers: Array<{ id: number; isBank: boolean }>;
+          transfers: Array<{ uit: number; in: number; timestamp: string }>;
+          transfersFull: GwTransfer[];
+          formatie: string;
+        }>;
       } = existing ? JSON.parse(existing) : { baseTeam: null, gameweeks: {} };
-      for (const [gwStr, playerBank] of Object.entries(gwPlayerBank)) {
-        plan.gameweeks[gwStr] = {
-          ...(plan.gameweeks[gwStr] ?? {}),
+
+      // Samenvoeg alle GWs (zowel bank als transfers)
+      const allGwSet = new Set([
+        ...Object.keys(gwPlayerBank).map(Number),
+        ...Object.keys(gwTransfers).map(Number),
+      ]);
+      const allGws = Array.from(allGwSet);
+
+      for (const gw of allGws) {
+        const playerBank = gwPlayerBank[gw] ?? {};
+        const gwTrs      = gwTransfers[gw] ?? [];
+        plan.gameweeks[String(gw)] = {
+          ...(plan.gameweeks[String(gw)] ?? {}),
           spelers: Object.entries(playerBank).map(([id, isBank]) => ({ id: parseInt(id, 10), isBank })),
-          transfers: plan.gameweeks[gwStr]?.transfers ?? [],
+          transfers: gwTrs.map(t => ({
+            uit: t.outId,
+            in: t.inPlayer.id,
+            timestamp: new Date(t.timestamp).toISOString(),
+          })),
+          transfersFull: gwTrs,
           formatie: formation,
         };
       }
       localStorage.setItem(PLAN_KEY, JSON.stringify(plan));
     } catch {}
-  }, [gwPlayerBank, formation]);
+  }, [gwPlayerBank, gwTransfers, formation]);
 
   /* ── Auto-sla baseTeam op zodra team 11+ spelers heeft ── */
   useEffect(() => {
@@ -508,7 +563,7 @@ export default function TeambouwerPage() {
     setTeam(newTeam);
   }, [team]);
 
-  /* ── team stats ── */
+  /* ── team stats (basis) ── */
   const teamValues = useMemo(() => {
     const selected = Object.values(team);
     const total    = selected.reduce((s, p) => s + p.price, 0);
@@ -523,7 +578,7 @@ export default function TeambouwerPage() {
     return { total, remaining, count, countByPos, countByClub };
   }, [team, customBudget]);
 
-  /* ── validatie ── */
+  /* ── validatie (speler toevoegen aan basis) ── */
   const canAdd = useCallback((player: FplPlayer): { ok: boolean; reason?: string } => {
     const sel = Object.values(team);
     if (sel.find((p) => p.id === player.id))                          return { ok: false, reason: 'Al in team' };
@@ -623,14 +678,37 @@ export default function TeambouwerPage() {
     } catch { return null; }
   }, [currentDeadlineIso]);
 
+  /* ── effectief team per GW (base team + alle transfers t/m dat GW) ── */
+  const getEffectiveTeam = useCallback((gw: number): Record<string, SelectedPlayer> => {
+    let result: Record<string, SelectedPlayer> = { ...team };
+    const gwNums = Object.keys(gwTransfers).map(Number).filter(g => g <= gw).sort((a, b) => a - b);
+    for (const g of gwNums) {
+      for (const t of (gwTransfers[g] ?? [])) {
+        result = { ...result, [t.slotId]: { ...t.inPlayer, slotId: t.slotId } };
+      }
+    }
+    return result;
+  }, [team, gwTransfers]);
+
+  const effectiveTeamForGw = useMemo(() => {
+    if (currentGW === null) return team;
+    return getEffectiveTeam(currentGW);
+  }, [currentGW, getEffectiveTeam, team]);
+
+  /* ── GW budget resterend (op basis van effectief team) ── */
+  const gwBudgetRemaining = useMemo(() => {
+    const effectiveTotal = Object.values(effectiveTeamForGw).reduce((s, p) => s + p.price, 0);
+    return customBudget - effectiveTotal;
+  }, [effectiveTeamForGw, customBudget]);
+
   /* ── GW team: alle spelers met effectief isBank per GW ── */
   const gwTeamPlayers = useMemo<Array<SelectedPlayer & { isBank: boolean }>>(() => {
-    return Object.values(team).map((p) => {
+    return Object.values(effectiveTeamForGw).map((p) => {
       const defaultIsBank = p.slotId.startsWith('BENCH');
       const gwOverride    = currentGW != null ? gwPlayerBank[currentGW]?.[p.id] : undefined;
       return { ...p, isBank: gwOverride !== undefined ? gwOverride : defaultIsBank };
     });
-  }, [team, gwPlayerBank, currentGW]);
+  }, [effectiveTeamForGw, gwPlayerBank, currentGW]);
 
   /* ── GW starter/bench rijen ── */
   const gwStarters = gwTeamPlayers.filter((p) => !p.isBank);
@@ -648,6 +726,30 @@ export default function TeambouwerPage() {
   /* ── GW effectieve formatie ── */
   const gwFormKey = `${gwDefRow.length}-${gwMidRow.length}-${gwFwdRow.length}` as FormationKey;
   const effectiveGwFormation: FormationKey = FORMATIONS[gwFormKey] ? gwFormKey : formation;
+
+  /* ── Spelers die dit GW binnenkomen / volgende GW vertrekken ── */
+  const incomingThisGw = useMemo(() => {
+    if (currentGW === null) return new Set<number>();
+    return new Set((gwTransfers[currentGW] ?? []).map(t => t.inPlayer.id));
+  }, [gwTransfers, currentGW]);
+
+  const outgoingNextGw = useMemo(() => {
+    if (currentGW === null) return new Set<number>();
+    const nextGW = gameweeks[safePlannerOffset + 1];
+    if (!nextGW) return new Set<number>();
+    return new Set((gwTransfers[nextGW] ?? []).map(t => t.outId));
+  }, [gwTransfers, currentGW, gameweeks, safePlannerOffset]);
+
+  /* ── Transfer log (alle GWs gesorteerd) ── */
+  const allGwTransfersList = useMemo(() => {
+    const list: Array<{ gw: number; transfer: GwTransfer }> = [];
+    for (const [gwStr, trs] of Object.entries(gwTransfers)) {
+      for (const t of trs) {
+        list.push({ gw: parseInt(gwStr, 10), transfer: t });
+      }
+    }
+    return list.sort((a, b) => a.gw - b.gw || a.transfer.timestamp - b.transfer.timestamp);
+  }, [gwTransfers]);
 
   /* ── Haal fixture op voor huidig GW ── */
   const getFixture1 = useCallback(
@@ -709,10 +811,41 @@ export default function TeambouwerPage() {
     setSelectedPlayerId(null);
   }, [currentGW]);
 
+  /* ── Reset transfers voor huidig GW ── */
+  const resetGwTransfers = useCallback(() => {
+    if (currentGW === null) return;
+    setGwTransfers(prev => {
+      const next = { ...prev };
+      delete next[currentGW];
+      return next;
+    });
+    setTransferTarget(null);
+    setTransferConfirm(null);
+  }, [currentGW]);
+
+  /* ── Reset huidige GW (wissels + transfers) ── */
+  const resetCurrentGw = useCallback(() => {
+    if (!confirm(`Gameweek ${currentGW} volledig resetten?`)) return;
+    resetGwSwaps();
+    resetGwTransfers();
+  }, [resetGwSwaps, resetGwTransfers, currentGW]);
+
+  /* ── Reset alles ── */
+  const resetAll = useCallback(() => {
+    if (!confirm('Alles resetten? Alle GW-plannen worden verwijderd.')) return;
+    setGwTransfers({});
+    setGwPlayerBank({});
+    setTransferTarget(null);
+    setTransferConfirm(null);
+    try { localStorage.removeItem(PLAN_KEY); } catch {}
+  }, []);
+
   /* ── Klik op wissel-icoon ── */
   const handleWisselClick = useCallback(
     (e: React.MouseEvent, playerId: number) => {
       e.stopPropagation();
+      // Wisselen en transfermodus zijn exclusief
+      setTransferTarget(null);
       if (selectedPlayerId === playerId) {
         setSelectedPlayerId(null);
       } else if (selectedPlayerId !== null) {
@@ -724,8 +857,75 @@ export default function TeambouwerPage() {
     [selectedPlayerId, performGwSwap],
   );
 
+  /* ── Klik op veldkaart (transfer target) ── */
+  const handleCardClick = useCallback(
+    (player: SelectedPlayer & { isBank: boolean }) => {
+      // Als er een wissel actief is: doe niets
+      if (selectedPlayerId !== null) return;
+      // Toggle transfer target
+      if (transferTarget?.id === player.id) {
+        setTransferTarget(null);
+      } else {
+        setTransferTarget({
+          id: player.id,
+          slotId: player.slotId,
+          name: player.name,
+          price: player.price,
+          position: player.position,
+        });
+        setSelectedPlayerId(null);
+      }
+    },
+    [selectedPlayerId, transferTarget],
+  );
+
+  /* ── Validatie transfer (vervanger kiezen) ── */
+  const canTransferIn = useCallback((player: FplPlayer, outSlotId: string): { ok: boolean; reason?: string } => {
+    const otherPlayers = Object.entries(effectiveTeamForGw)
+      .filter(([slotId]) => slotId !== outSlotId)
+      .map(([, p]) => p);
+    if (otherPlayers.find(p => p.id === player.id)) return { ok: false, reason: 'Al in team' };
+    const clubCount = otherPlayers.filter(p => p.team === player.team).length;
+    if (clubCount >= MAX_PER_CLUB) return { ok: false, reason: 'Max 3/club' };
+    return { ok: true };
+  }, [effectiveTeamForGw]);
+
+  /* ── Klik op speler in lijst wanneer transfermodus actief ── */
+  const handleTransferIn = useCallback((inPlayer: FplPlayer) => {
+    if (!transferTarget) return;
+    // Zelfde positie vereist
+    if (inPlayer.position !== transferTarget.position) {
+      setSwapError(`Selecteer een ${transferTarget.position} als vervanger`);
+      return;
+    }
+    const { ok, reason } = canTransferIn(inPlayer, transferTarget.slotId);
+    if (!ok) { setSwapError(reason ?? 'Ongeldige selectie'); return; }
+    setTransferConfirm({
+      outId:    transferTarget.id,
+      outName:  transferTarget.name,
+      outPrice: transferTarget.price,
+      slotId:   transferTarget.slotId,
+      inPlayer,
+    });
+  }, [transferTarget, canTransferIn]);
+
+  /* ── Bevestig transfer ── */
+  const confirmTransfer = useCallback(() => {
+    if (!transferConfirm || currentGW === null) return;
+    const { outId, outName, outPrice, slotId, inPlayer } = transferConfirm;
+    const newTransfer: GwTransfer = { outId, outName, outPrice, slotId, inPlayer, timestamp: Date.now() };
+    setGwTransfers(prev => ({
+      ...prev,
+      [currentGW]: [...(prev[currentGW] ?? []), newTransfer],
+    }));
+    setTransferConfirm(null);
+    setTransferTarget(null);
+  }, [transferConfirm, currentGW]);
+
   /* ─────────────── render ─────────────── */
-  const hasGwSwaps = currentGW != null && Object.keys(gwPlayerBank[currentGW] ?? {}).length > 0;
+  const hasGwSwaps     = currentGW != null && Object.keys(gwPlayerBank[currentGW] ?? {}).length > 0;
+  const hasGwTransfers = currentGW != null && (gwTransfers[currentGW] ?? []).length > 0;
+  const hasGwChanges   = hasGwSwaps || hasGwTransfers;
   const rowGap = 'clamp(6px, 2.8vw, 28px)';
 
   return (
@@ -861,6 +1061,35 @@ export default function TeambouwerPage() {
                 </div>
               </div>
 
+              {/* Transfer modus banner */}
+              {transferTarget && (
+                <div style={{
+                  background: 'rgba(255,68,68,0.08)',
+                  border: '1px solid rgba(255,68,68,0.3)',
+                  borderRadius: 12,
+                  padding: '10px 14px',
+                  display: 'flex', alignItems: 'center', justifyContent: 'space-between', gap: 8,
+                  fontFamily: 'Montserrat, sans-serif',
+                }}>
+                  <div>
+                    <span style={{ color: '#FF8888', fontSize: 11, fontWeight: 700 }}>
+                      Transfermodus actief
+                    </span>
+                    <span style={{ color: 'rgba(255,255,255,0.45)', fontSize: 10, marginLeft: 8 }}>
+                      Selecteer een {transferTarget.position} als vervanger voor <strong style={{ color: '#fff' }}>{transferTarget.name}</strong>
+                    </span>
+                  </div>
+                  <button
+                    onClick={() => setTransferTarget(null)}
+                    style={{
+                      padding: '3px 10px', borderRadius: 6, fontSize: 10, fontWeight: 600,
+                      background: 'rgba(255,255,255,0.07)', color: 'rgba(255,255,255,0.55)',
+                      border: '1px solid rgba(255,255,255,0.12)', cursor: 'pointer', flexShrink: 0,
+                    }}
+                  >Annuleer</button>
+                </div>
+              )}
+
               {/* Tabel */}
               <div
                 className="rounded-2xl border border-white/8 overflow-hidden"
@@ -894,11 +1123,20 @@ export default function TeambouwerPage() {
                     const { ok } = canAdd(p);
                     const inTeam  = !!Object.values(team).find((t) => t.id === p.id);
                     const fixtures = (fdrMap[p.teamId] ?? []).slice(0, 3);
+
+                    // Transfer modus: kan dit de vervanger zijn?
+                    const isTransferCandidate = !!transferTarget;
+                    const samePos = transferTarget ? p.position === transferTarget.position : false;
+                    const alreadyInEffective = !!Object.values(effectiveTeamForGw).find(ep => ep.id === p.id && ep.slotId !== transferTarget?.slotId);
+
                     return (
                       <div
                         key={p.id}
                         className="tb-grid-row grid items-center px-3 py-2 border-b border-white/5 last:border-b-0 hover:bg-white/5 transition-colors"
-                        style={{ gridTemplateColumns: '2fr 80px 50px 110px 60px 60px 44px' }}
+                        style={{
+                          gridTemplateColumns: '2fr 80px 50px 110px 60px 60px 44px',
+                          opacity: isTransferCandidate && !samePos ? 0.35 : 1,
+                        }}
                         onMouseEnter={(e) => {
                           const rect = (e.currentTarget as HTMLElement).getBoundingClientRect();
                           setTooltip({ player: p, x: rect.right, y: rect.top, side: 'right' });
@@ -951,21 +1189,36 @@ export default function TeambouwerPage() {
                         {/* Punten */}
                         <span className="tb-col-ptn text-white/50 text-xs">{p.totalPoints}pt</span>
 
-                        {/* Toevoegen/verwijderen */}
-                        <button
-                          onClick={() => inTeam
-                            ? removePlayer(Object.values(team).find((t) => t.id === p.id)!.slotId)
-                            : addPlayer(p)}
-                          disabled={!inTeam && !ok}
-                          className="w-7 h-7 rounded-lg flex items-center justify-center transition-all shrink-0 disabled:opacity-25"
-                          style={{
-                            background: inTeam ? 'rgba(239,68,68,0.15)' : 'rgba(0,250,97,0.12)',
-                            color: inTeam ? '#F87171' : '#00FA61',
-                          }}
-                          title={inTeam ? 'Verwijder uit team' : 'Voeg toe aan team'}
-                        >
-                          {inTeam ? <Minus size={12} /> : <Plus size={12} />}
-                        </button>
+                        {/* Toevoegen / verwijderen / transfer */}
+                        {isTransferCandidate ? (
+                          <button
+                            onClick={() => { if (samePos && !alreadyInEffective) handleTransferIn(p); }}
+                            disabled={!samePos || alreadyInEffective}
+                            className="w-7 h-7 rounded-lg flex items-center justify-center transition-all shrink-0 disabled:opacity-25"
+                            style={{
+                              background: samePos && !alreadyInEffective ? 'rgba(255,68,68,0.18)' : 'rgba(255,255,255,0.05)',
+                              color: samePos && !alreadyInEffective ? '#FF8888' : 'rgba(255,255,255,0.25)',
+                            }}
+                            title={samePos ? 'Selecteer als vervanger' : `Selecteer een ${transferTarget?.position}`}
+                          >
+                            →
+                          </button>
+                        ) : (
+                          <button
+                            onClick={() => inTeam
+                              ? removePlayer(Object.values(team).find((t) => t.id === p.id)!.slotId)
+                              : addPlayer(p)}
+                            disabled={!inTeam && !ok}
+                            className="w-7 h-7 rounded-lg flex items-center justify-center transition-all shrink-0 disabled:opacity-25"
+                            style={{
+                              background: inTeam ? 'rgba(239,68,68,0.15)' : 'rgba(0,250,97,0.12)',
+                              color: inTeam ? '#F87171' : '#00FA61',
+                            }}
+                            title={inTeam ? 'Verwijder uit team' : 'Voeg toe aan team'}
+                          >
+                            {inTeam ? <Minus size={12} /> : <Plus size={12} />}
+                          </button>
+                        )}
                       </div>
                     );
                   })
@@ -1014,7 +1267,7 @@ export default function TeambouwerPage() {
                   borderBottom: '1px solid rgba(255,255,255,0.07)',
                 }}>
                   <button
-                    onClick={() => { setPlannerOffset((o) => Math.max(0, o - 1)); setSelectedPlayerId(null); }}
+                    onClick={() => { setPlannerOffset((o) => Math.max(0, o - 1)); setSelectedPlayerId(null); setTransferTarget(null); }}
                     disabled={plannerOffset === 0}
                     style={{
                       width: 32, height: 32, borderRadius: 8, flexShrink: 0,
@@ -1035,9 +1288,9 @@ export default function TeambouwerPage() {
                   <div style={{ textAlign: 'center', flex: 1 }}>
                     <div style={{ color: '#00FA61', fontWeight: 800, fontSize: 14, fontFamily: 'Montserrat, sans-serif', letterSpacing: '-0.01em', display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 6 }}>
                       {currentGW ? `Gameweek ${currentGW}` : '—'}
-                      {hasGwSwaps && (
+                      {hasGwChanges && (
                         <span
-                          title="Wissels opgeslagen voor deze gameweek"
+                          title="Wijzigingen opgeslagen voor deze gameweek"
                           style={{
                             display: 'inline-block',
                             width: 7, height: 7,
@@ -1070,6 +1323,7 @@ export default function TeambouwerPage() {
                       }
                       setPlannerOffset(nextOffset);
                       setSelectedPlayerId(null);
+                      setTransferTarget(null);
                     }}
                     disabled={plannerOffset >= plannerMaxOffset}
                     style={{
@@ -1089,7 +1343,66 @@ export default function TeambouwerPage() {
                   </button>
                 </div>
 
-                {/* Stats bar: in the bank + formatie + reset wissels */}
+                {/* Transfer log (inklapbaar) */}
+                <div style={{ borderBottom: '1px solid rgba(255,255,255,0.05)', background: 'rgba(0,0,0,0.18)' }}>
+                  <button
+                    onClick={() => setTransferLogOpen(o => !o)}
+                    style={{
+                      width: '100%', padding: '7px 16px',
+                      display: 'flex', alignItems: 'center', justifyContent: 'space-between',
+                      color: allGwTransfersList.length > 0 ? 'rgba(255,255,255,0.5)' : 'rgba(255,255,255,0.25)',
+                      fontSize: 10, fontFamily: 'Montserrat, sans-serif', fontWeight: 600,
+                      background: 'none', border: 'none', cursor: 'pointer',
+                      letterSpacing: '0.05em',
+                    }}
+                  >
+                    <span>
+                      Jouw transferplan
+                      {allGwTransfersList.length > 0 && (
+                        <span style={{ marginLeft: 6, background: 'rgba(0,250,97,0.15)', color: '#00FA61', padding: '1px 6px', borderRadius: 3, fontSize: 9 }}>
+                          {allGwTransfersList.length}
+                        </span>
+                      )}
+                    </span>
+                    <ChevronDown
+                      size={12}
+                      style={{
+                        transform: transferLogOpen ? 'rotate(180deg)' : 'none',
+                        transition: 'transform 0.2s',
+                        color: 'rgba(255,255,255,0.3)',
+                      }}
+                    />
+                  </button>
+                  {transferLogOpen && (
+                    <div style={{ padding: '4px 16px 12px', display: 'flex', flexDirection: 'column', gap: 5 }}>
+                      {allGwTransfersList.length === 0 ? (
+                        <span style={{ color: 'rgba(255,255,255,0.2)', fontSize: 10, fontFamily: 'Montserrat, sans-serif' }}>
+                          Nog geen transfers gepland
+                        </span>
+                      ) : (
+                        allGwTransfersList.map(({ gw, transfer }) => {
+                          const diff = transfer.inPlayer.price - transfer.outPrice;
+                          return (
+                            <div
+                              key={transfer.timestamp}
+                              style={{ display: 'flex', alignItems: 'center', gap: 5, fontSize: 10, flexWrap: 'wrap' as const }}
+                            >
+                              <span style={{ color: '#00FA61', fontFamily: 'Montserrat, sans-serif', fontWeight: 700, flexShrink: 0 }}>GW{gw}:</span>
+                              <span style={{ color: '#FF8888' }}>{transfer.outName}</span>
+                              <span style={{ color: 'rgba(255,255,255,0.3)' }}>→</span>
+                              <span style={{ color: '#fff' }}>{transfer.inPlayer.name}</span>
+                              <span style={{ color: diff > 0 ? '#F87171' : '#00FA61', fontSize: 9, flexShrink: 0 }}>
+                                ({diff >= 0 ? '-' : '+'}£{Math.abs(diff).toFixed(1)}m)
+                              </span>
+                            </div>
+                          );
+                        })
+                      )}
+                    </div>
+                  )}
+                </div>
+
+                {/* Stats bar: in the bank + formatie + reset knoppen */}
                 <div style={{
                   background: 'rgba(0,0,0,0.5)',
                   padding: '8px 16px',
@@ -1100,48 +1413,73 @@ export default function TeambouwerPage() {
                     <div style={{ color: 'rgba(255,255,255,0.28)', fontSize: 8, textTransform: 'uppercase', letterSpacing: '0.12em', marginBottom: 2, fontFamily: 'Montserrat, sans-serif' }}>
                       In the bank
                     </div>
-                    <div style={{ fontWeight: 800, fontSize: 15, fontFamily: 'Montserrat, sans-serif', lineHeight: 1, color: teamValues.remaining >= 0 ? '#00FA61' : '#FF4444' }}>
-                      £{teamValues.remaining.toFixed(1)}m
+                    <div style={{ fontWeight: 800, fontSize: 15, fontFamily: 'Montserrat, sans-serif', lineHeight: 1, color: gwBudgetRemaining >= 0 ? '#00FA61' : '#FF4444' }}>
+                      £{gwBudgetRemaining.toFixed(1)}m
                     </div>
                   </div>
                   <div style={{ textAlign: 'center', padding: '0 10px' }}>
                     <div style={{ color: 'rgba(255,255,255,0.28)', fontSize: 8, textTransform: 'uppercase', letterSpacing: '0.12em', marginBottom: 2, fontFamily: 'Montserrat, sans-serif' }}>
                       Formatie
                     </div>
-                    <div style={{ fontWeight: 800, fontSize: 15, fontFamily: 'Montserrat, sans-serif', lineHeight: 1, color: hasGwSwaps ? '#00FA61' : '#fff' }}>
+                    <div style={{ fontWeight: 800, fontSize: 15, fontFamily: 'Montserrat, sans-serif', lineHeight: 1, color: hasGwChanges ? '#00FA61' : '#fff' }}>
                       {effectiveGwFormation}
                     </div>
                   </div>
-                  {hasGwSwaps && (
-                    <button
-                      onClick={resetGwSwaps}
-                      style={{
-                        padding: '5px 10px', borderRadius: 7, fontSize: 10, fontWeight: 600,
-                        background: 'rgba(255,100,100,0.12)', color: '#F87171',
-                        border: '1px solid rgba(255,100,100,0.2)', cursor: 'pointer',
-                        display: 'flex', alignItems: 'center', gap: 4,
-                        fontFamily: 'Montserrat, sans-serif', flexShrink: 0,
-                      }}
-                    >
-                      <RotateCcw size={9} /> Reset
-                    </button>
-                  )}
+                  <div style={{ display: 'flex', flexDirection: 'column', gap: 4, flexShrink: 0 }}>
+                    {hasGwChanges && (
+                      <button
+                        onClick={resetCurrentGw}
+                        style={{
+                          padding: '4px 9px', borderRadius: 6, fontSize: 9, fontWeight: 600,
+                          background: 'rgba(255,100,100,0.12)', color: '#F87171',
+                          border: '1px solid rgba(255,100,100,0.2)', cursor: 'pointer',
+                          display: 'flex', alignItems: 'center', gap: 3,
+                          fontFamily: 'Montserrat, sans-serif',
+                        }}
+                        title="Reset huidige gameweek"
+                      >
+                        <RotateCcw size={8} /> GW reset
+                      </button>
+                    )}
+                    {allGwTransfersList.length > 0 && (
+                      <button
+                        onClick={resetAll}
+                        style={{
+                          padding: '4px 9px', borderRadius: 6, fontSize: 9, fontWeight: 600,
+                          background: 'rgba(255,255,255,0.05)', color: 'rgba(255,255,255,0.4)',
+                          border: '1px solid rgba(255,255,255,0.12)', cursor: 'pointer',
+                          display: 'flex', alignItems: 'center', gap: 3,
+                          fontFamily: 'Montserrat, sans-serif',
+                        }}
+                        title="Reset alles"
+                      >
+                        <RotateCcw size={8} /> Alles
+                      </button>
+                    )}
+                  </div>
                 </div>
 
-                {/* Wissel status bar */}
-                {(selectedPlayerId !== null || swapError) && (
+                {/* Wissel / transfer status bar */}
+                {(selectedPlayerId !== null || swapError || transferTarget !== null) && (
                   <div style={{
-                    background: 'rgba(0,0,0,0.35)',
+                    background: transferTarget ? 'rgba(255,68,68,0.06)' : 'rgba(0,0,0,0.35)',
                     padding: '7px 16px',
                     display: 'flex', alignItems: 'center', justifyContent: 'space-between', gap: 8,
                     borderBottom: '1px solid rgba(255,255,255,0.04)',
                   }}>
-                    <span style={{ color: swapError ? '#F87171' : '#00FA61', fontSize: 11, fontFamily: 'Montserrat, sans-serif' }}>
-                      {swapError ?? 'Selecteer een andere speler om te wisselen…'}
+                    <span style={{
+                      color: swapError ? '#F87171' : transferTarget ? '#FF8888' : '#00FA61',
+                      fontSize: 11, fontFamily: 'Montserrat, sans-serif',
+                    }}>
+                      {swapError
+                        ? swapError
+                        : transferTarget
+                        ? `Selecteer een ${transferTarget.position} als vervanger voor ${transferTarget.name}`
+                        : 'Selecteer een andere speler om te wisselen…'}
                     </span>
-                    {selectedPlayerId !== null && (
+                    {(selectedPlayerId !== null || transferTarget !== null) && !swapError && (
                       <button
-                        onClick={() => setSelectedPlayerId(null)}
+                        onClick={() => { setSelectedPlayerId(null); setTransferTarget(null); }}
                         style={{
                           padding: '3px 10px', borderRadius: 6, fontSize: 10, fontWeight: 600,
                           background: 'rgba(255,255,255,0.07)', color: 'rgba(255,255,255,0.55)',
@@ -1251,9 +1589,12 @@ export default function TeambouwerPage() {
                                 key={p.id}
                                 player={p}
                                 isSelected={selectedPlayerId === p.id}
+                                isTransferTarget={transferTarget?.id === p.id}
+                                isNewTransfer={incomingThisGw.has(p.id)}
+                                isOutNext={outgoingNextGw.has(p.id)}
                                 fixture={getFixture1(p.teamId)}
                                 onSwapClick={(e) => handleWisselClick(e, p.id)}
-                                onCardClick={() => setPlayerPopup(p)}
+                                onCardClick={() => handleCardClick(p)}
                                 onHoverEnter={(e) => {
                                   const rect = (e.currentTarget as HTMLElement).getBoundingClientRect();
                                   setTooltip({ player: p, x: rect.left, y: rect.top, side: 'left' });
@@ -1272,9 +1613,12 @@ export default function TeambouwerPage() {
                                 key={p.id}
                                 player={p}
                                 isSelected={selectedPlayerId === p.id}
+                                isTransferTarget={transferTarget?.id === p.id}
+                                isNewTransfer={incomingThisGw.has(p.id)}
+                                isOutNext={outgoingNextGw.has(p.id)}
                                 fixture={getFixture1(p.teamId)}
                                 onSwapClick={(e) => handleWisselClick(e, p.id)}
-                                onCardClick={() => setPlayerPopup(p)}
+                                onCardClick={() => handleCardClick(p)}
                                 onHoverEnter={(e) => {
                                   const rect = (e.currentTarget as HTMLElement).getBoundingClientRect();
                                   setTooltip({ player: p, x: rect.left, y: rect.top, side: 'left' });
@@ -1293,9 +1637,12 @@ export default function TeambouwerPage() {
                                 key={p.id}
                                 player={p}
                                 isSelected={selectedPlayerId === p.id}
+                                isTransferTarget={transferTarget?.id === p.id}
+                                isNewTransfer={incomingThisGw.has(p.id)}
+                                isOutNext={outgoingNextGw.has(p.id)}
                                 fixture={getFixture1(p.teamId)}
                                 onSwapClick={(e) => handleWisselClick(e, p.id)}
-                                onCardClick={() => setPlayerPopup(p)}
+                                onCardClick={() => handleCardClick(p)}
                                 onHoverEnter={(e) => {
                                   const rect = (e.currentTarget as HTMLElement).getBoundingClientRect();
                                   setTooltip({ player: p, x: rect.left, y: rect.top, side: 'left' });
@@ -1314,9 +1661,12 @@ export default function TeambouwerPage() {
                                 key={p.id}
                                 player={p}
                                 isSelected={selectedPlayerId === p.id}
+                                isTransferTarget={transferTarget?.id === p.id}
+                                isNewTransfer={incomingThisGw.has(p.id)}
+                                isOutNext={outgoingNextGw.has(p.id)}
                                 fixture={getFixture1(p.teamId)}
                                 onSwapClick={(e) => handleWisselClick(e, p.id)}
-                                onCardClick={() => setPlayerPopup(p)}
+                                onCardClick={() => handleCardClick(p)}
                                 onHoverEnter={(e) => {
                                   const rect = (e.currentTarget as HTMLElement).getBoundingClientRect();
                                   setTooltip({ player: p, x: rect.left, y: rect.top, side: 'left' });
@@ -1351,9 +1701,12 @@ export default function TeambouwerPage() {
                               key={p.id}
                               player={p}
                               isSelected={selectedPlayerId === p.id}
+                              isTransferTarget={transferTarget?.id === p.id}
+                              isNewTransfer={incomingThisGw.has(p.id)}
+                              isOutNext={outgoingNextGw.has(p.id)}
                               fixture={getFixture1(p.teamId)}
                               onSwapClick={(e) => handleWisselClick(e, p.id)}
-                              onCardClick={() => setPlayerPopup(p)}
+                              onCardClick={() => handleCardClick(p)}
                               onHoverEnter={(e) => {
                                 const rect = (e.currentTarget as HTMLElement).getBoundingClientRect();
                                 setTooltip({ player: p, x: rect.left, y: rect.top, side: 'left' });
@@ -1501,88 +1854,118 @@ export default function TeambouwerPage() {
         </div>
       </div>
 
-      {/* ── Speler info popup (klik op veldkaart) ── */}
-      {playerPopup && (
+      {/* ── Transfer bevestigingsdialoog ── */}
+      {transferConfirm && (
         <div
           style={{
             position: 'fixed', inset: 0,
-            background: 'rgba(0,0,0,0.7)',
+            background: 'rgba(0,0,0,0.75)',
             zIndex: 9998,
             display: 'flex', alignItems: 'center', justifyContent: 'center',
             padding: '16px',
           }}
-          onClick={() => setPlayerPopup(null)}
+          onClick={() => setTransferConfirm(null)}
         >
           <div
             style={{
-              background: 'rgba(31,14,132,0.97)',
+              background: 'rgba(12,6,48,0.98)',
               backdropFilter: 'blur(24px)',
               WebkitBackdropFilter: 'blur(24px)',
               borderRadius: 18,
               padding: 24,
               width: '100%',
-              maxWidth: 320,
+              maxWidth: 340,
               border: '1px solid rgba(255,255,255,0.15)',
-              boxShadow: '0 24px 80px rgba(0,0,0,0.7)',
-              position: 'relative',
+              boxShadow: '0 24px 80px rgba(0,0,0,0.8)',
               fontFamily: 'Montserrat, sans-serif',
             }}
             onClick={(e) => e.stopPropagation()}
           >
-            {/* Sluitknop */}
-            <button
-              onClick={() => setPlayerPopup(null)}
-              style={{
-                position: 'absolute', top: 14, right: 14,
-                width: 28, height: 28, borderRadius: '50%',
-                background: 'rgba(255,255,255,0.08)',
-                border: '1px solid rgba(255,255,255,0.12)',
-                color: 'rgba(255,255,255,0.6)',
-                display: 'flex', alignItems: 'center', justifyContent: 'center',
-                cursor: 'pointer',
-              }}
-            >
-              <X size={14} />
-            </button>
+            <div style={{ color: '#fff', fontWeight: 800, fontSize: 15, marginBottom: 18 }}>
+              Transfer bevestigen
+            </div>
 
-            {/* Speler naam + info */}
-            <div style={{ marginBottom: 16, paddingRight: 32 }}>
-              <div style={{ display: 'flex', alignItems: 'center', gap: 10, marginBottom: 6 }}>
-                <ShirtIcon shortName={playerPopup.team} size={36} />
-                <div>
-                  <div style={{ color: '#fff', fontWeight: 800, fontSize: 15, lineHeight: 1.2 }}>
-                    {playerPopup.name}
-                  </div>
-                  <div style={{ color: 'rgba(255,255,255,0.4)', fontSize: 11, marginTop: 2 }}>
-                    {playerPopup.team} · {playerPopup.position} · £{playerPopup.price.toFixed(1)}m
-                  </div>
+            {/* OUT → IN */}
+            <div style={{
+              display: 'flex', alignItems: 'center', gap: 10, marginBottom: 16,
+              background: 'rgba(255,255,255,0.04)', borderRadius: 10, padding: '12px 14px',
+            }}>
+              <div style={{ flex: 1 }}>
+                <div style={{ color: 'rgba(255,255,255,0.35)', fontSize: 9, textTransform: 'uppercase', letterSpacing: '0.1em', marginBottom: 3 }}>
+                  Uit
+                </div>
+                <div style={{ color: '#FF8888', fontWeight: 700, fontSize: 13 }}>
+                  {transferConfirm.outName}
+                </div>
+                <div style={{ color: 'rgba(255,255,255,0.35)', fontSize: 10, marginTop: 2 }}>
+                  £{transferConfirm.outPrice.toFixed(1)}m
+                </div>
+              </div>
+              <span style={{ color: 'rgba(255,255,255,0.3)', fontSize: 16 }}>→</span>
+              <div style={{ flex: 1, textAlign: 'right' }}>
+                <div style={{ color: 'rgba(255,255,255,0.35)', fontSize: 9, textTransform: 'uppercase', letterSpacing: '0.1em', marginBottom: 3 }}>
+                  In
+                </div>
+                <div style={{ color: '#00FA61', fontWeight: 700, fontSize: 13 }}>
+                  {transferConfirm.inPlayer.name}
+                </div>
+                <div style={{ color: 'rgba(255,255,255,0.35)', fontSize: 10, marginTop: 2 }}>
+                  £{transferConfirm.inPlayer.price.toFixed(1)}m
                 </div>
               </div>
             </div>
 
-            {/* Stats */}
-            <div style={{ display: 'flex', flexDirection: 'column', gap: 0, borderRadius: 10, overflow: 'hidden' }}>
-              {[
-                { label: '⚽ Goals', value: playerPopup.goals },
-                { label: '🅰️ Assists', value: playerPopup.assists },
-                ...(playerPopup.position === 'GK' || playerPopup.position === 'DEF'
-                  ? [{ label: '🧤 Clean Sheets', value: playerPopup.cleanSheets ?? 0 }]
-                  : []),
-                { label: '👥 Eigendom', value: `${playerPopup.ownership}%` },
-                { label: '⏱️ Minuten', value: playerPopup.minutes },
-              ].map((row, i) => (
-                <div
-                  key={i}
-                  style={{
-                    display: 'flex', justifyContent: 'space-between', alignItems: 'center',
-                    padding: '9px 12px',
-                    background: i % 2 === 0 ? 'rgba(255,255,255,0.04)' : 'rgba(255,255,255,0.02)',
-                  }}
-                >
-                  <span style={{ color: 'rgba(255,255,255,0.5)', fontSize: 12 }}>{row.label}</span>
-                  <span style={{ color: '#00FA61', fontWeight: 700, fontSize: 13 }}>{row.value}</span>
-                </div>
-              ))}
+            {/* Prijsverschil + nieuw budget */}
+            <div style={{
+              display: 'flex', gap: 8, marginBottom: 20,
+            }}>
+              {(() => {
+                const diff = transferConfirm.inPlayer.price - transferConfirm.outPrice;
+                const newBudget = gwBudgetRemaining - diff;
+                return (
+                  <>
+                    <div style={{
+                      flex: 1, background: 'rgba(255,255,255,0.04)', borderRadius: 8, padding: '8px 10px', textAlign: 'center',
+                    }}>
+                      <div style={{ color: 'rgba(255,255,255,0.3)', fontSize: 9, marginBottom: 3 }}>Prijsverschil</div>
+                      <div style={{ fontWeight: 700, fontSize: 13, color: diff > 0 ? '#F87171' : '#00FA61' }}>
+                        {diff >= 0 ? '-' : '+'}£{Math.abs(diff).toFixed(1)}m
+                      </div>
+                    </div>
+                    <div style={{
+                      flex: 1, background: 'rgba(255,255,255,0.04)', borderRadius: 8, padding: '8px 10px', textAlign: 'center',
+                    }}>
+                      <div style={{ color: 'rgba(255,255,255,0.3)', fontSize: 9, marginBottom: 3 }}>Nieuw budget</div>
+                      <div style={{ fontWeight: 700, fontSize: 13, color: newBudget < 0 ? '#F87171' : '#00FA61' }}>
+                        £{newBudget.toFixed(1)}m
+                      </div>
+                    </div>
+                  </>
+                );
+              })()}
+            </div>
+
+            {/* Knoppen */}
+            <div style={{ display: 'flex', gap: 10 }}>
+              <button
+                onClick={confirmTransfer}
+                style={{
+                  flex: 1, padding: '11px 0', borderRadius: 10, fontWeight: 700, fontSize: 13,
+                  background: '#00FA61', color: '#111', border: 'none', cursor: 'pointer',
+                }}
+              >
+                Bevestigen
+              </button>
+              <button
+                onClick={() => setTransferConfirm(null)}
+                style={{
+                  flex: 1, padding: '11px 0', borderRadius: 10, fontWeight: 600, fontSize: 13,
+                  background: 'rgba(255,255,255,0.07)', color: 'rgba(255,255,255,0.6)',
+                  border: '1px solid rgba(255,255,255,0.12)', cursor: 'pointer',
+                }}
+              >
+                Annuleren
+              </button>
             </div>
           </div>
         </div>
