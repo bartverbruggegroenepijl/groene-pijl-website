@@ -4,16 +4,35 @@ import Link from 'next/link';
 import { Instagram, Mic } from 'lucide-react';
 import Logo from '@/components/ui/Logo';
 
-interface Manager {
-  id: string;
-  name: string;
-}
+const inhoudLinks = [
+  { label: 'Afleveringen',        href: '/afleveringen'   },
+  { label: 'Artikelen',           href: '/artikelen'      },
+  { label: 'Bouw Mijn Team',      href: '/teambouwer'     },
+  { label: 'Transfers & Captains', href: '/#captain-pick' },
+];
 
-interface FooterProps {
-  managers?: Manager[];
-}
+const dataLinks = [
+  { label: 'Speler Statistieken',    href: '/statistieken'    },
+  { label: 'Groene Pijl Competitie', href: '/rankings'        },
+  { label: 'Spelerstatus',           href: '/spelerstatus'    },
+  { label: 'Wedstrijdplanner',       href: '/wedstrijdplanner'},
+];
 
-export default function Footer({ managers = [] }: FooterProps) {
+const managersLinks = [
+  { label: 'Bart Verbrugge',   href: '/managers/a805b851-bd39-4641-bce1-08b3af28d425' },
+  { label: 'Jeffrey Nederlof', href: '/managers/ea351304-7690-4563-a856-ab396d9296a9' },
+  { label: 'Kieran Walsh',     href: '/managers/591fa7b6-e27f-4e59-ace5-4006f8e4d64a' },
+  { label: 'Tom Verbrugge',    href: '/managers/1811c6f2-1e91-4535-873a-60e7d2ec2540' },
+];
+
+const linkStyle = {
+  color: 'rgba(255,255,255,0.7)',
+  textDecoration: 'none',
+  cursor: 'pointer',
+  transition: 'color 0.15s',
+} as const;
+
+export default function Footer() {
   return (
     <footer
       className="text-white/70"
@@ -24,9 +43,9 @@ export default function Footer({ managers = [] }: FooterProps) {
       }}
     >
       <div className="max-w-8xl mx-auto px-4 sm:px-6 lg:px-8 py-14">
-        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-10 mb-10">
+        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-5 gap-10 mb-10">
 
-          {/* Brand — logo + tekst altijd zichtbaar, ook op mobiel */}
+          {/* Brand — logo + tekst */}
           <div className="lg:col-span-1">
             <div className="mb-4">
               <Logo size="md" showTextMobile />
@@ -36,43 +55,60 @@ export default function Footer({ managers = [] }: FooterProps) {
             </p>
           </div>
 
-          {/* Links */}
+          {/* Inhoud */}
           <div>
             <h4 className="font-semibold text-sm mb-4 uppercase tracking-wider" style={{ color: '#00FA61', letterSpacing: '0.1em' }}>Inhoud</h4>
             <ul className="space-y-2.5 text-sm">
-              <li><a href="#afleveringen" className="hover:text-primary transition-colors">Afleveringen</a></li>
-              <li><a href="#artikelen" className="hover:text-primary transition-colors">Artikelen</a></li>
-              <li><a href="#captain-pick" className="hover:text-primary transition-colors">Captain Tips</a></li>
-              <li><a href="#team" className="hover:text-primary transition-colors">Team vd Week</a></li>
-              <li><a href="#kooptips" className="hover:text-primary transition-colors">Transfertips</a></li>
+              {inhoudLinks.map((item) => (
+                <li key={item.href}>
+                  <Link
+                    href={item.href}
+                    style={linkStyle}
+                    onMouseEnter={(e) => (e.currentTarget.style.color = '#00FA61')}
+                    onMouseLeave={(e) => (e.currentTarget.style.color = 'rgba(255,255,255,0.7)')}
+                  >
+                    {item.label}
+                  </Link>
+                </li>
+              ))}
             </ul>
           </div>
 
-          {/* Managers — klikbare links naar managerpagina */}
+          {/* Data & Inzichten */}
+          <div>
+            <h4 className="font-semibold text-sm mb-4 uppercase tracking-wider" style={{ color: '#00FA61', letterSpacing: '0.1em' }}>Data &amp; Inzichten</h4>
+            <ul className="space-y-2.5 text-sm">
+              {dataLinks.map((item) => (
+                <li key={item.href}>
+                  <Link
+                    href={item.href}
+                    style={linkStyle}
+                    onMouseEnter={(e) => (e.currentTarget.style.color = '#00FA61')}
+                    onMouseLeave={(e) => (e.currentTarget.style.color = 'rgba(255,255,255,0.7)')}
+                  >
+                    {item.label}
+                  </Link>
+                </li>
+              ))}
+            </ul>
+          </div>
+
+          {/* Managers */}
           <div>
             <h4 className="font-semibold text-sm mb-4 uppercase tracking-wider" style={{ color: '#00FA61', letterSpacing: '0.1em' }}>Managers</h4>
             <ul className="space-y-2.5 text-sm">
-              {managers.length > 0 ? (
-                managers.map((m) => (
-                  <li key={m.id}>
-                    <Link
-                      href={`/managers/${m.id}`}
-                      style={{ color: 'rgba(255,255,255,0.7)', textDecoration: 'none', cursor: 'pointer', transition: 'color 0.15s' }}
-                      onMouseEnter={(e) => (e.currentTarget.style.color = '#00FA61')}
-                      onMouseLeave={(e) => (e.currentTarget.style.color = 'rgba(255,255,255,0.7)')}
-                    >
-                      {m.name}
-                    </Link>
-                  </li>
-                ))
-              ) : (
-                // Fallback als managers nog niet geladen zijn
-                ['Bart', 'Jeffrey', 'Tom', 'Kieran'].map((name) => (
-                  <li key={name}>
-                    <span style={{ color: 'rgba(255,255,255,0.7)' }}>{name}</span>
-                  </li>
-                ))
-              )}
+              {managersLinks.map((item) => (
+                <li key={item.href}>
+                  <Link
+                    href={item.href}
+                    style={linkStyle}
+                    onMouseEnter={(e) => (e.currentTarget.style.color = '#00FA61')}
+                    onMouseLeave={(e) => (e.currentTarget.style.color = 'rgba(255,255,255,0.7)')}
+                  >
+                    {item.label}
+                  </Link>
+                </li>
+              ))}
             </ul>
           </div>
 

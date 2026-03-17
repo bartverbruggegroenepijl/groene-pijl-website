@@ -19,11 +19,20 @@ const dataLinks = [
   { label: 'Wedstrijdplanner',       href: '/wedstrijdplanner', desc: 'Fixture Difficulty Rating'    },
 ];
 
+const managersLinks = [
+  { label: 'Bart Verbrugge',   href: '/managers/a805b851-bd39-4641-bce1-08b3af28d425' },
+  { label: 'Jeffrey Nederlof', href: '/managers/ea351304-7690-4563-a856-ab396d9296a9' },
+  { label: 'Kieran Walsh',     href: '/managers/591fa7b6-e27f-4e59-ace5-4006f8e4d64a' },
+  { label: 'Tom Verbrugge',    href: '/managers/1811c6f2-1e91-4535-873a-60e7d2ec2540' },
+];
+
 export default function Navbar() {
-  const [scrolled, setScrolled]   = useState(false);
-  const [menuOpen, setMenuOpen]   = useState(false);
-  const [dataOpen, setDataOpen]   = useState(false);
-  const dataRef = useRef<HTMLDivElement>(null);
+  const [scrolled, setScrolled]         = useState(false);
+  const [menuOpen, setMenuOpen]         = useState(false);
+  const [dataOpen, setDataOpen]         = useState(false);
+  const [managersOpen, setManagersOpen] = useState(false);
+  const dataRef     = useRef<HTMLDivElement>(null);
+  const managersRef = useRef<HTMLDivElement>(null);
 
   // Scroll listener
   useEffect(() => {
@@ -38,11 +47,14 @@ export default function Navbar() {
     return () => { document.body.style.overflow = ''; };
   }, [menuOpen]);
 
-  // Sluit Data & Inzichten dropdown bij klik buiten
+  // Sluit dropdowns bij klik buiten
   useEffect(() => {
     function handleOutside(e: MouseEvent) {
       if (dataRef.current && !dataRef.current.contains(e.target as Node)) {
         setDataOpen(false);
+      }
+      if (managersRef.current && !managersRef.current.contains(e.target as Node)) {
+        setManagersOpen(false);
       }
     }
     document.addEventListener('mousedown', handleOutside);
@@ -94,7 +106,7 @@ export default function Navbar() {
             {/* Data & Inzichten dropdown */}
             <div className="relative" ref={dataRef}>
               <button
-                onClick={() => setDataOpen(!dataOpen)}
+                onClick={() => { setDataOpen(!dataOpen); setManagersOpen(false); }}
                 className="flex items-center gap-1.5 px-4 py-2 text-sm font-medium text-white/70 hover:text-primary rounded-lg hover:bg-primary/8 transition-all duration-200"
               >
                 Data &amp; Inzichten
@@ -121,13 +133,34 @@ export default function Navbar() {
               )}
             </div>
 
-            {/* Managers — standalone link */}
-            <Link
-              href="/managers"
-              className="px-4 py-2 text-sm font-medium text-white/70 hover:text-primary rounded-lg hover:bg-primary/8 transition-all duration-200"
-            >
-              Managers
-            </Link>
+            {/* Managers dropdown */}
+            <div className="relative" ref={managersRef}>
+              <button
+                onClick={() => { setManagersOpen(!managersOpen); setDataOpen(false); }}
+                className="flex items-center gap-1.5 px-4 py-2 text-sm font-medium text-white/70 hover:text-primary rounded-lg hover:bg-primary/8 transition-all duration-200"
+              >
+                Managers
+                <ChevronDown
+                  size={14}
+                  className={`transition-transform duration-200 ${managersOpen ? 'rotate-180' : ''}`}
+                />
+              </button>
+
+              {managersOpen && (
+                <div className="absolute top-full left-1/2 -translate-x-1/2 mt-2 bg-navy-card border border-white/10 rounded-xl shadow-card-hover py-2 min-w-[200px] z-50">
+                  {managersLinks.map((item) => (
+                    <Link
+                      key={item.href}
+                      href={item.href}
+                      onClick={() => setManagersOpen(false)}
+                      className="flex px-4 py-3 hover:bg-white/5 transition-colors"
+                    >
+                      <span className="text-white text-sm font-semibold">{item.label}</span>
+                    </Link>
+                  ))}
+                </div>
+              )}
+            </div>
           </nav>
 
           {/* Right side — deadline countdown */}
@@ -273,23 +306,37 @@ export default function Navbar() {
                 </Link>
               ))}
 
-              {/* Managers — standalone link */}
-              <Link
-                href="/managers"
-                onClick={() => setMenuOpen(false)}
+              {/* ── Managers sectie ── */}
+              <div
                 style={{
-                  display: 'block',
-                  padding: '10px 24px',
-                  fontSize: 15,
+                  padding: '8px 24px 4px',
+                  fontSize: 9,
                   fontWeight: 700,
-                  color: 'rgba(255,255,255,0.9)',
-                  textDecoration: 'none',
-                  borderBottom: '1px solid rgba(255,255,255,0.06)',
-                  fontFamily: 'Montserrat, sans-serif',
+                  letterSpacing: '0.18em',
+                  textTransform: 'uppercase',
+                  color: '#00FA61',
                 }}
               >
                 Managers
-              </Link>
+              </div>
+              {managersLinks.map((item) => (
+                <Link
+                  key={item.href}
+                  href={item.href}
+                  onClick={() => setMenuOpen(false)}
+                  style={{
+                    display: 'block',
+                    padding: '7px 24px 7px 36px',
+                    textDecoration: 'none',
+                    borderBottom: '1px solid rgba(255,255,255,0.05)',
+                    fontFamily: 'Montserrat, sans-serif',
+                  }}
+                >
+                  <span style={{ fontSize: 13, fontWeight: 600, color: 'rgba(255,255,255,0.85)', display: 'block' }}>
+                    {item.label}
+                  </span>
+                </Link>
+              ))}
 
               {/* ── Join Mini-League CTA ── */}
               <div style={{ padding: '16px 24px 32px' }}>
