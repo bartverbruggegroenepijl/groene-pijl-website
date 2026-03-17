@@ -415,9 +415,9 @@ export default async function HomePage() {
                       <ExternalLink size={14} />Luister op Spotify
                     </a>
                   )}
-                  <a href="#afleveringen" className="inline-flex items-center gap-2 border border-gray-200 text-gray-500 hover:text-gray-900 hover:border-gray-400 text-sm font-medium px-5 py-2.5 rounded-xl transition-colors">
+                  <Link href="/afleveringen" className="inline-flex items-center gap-2 border border-gray-200 text-gray-500 hover:text-gray-900 hover:border-gray-400 text-sm font-medium px-5 py-2.5 rounded-xl transition-colors">
                     Alle afleveringen <ArrowRight size={12} />
-                  </a>
+                  </Link>
                 </div>
               </div>
             </div>

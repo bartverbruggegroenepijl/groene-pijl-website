@@ -119,7 +119,7 @@ export default function HeroSection({ currentGameweek, latestEpisodeUrl }: HeroS
             🎙️ Luister nieuwste aflevering
           </a>
           <a
-            href="#captain-pick"
+            href="/teambouwer"
             style={{
               display: 'inline-flex',
               alignItems: 'center',
@@ -134,7 +134,7 @@ export default function HeroSection({ currentGameweek, latestEpisodeUrl }: HeroS
               fontFamily: 'Montserrat, sans-serif',
             }}
           >
-            Bekijk captain advies
+            Bouw mijn team
           </a>
         </div>
 
