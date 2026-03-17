@@ -554,8 +554,9 @@ export default function TeamVanDeWeekSection({ team }: Props) {
         paddingBottom: 0,
         paddingLeft: 16,
         paddingRight: 16,
-        background: 'linear-gradient(180deg, #0a0628 0%, #0d0835 40%, #1a1361 100%)',
+        background: 'linear-gradient(180deg, #050318 0%, #0a0628 30%, #0d0835 70%, #1a1361 100%)',
         borderTop: '2px solid rgba(0,250,97,0.18)',
+        borderRadius: 16,
         overflow: 'hidden',
         fontFamily: 'Montserrat, sans-serif',
       }}
@@ -575,7 +576,7 @@ export default function TeamVanDeWeekSection({ team }: Props) {
           to   { opacity: 1; transform: translateX(-50%) translateY(0); }
         }
         @keyframes floodlight {
-          0%, 100% { opacity: 0.7; }
+          0%, 100% { opacity: 0.6; }
           50%       { opacity: 1; }
         }
       `}</style>
@@ -585,43 +586,43 @@ export default function TeamVanDeWeekSection({ team }: Props) {
       <div
         style={{
           position: 'absolute',
-          top: -60,
-          left: -40,
-          width: 500,
-          height: 500,
+          top: -80,
+          left: -60,
+          width: 600,
+          height: 600,
           background:
-            'radial-gradient(ellipse at top left, rgba(255,255,220,0.13) 0%, transparent 65%)',
-          transform: 'rotate(15deg)',
+            'radial-gradient(ellipse at top left, rgba(255,255,220,0.18) 0%, rgba(255,255,180,0.06) 30%, transparent 65%)',
+          transform: 'rotate(20deg)',
           pointerEvents: 'none',
           zIndex: 1,
-          animation: 'floodlight 4s ease-in-out infinite',
+          animation: 'floodlight 5s ease-in-out infinite',
         }}
       />
       {/* Rechter schijnwerper */}
       <div
         style={{
           position: 'absolute',
-          top: -60,
-          right: -40,
-          width: 500,
-          height: 500,
+          top: -80,
+          right: -60,
+          width: 600,
+          height: 600,
           background:
-            'radial-gradient(ellipse at top right, rgba(255,255,220,0.13) 0%, transparent 65%)',
-          transform: 'rotate(-15deg)',
+            'radial-gradient(ellipse at top right, rgba(255,255,220,0.18) 0%, rgba(255,255,180,0.06) 30%, transparent 65%)',
+          transform: 'rotate(-20deg)',
           pointerEvents: 'none',
           zIndex: 1,
-          animation: 'floodlight 4s ease-in-out infinite 2s',
+          animation: 'floodlight 5s ease-in-out infinite 2.5s',
         }}
       />
       {/* Stadion publiek suggestie */}
       <div
         style={{
           position: 'absolute',
-          top: 80,
+          top: 60,
           left: 0,
           right: 0,
-          height: 60,
-          background: 'linear-gradient(180deg, rgba(255,255,255,0.03) 0%, transparent 100%)',
+          height: 80,
+          background: 'linear-gradient(180deg, rgba(255,255,255,0.04) 0%, rgba(255,255,255,0.01) 60%, transparent 100%)',
           pointerEvents: 'none',
           zIndex: 1,
         }}
@@ -734,7 +735,7 @@ export default function TeamVanDeWeekSection({ team }: Props) {
         </div>
 
         {/* ── Veld ───────────────────────────────────────────────────────── */}
-        <div style={{ position: 'relative', borderRadius: 12, boxShadow: '0 8px 40px rgba(0,0,0,0.6)' }}>
+        <div style={{ position: 'relative', borderRadius: 12, boxShadow: '0 12px 50px rgba(0,0,0,0.7)' }}>
           {/* Achtergrond (geknipte strepen + lijnen + vignette) */}
           <div
             style={{
@@ -751,7 +752,7 @@ export default function TeamVanDeWeekSection({ team }: Props) {
                 position: 'absolute',
                 inset: 0,
                 background:
-                  'repeating-linear-gradient(180deg, rgba(0,0,0,0.08) 0px, rgba(0,0,0,0.08) 36px, transparent 36px, transparent 72px), linear-gradient(180deg, #1a5c2a 0%, #1e6b30 50%, #1a5c2a 100%)',
+                  'repeating-linear-gradient(180deg, rgba(0,0,0,0.1) 0px, rgba(0,0,0,0.1) 38px, transparent 38px, transparent 76px), linear-gradient(180deg, #1a5c2a 0%, #1e6b30 50%, #1a5c2a 100%)',
               }}
             />
 
@@ -874,7 +875,7 @@ export default function TeamVanDeWeekSection({ team }: Props) {
               style={{
                 position: 'absolute',
                 inset: 0,
-                boxShadow: 'inset 0 0 60px rgba(0,0,0,0.5)',
+                boxShadow: 'inset 0 0 80px rgba(0,0,0,0.6)',
               }}
             />
             {/* Rand */}
