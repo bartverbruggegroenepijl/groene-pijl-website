@@ -1122,7 +1122,9 @@ export default function TeambouwerPage() {
                   pagePlayers.map((p) => {
                     const { ok } = canAdd(p);
                     const inTeam  = !!Object.values(team).find((t) => t.id === p.id);
-                    const fixtures = (fdrMap[p.teamId] ?? []).slice(0, 3);
+                    const fixtures = currentGW !== null
+                      ? (fdrMap[p.teamId] ?? []).filter((f) => f.gw >= currentGW).slice(0, 3)
+                      : (fdrMap[p.teamId] ?? []).slice(0, 3);
 
                     // Transfer modus: kan dit de vervanger zijn?
                     const isTransferCandidate = !!transferTarget;
@@ -1248,6 +1250,129 @@ export default function TeambouwerPage() {
                     <ChevronRight size={14} className="text-white/60" />
                   </button>
                 </div>
+              </div>
+
+              {/* Budget stats */}
+              <div
+                className="rounded-2xl p-4 border border-white/8 flex flex-col gap-3"
+                style={{ background: 'rgba(0,0,0,0.3)' }}
+              >
+                <div className="flex items-center justify-between pb-2 border-b border-white/5">
+                  <span className="text-white/40 text-[10px] uppercase tracking-widest">Budget</span>
+                  {budgetEditing ? (
+                    <div className="flex items-center gap-1">
+                      <span className="text-white/40 text-xs">£</span>
+                      <input
+                        type="number"
+                        value={budgetInputValue}
+                        onChange={(e) => setBudgetInputValue(e.target.value)}
+                        onBlur={commitBudget}
+                        onKeyDown={(e) => {
+                          if (e.key === 'Enter') commitBudget();
+                          if (e.key === 'Escape') setBudgetEditing(false);
+                        }}
+                        autoFocus
+                        min={50} max={120} step={0.1}
+                        className="rounded-lg text-sm font-bold text-white outline-none border border-primary/40 text-right"
+                        style={{ width: 72, background: 'rgba(0,250,97,0.08)', padding: '3px 6px' }}
+                      />
+                      <span className="text-white/40 text-xs">m</span>
+                    </div>
+                  ) : (
+                    <button
+                      onClick={() => { setBudgetEditing(true); setBudgetInputValue(customBudget.toFixed(1)); }}
+                      className="flex items-center gap-1.5 text-sm font-bold hover:opacity-80 transition-opacity"
+                      style={{ color: '#00FA61' }}
+                      title="Klik om budget aan te passen"
+                    >
+                      £{customBudget.toFixed(1)}m
+                      <span style={{ fontSize: 10, opacity: 0.6 }}>✏️</span>
+                    </button>
+                  )}
+                </div>
+                <div className="grid grid-cols-3 gap-3">
+                  <div className="text-center">
+                    <div className="text-white/40 text-[10px] uppercase tracking-widest mb-1">Waarde</div>
+                    <div className="text-white font-bold text-base">£{teamValues.total.toFixed(1)}m</div>
+                  </div>
+                  <div className="text-center">
+                    <div className="text-white/40 text-[10px] uppercase tracking-widest mb-1">Resterend</div>
+                    <div className="font-bold text-base" style={{ color: teamValues.remaining < 0 ? '#F87171' : '#00FA61' }}>
+                      £{teamValues.remaining.toFixed(1)}m
+                    </div>
+                  </div>
+                  <div className="text-center">
+                    <div className="text-white/40 text-[10px] uppercase tracking-widest mb-1">Spelers</div>
+                    <div className="text-white font-bold text-base">{teamValues.count}/15</div>
+                  </div>
+                </div>
+              </div>
+
+              {/* Formatie selector */}
+              <div
+                className="rounded-2xl p-3 border border-white/8"
+                style={{ background: 'rgba(0,0,0,0.3)' }}
+              >
+                <p className="text-white/30 text-[10px] uppercase tracking-widest font-semibold mb-2">Formatie</p>
+                <div className="flex flex-wrap gap-1.5">
+                  {FORMATION_KEYS.map((f) => (
+                    <button
+                      key={f}
+                      onClick={() => changeFormation(f)}
+                      className="px-3 py-1.5 rounded-lg text-xs font-bold transition-all"
+                      style={{
+                        background: formation === f ? '#00FA61' : 'rgba(255,255,255,0.06)',
+                        color:      formation === f ? '#111'    : 'rgba(255,255,255,0.5)',
+                        border:     formation === f ? 'none'    : '1px solid rgba(255,255,255,0.08)',
+                      }}
+                    >
+                      {f}
+                    </button>
+                  ))}
+                </div>
+              </div>
+
+              {/* Positie overzicht */}
+              <div
+                className="rounded-2xl p-4 border border-white/8"
+                style={{ background: 'rgba(0,0,0,0.3)' }}
+              >
+                <p className="text-white/30 text-[10px] uppercase tracking-widest font-semibold mb-3 flex items-center gap-2">
+                  <Users size={11} /> Samenstelling
+                </p>
+                <div className="grid grid-cols-4 gap-2 text-center">
+                  {(['GK', 'DEF', 'MID', 'FWD'] as Position[]).map((pos) => {
+                    const count = teamValues.countByPos[pos];
+                    const max   = MAX_PER_POS[pos];
+                    const full  = count >= max;
+                    return (
+                      <div key={pos}>
+                        <div className="text-xs font-bold" style={{ color: full ? '#F87171' : '#00FA61' }}>
+                          {count}/{max}
+                        </div>
+                        <div className="text-white/30 text-[10px]">{pos}</div>
+                      </div>
+                    );
+                  })}
+                </div>
+              </div>
+
+              {/* Acties */}
+              <div className="flex gap-3">
+                <button
+                  onClick={saveTeam}
+                  className="flex-1 flex items-center justify-center gap-2 py-3 rounded-xl font-semibold text-sm transition-all btn-glow"
+                  style={{ background: '#00FA61', color: '#111' }}
+                >
+                  <Save size={14} /> Opslaan
+                </button>
+                <button
+                  onClick={resetTeam}
+                  className="flex items-center justify-center gap-2 px-4 py-3 rounded-xl font-semibold text-sm transition-all border border-white/10 hover:border-white/25 text-white/60 hover:text-white"
+                  style={{ background: 'rgba(0,0,0,0.2)' }}
+                >
+                  <RotateCcw size={14} /> Reset
+                </button>
               </div>
             </div>
 
@@ -1725,128 +1850,6 @@ export default function TeambouwerPage() {
                 )}
               </div>
 
-              {/* Budget stats */}
-              <div
-                className="rounded-2xl p-4 border border-white/8 flex flex-col gap-3"
-                style={{ background: 'rgba(0,0,0,0.3)' }}
-              >
-                <div className="flex items-center justify-between pb-2 border-b border-white/5">
-                  <span className="text-white/40 text-[10px] uppercase tracking-widest">Budget</span>
-                  {budgetEditing ? (
-                    <div className="flex items-center gap-1">
-                      <span className="text-white/40 text-xs">£</span>
-                      <input
-                        type="number"
-                        value={budgetInputValue}
-                        onChange={(e) => setBudgetInputValue(e.target.value)}
-                        onBlur={commitBudget}
-                        onKeyDown={(e) => {
-                          if (e.key === 'Enter') commitBudget();
-                          if (e.key === 'Escape') setBudgetEditing(false);
-                        }}
-                        autoFocus
-                        min={50} max={120} step={0.1}
-                        className="rounded-lg text-sm font-bold text-white outline-none border border-primary/40 text-right"
-                        style={{ width: 72, background: 'rgba(0,250,97,0.08)', padding: '3px 6px' }}
-                      />
-                      <span className="text-white/40 text-xs">m</span>
-                    </div>
-                  ) : (
-                    <button
-                      onClick={() => { setBudgetEditing(true); setBudgetInputValue(customBudget.toFixed(1)); }}
-                      className="flex items-center gap-1.5 text-sm font-bold hover:opacity-80 transition-opacity"
-                      style={{ color: '#00FA61' }}
-                      title="Klik om budget aan te passen"
-                    >
-                      £{customBudget.toFixed(1)}m
-                      <span style={{ fontSize: 10, opacity: 0.6 }}>✏️</span>
-                    </button>
-                  )}
-                </div>
-                <div className="grid grid-cols-3 gap-3">
-                  <div className="text-center">
-                    <div className="text-white/40 text-[10px] uppercase tracking-widest mb-1">Waarde</div>
-                    <div className="text-white font-bold text-base">£{teamValues.total.toFixed(1)}m</div>
-                  </div>
-                  <div className="text-center">
-                    <div className="text-white/40 text-[10px] uppercase tracking-widest mb-1">Resterend</div>
-                    <div className="font-bold text-base" style={{ color: teamValues.remaining < 0 ? '#F87171' : '#00FA61' }}>
-                      £{teamValues.remaining.toFixed(1)}m
-                    </div>
-                  </div>
-                  <div className="text-center">
-                    <div className="text-white/40 text-[10px] uppercase tracking-widest mb-1">Spelers</div>
-                    <div className="text-white font-bold text-base">{teamValues.count}/15</div>
-                  </div>
-                </div>
-              </div>
-
-              {/* Formatie selector */}
-              <div
-                className="rounded-2xl p-3 border border-white/8"
-                style={{ background: 'rgba(0,0,0,0.3)' }}
-              >
-                <p className="text-white/30 text-[10px] uppercase tracking-widest font-semibold mb-2">Formatie</p>
-                <div className="flex flex-wrap gap-1.5">
-                  {FORMATION_KEYS.map((f) => (
-                    <button
-                      key={f}
-                      onClick={() => changeFormation(f)}
-                      className="px-3 py-1.5 rounded-lg text-xs font-bold transition-all"
-                      style={{
-                        background: formation === f ? '#00FA61' : 'rgba(255,255,255,0.06)',
-                        color:      formation === f ? '#111'    : 'rgba(255,255,255,0.5)',
-                        border:     formation === f ? 'none'    : '1px solid rgba(255,255,255,0.08)',
-                      }}
-                    >
-                      {f}
-                    </button>
-                  ))}
-                </div>
-              </div>
-
-              {/* Positie overzicht */}
-              <div
-                className="rounded-2xl p-4 border border-white/8"
-                style={{ background: 'rgba(0,0,0,0.3)' }}
-              >
-                <p className="text-white/30 text-[10px] uppercase tracking-widest font-semibold mb-3 flex items-center gap-2">
-                  <Users size={11} /> Samenstelling
-                </p>
-                <div className="grid grid-cols-4 gap-2 text-center">
-                  {(['GK', 'DEF', 'MID', 'FWD'] as Position[]).map((pos) => {
-                    const count = teamValues.countByPos[pos];
-                    const max   = MAX_PER_POS[pos];
-                    const full  = count >= max;
-                    return (
-                      <div key={pos}>
-                        <div className="text-xs font-bold" style={{ color: full ? '#F87171' : '#00FA61' }}>
-                          {count}/{max}
-                        </div>
-                        <div className="text-white/30 text-[10px]">{pos}</div>
-                      </div>
-                    );
-                  })}
-                </div>
-              </div>
-
-              {/* Acties */}
-              <div className="flex gap-3">
-                <button
-                  onClick={saveTeam}
-                  className="flex-1 flex items-center justify-center gap-2 py-3 rounded-xl font-semibold text-sm transition-all btn-glow"
-                  style={{ background: '#00FA61', color: '#111' }}
-                >
-                  <Save size={14} /> Opslaan
-                </button>
-                <button
-                  onClick={resetTeam}
-                  className="flex items-center justify-center gap-2 px-4 py-3 rounded-xl font-semibold text-sm transition-all border border-white/10 hover:border-white/25 text-white/60 hover:text-white"
-                  style={{ background: 'rgba(0,0,0,0.2)' }}
-                >
-                  <RotateCcw size={14} /> Reset
-                </button>
-              </div>
             </div>
           </div>
 
