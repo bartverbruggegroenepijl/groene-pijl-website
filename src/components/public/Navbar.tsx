@@ -18,10 +18,8 @@ interface NavbarProps {
 }
 
 const navLinks = [
-  { label: 'Afleveringen',         href: '/afleveringen'   },
-  { label: 'Artikelen',            href: '/artikelen'      },
-  { label: 'Rankings',             href: '/rankings'       },
-  { label: 'Data & Inzichten',     href: '/statistieken'   },
+  { label: 'Afleveringen', href: '/afleveringen' },
+  { label: 'Artikelen',    href: '/artikelen'    },
 ];
 
 const transfersLinks = [
@@ -34,15 +32,22 @@ const teamstatusLinks = [
   { label: 'Wedstrijdplanner', href: '/wedstrijdplanner', desc: 'Fixture Difficulty Rating'   },
 ];
 
+const dataLinks = [
+  { label: 'Data & Inzichten',       href: '/statistieken', desc: 'Premier League statistieken'  },
+  { label: 'Groene Pijl Competitie', href: '/rankings',     desc: 'Onze mini-league rankings'    },
+];
+
 export default function Navbar({ managers = [] }: NavbarProps) {
   const [scrolled, setScrolled] = useState(false);
   const [menuOpen, setMenuOpen] = useState(false);
   const [managersOpen, setManagersOpen] = useState(false);
   const [teamstatusOpen, setTeaminformatieOpen] = useState(false);
   const [transfersOpen, setTransfersOpen] = useState(false);
+  const [dataOpen, setDataOpen] = useState(false);
   const dropdownRef = useRef<HTMLDivElement>(null);
   const teamstatusRef = useRef<HTMLDivElement>(null);
   const transfersRef = useRef<HTMLDivElement>(null);
+  const dataRef = useRef<HTMLDivElement>(null);
 
   useEffect(() => {
     const handleScroll = () => setScrolled(window.scrollY > 60);
@@ -71,6 +76,9 @@ export default function Navbar({ managers = [] }: NavbarProps) {
       }
       if (transfersRef.current && !transfersRef.current.contains(e.target as Node)) {
         setTransfersOpen(false);
+      }
+      if (dataRef.current && !dataRef.current.contains(e.target as Node)) {
+        setDataOpen(false);
       }
     }
     document.addEventListener('mousedown', handleOutside);
@@ -112,7 +120,7 @@ export default function Navbar({ managers = [] }: NavbarProps) {
             {/* Transfers & Captains dropdown */}
             <div className="relative" ref={transfersRef}>
               <button
-                onClick={() => { setTransfersOpen(!transfersOpen); setManagersOpen(false); setTeaminformatieOpen(false); }}
+                onClick={() => { setTransfersOpen(!transfersOpen); setManagersOpen(false); setTeaminformatieOpen(false); setDataOpen(false); }}
                 className="flex items-center gap-1.5 px-4 py-2 text-sm font-medium text-white/70 hover:text-primary rounded-lg hover:bg-primary/8 transition-all duration-200"
               >
                 Transfers &amp; Captains
@@ -142,7 +150,7 @@ export default function Navbar({ managers = [] }: NavbarProps) {
             {/* Teaminformatie dropdown */}
             <div className="relative" ref={teamstatusRef}>
               <button
-                onClick={() => { setTeaminformatieOpen(!teamstatusOpen); setManagersOpen(false); setTransfersOpen(false); }}
+                onClick={() => { setTeaminformatieOpen(!teamstatusOpen); setManagersOpen(false); setTransfersOpen(false); setDataOpen(false); }}
                 className="flex items-center gap-1.5 px-4 py-2 text-sm font-medium text-white/70 hover:text-primary rounded-lg hover:bg-primary/8 transition-all duration-200"
               >
                 Teaminformatie
@@ -169,10 +177,40 @@ export default function Navbar({ managers = [] }: NavbarProps) {
               )}
             </div>
 
+            {/* Data & Inzichten dropdown */}
+            <div className="relative" ref={dataRef}>
+              <button
+                onClick={() => { setDataOpen(!dataOpen); setManagersOpen(false); setTeaminformatieOpen(false); setTransfersOpen(false); }}
+                className="flex items-center gap-1.5 px-4 py-2 text-sm font-medium text-white/70 hover:text-primary rounded-lg hover:bg-primary/8 transition-all duration-200"
+              >
+                Data &amp; Inzichten
+                <ChevronDown
+                  size={14}
+                  className={`transition-transform duration-200 ${dataOpen ? 'rotate-180' : ''}`}
+                />
+              </button>
+
+              {dataOpen && (
+                <div className="absolute top-full left-1/2 -translate-x-1/2 mt-2 bg-navy-card border border-white/10 rounded-xl shadow-card-hover py-2 min-w-[220px] z-50">
+                  {dataLinks.map((item) => (
+                    <Link
+                      key={item.href}
+                      href={item.href}
+                      onClick={() => setDataOpen(false)}
+                      className="flex flex-col px-4 py-3 hover:bg-white/5 transition-colors"
+                    >
+                      <span className="text-white text-sm font-semibold">{item.label}</span>
+                      <span className="text-white/40 text-xs mt-0.5">{item.desc}</span>
+                    </Link>
+                  ))}
+                </div>
+              )}
+            </div>
+
             {/* Managers dropdown */}
             <div className="relative" ref={dropdownRef}>
               <button
-                onClick={() => { setManagersOpen(!managersOpen); setTeaminformatieOpen(false); setTransfersOpen(false); }}
+                onClick={() => { setManagersOpen(!managersOpen); setTeaminformatieOpen(false); setTransfersOpen(false); setDataOpen(false); }}
                 className="flex items-center gap-1.5 px-4 py-2 text-sm font-medium text-white/70 hover:text-primary rounded-lg hover:bg-primary/8 transition-all duration-200"
               >
                 Managers
@@ -359,6 +397,38 @@ export default function Navbar({ managers = [] }: NavbarProps) {
                 Teaminformatie
               </div>
               {teamstatusLinks.map((item) => (
+                <Link
+                  key={item.href}
+                  href={item.href}
+                  onClick={() => setMenuOpen(false)}
+                  style={{
+                    display: 'block',
+                    padding: '7px 24px 7px 36px',
+                    textDecoration: 'none',
+                    borderBottom: '1px solid rgba(255,255,255,0.05)',
+                    fontFamily: 'Montserrat, sans-serif',
+                  }}
+                >
+                  <span style={{ fontSize: 13, fontWeight: 600, color: 'rgba(255,255,255,0.85)', display: 'block' }}>
+                    {item.label}
+                  </span>
+                </Link>
+              ))}
+
+              {/* ── Data & Inzichten ── */}
+              <div
+                style={{
+                  padding: '8px 24px 4px',
+                  fontSize: 9,
+                  fontWeight: 700,
+                  letterSpacing: '0.18em',
+                  textTransform: 'uppercase',
+                  color: '#00FA61',
+                }}
+              >
+                Data &amp; Inzichten
+              </div>
+              {dataLinks.map((item) => (
                 <Link
                   key={item.href}
                   href={item.href}
