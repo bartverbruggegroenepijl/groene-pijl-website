@@ -629,6 +629,7 @@ export default function TeamVanDeWeekSection({ team }: Props) {
 
       {/* ── Content ───────────────────────────────────────────────────────── */}
       <div
+        className="tvdw-stadion-wrapper"
         style={{
           maxWidth: 760,
           margin: '0 auto',
@@ -636,40 +637,8 @@ export default function TeamVanDeWeekSection({ team }: Props) {
           zIndex: 2,
           opacity: pitchOpacity,
           transition: 'opacity 220ms ease',
-          background: 'linear-gradient(180deg, #050318 0%, #0a0628 30%, #0d0835 70%, #1a1361 100%)',
-          borderRadius: '16px',
-          overflow: 'hidden',
         }}
       >
-        {/* Schijnwerper links */}
-        <div
-          style={{
-            position: 'absolute',
-            top: -80,
-            left: -60,
-            width: 600,
-            height: 600,
-            background: 'radial-gradient(ellipse at top left, rgba(255,255,220,0.22) 0%, rgba(255,255,180,0.08) 30%, transparent 65%)',
-            transform: 'rotate(-20deg)',
-            pointerEvents: 'none',
-            zIndex: 1,
-          }}
-        />
-        {/* Schijnwerper rechts */}
-        <div
-          style={{
-            position: 'absolute',
-            top: -80,
-            right: -60,
-            width: 600,
-            height: 600,
-            background: 'radial-gradient(ellipse at top right, rgba(255,255,220,0.22) 0%, rgba(255,255,180,0.08) 30%, transparent 65%)',
-            transform: 'rotate(20deg)',
-            pointerEvents: 'none',
-            zIndex: 1,
-          }}
-        />
-
         {/* Header */}
         <div
           style={{
@@ -993,6 +962,8 @@ export default function TeamVanDeWeekSection({ team }: Props) {
             justifyContent: 'space-between',
             alignItems: 'center',
             padding: '14px 20px',
+            position: 'relative',
+            zIndex: 2,
             background: 'rgba(4,2,20,0.80)',
             backdropFilter: 'blur(12px)',
             WebkitBackdropFilter: 'blur(12px)',
@@ -1053,6 +1024,8 @@ export default function TeamVanDeWeekSection({ team }: Props) {
               gap: 2,
               padding: '10px 16px 14px',
               marginTop: 12,
+              position: 'relative',
+              zIndex: 2,
             }}
           >
             {/* Pijl links */}
