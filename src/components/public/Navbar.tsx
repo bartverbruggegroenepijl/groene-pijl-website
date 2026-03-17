@@ -21,6 +21,7 @@ const navLinks = [
   { label: 'Afleveringen',         href: '/afleveringen'   },
   { label: 'Artikelen',            href: '/artikelen'      },
   { label: 'Rankings',             href: '/rankings'       },
+  { label: 'Data & Inzichten',     href: '/statistieken'   },
 ];
 
 const transfersLinks = [
@@ -31,7 +32,6 @@ const transfersLinks = [
 const teamstatusLinks = [
   { label: 'Spelerstatus',    href: '/spelerstatus',     desc: 'Blessures & beschikbaarheid' },
   { label: 'Wedstrijdplanner', href: '/wedstrijdplanner', desc: 'Fixture Difficulty Rating'   },
-  { label: 'Statistieken',    href: '/statistieken',     desc: 'Premier League statistieken'  },
 ];
 
 export default function Navbar({ managers = [] }: NavbarProps) {

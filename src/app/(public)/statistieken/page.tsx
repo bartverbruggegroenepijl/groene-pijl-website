@@ -783,7 +783,7 @@ export default function StatistiekenPage() {
                         {/* Content below photo */}
                         <div style={{ position: 'relative', zIndex: 3, width: '100%', textAlign: 'center' }}>
                           {/* Main stat */}
-                          <div style={{ color: '#00FA61', fontWeight: 800, fontSize: isFirst ? 22 : 18, lineHeight: 1, marginBottom: 2 }}>
+                          <div style={{ color: '#FFFFFF', fontWeight: 800, fontSize: isFirst ? 22 : 18, lineHeight: 1, marginBottom: 2, textShadow: '0 2px 8px rgba(0,0,0,0.8)' }}>
                             {tabConfig.heroDecimals === 0
                               ? Math.round(tabConfig.heroStat(player))
                               : tabConfig.heroStat(player).toFixed(tabConfig.heroDecimals ?? 2)}
