@@ -554,8 +554,7 @@ export default function TeamVanDeWeekSection({ team }: Props) {
         paddingBottom: 0,
         paddingLeft: 16,
         paddingRight: 16,
-        background:
-          'radial-gradient(ellipse at 50% -5%, #1c2a6e 0%, #0d0828 52%, #080520 100%)',
+        background: 'linear-gradient(180deg, #0a0628 0%, #0d0835 40%, #1a1361 100%)',
         borderTop: '2px solid rgba(0,250,97,0.18)',
         overflow: 'hidden',
         fontFamily: 'Montserrat, sans-serif',
@@ -575,43 +574,56 @@ export default function TeamVanDeWeekSection({ team }: Props) {
           from { opacity: 0; transform: translateX(-50%) translateY(6px); }
           to   { opacity: 1; transform: translateX(-50%) translateY(0); }
         }
-        @keyframes gpFloodLeft {
-          0%, 100% { opacity: 0.5; }
-          50%       { opacity: 0.85; }
-        }
-        @keyframes gpFloodRight {
-          0%, 100% { opacity: 0.5; }
-          50%       { opacity: 0.85; }
+        @keyframes floodlight {
+          0%, 100% { opacity: 0.7; }
+          50%       { opacity: 1; }
         }
       `}</style>
 
       {/* ── Schijnwerpers ─────────────────────────────────────────────────── */}
+      {/* Linker schijnwerper */}
       <div
         style={{
           position: 'absolute',
-          top: 0,
-          left: 0,
-          width: '55%',
-          height: '85%',
+          top: -60,
+          left: -40,
+          width: 500,
+          height: 500,
           background:
-            'radial-gradient(ellipse at 4% 0%, rgba(210,225,255,0.14) 0%, transparent 52%)',
+            'radial-gradient(ellipse at top left, rgba(255,255,220,0.13) 0%, transparent 65%)',
+          transform: 'rotate(15deg)',
           pointerEvents: 'none',
-          zIndex: 0,
-          animation: 'gpFloodLeft 5s ease-in-out infinite',
+          zIndex: 1,
+          animation: 'floodlight 4s ease-in-out infinite',
         }}
       />
+      {/* Rechter schijnwerper */}
       <div
         style={{
           position: 'absolute',
-          top: 0,
-          right: 0,
-          width: '55%',
-          height: '85%',
+          top: -60,
+          right: -40,
+          width: 500,
+          height: 500,
           background:
-            'radial-gradient(ellipse at 96% 0%, rgba(210,225,255,0.14) 0%, transparent 52%)',
+            'radial-gradient(ellipse at top right, rgba(255,255,220,0.13) 0%, transparent 65%)',
+          transform: 'rotate(-15deg)',
           pointerEvents: 'none',
-          zIndex: 0,
-          animation: 'gpFloodRight 5s ease-in-out infinite 2.5s',
+          zIndex: 1,
+          animation: 'floodlight 4s ease-in-out infinite 2s',
+        }}
+      />
+      {/* Stadion publiek suggestie */}
+      <div
+        style={{
+          position: 'absolute',
+          top: 80,
+          left: 0,
+          right: 0,
+          height: 60,
+          background: 'linear-gradient(180deg, rgba(255,255,255,0.03) 0%, transparent 100%)',
+          pointerEvents: 'none',
+          zIndex: 1,
         }}
       />
 
@@ -722,13 +734,13 @@ export default function TeamVanDeWeekSection({ team }: Props) {
         </div>
 
         {/* ── Veld ───────────────────────────────────────────────────────── */}
-        <div style={{ position: 'relative' }}>
+        <div style={{ position: 'relative', borderRadius: 12, boxShadow: '0 8px 40px rgba(0,0,0,0.6)' }}>
           {/* Achtergrond (geknipte strepen + lijnen + vignette) */}
           <div
             style={{
               position: 'absolute',
               inset: 0,
-              borderRadius: 16,
+              borderRadius: 12,
               overflow: 'hidden',
               zIndex: 0,
             }}
@@ -739,7 +751,7 @@ export default function TeamVanDeWeekSection({ team }: Props) {
                 position: 'absolute',
                 inset: 0,
                 background:
-                  'repeating-linear-gradient(180deg, #1b5f2e 0px, #1b5f2e 42px, #1f6c34 42px, #1f6c34 84px)',
+                  'repeating-linear-gradient(180deg, rgba(0,0,0,0.08) 0px, rgba(0,0,0,0.08) 36px, transparent 36px, transparent 72px), linear-gradient(180deg, #1a5c2a 0%, #1e6b30 50%, #1a5c2a 100%)',
               }}
             />
 
@@ -862,7 +874,7 @@ export default function TeamVanDeWeekSection({ team }: Props) {
               style={{
                 position: 'absolute',
                 inset: 0,
-                boxShadow: 'inset 0 0 90px rgba(3,1,18,0.70)',
+                boxShadow: 'inset 0 0 60px rgba(0,0,0,0.5)',
               }}
             />
             {/* Rand */}
@@ -981,22 +993,19 @@ export default function TeamVanDeWeekSection({ team }: Props) {
             </p>
           </div>
 
-          <div style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
-            <div
-              style={{
-                background: 'rgba(255,255,255,0.04)',
-                border: '1px solid rgba(255,255,255,0.09)',
-                color: 'rgba(255,255,255,0.45)',
-                fontSize: 11,
-                fontWeight: 600,
-                padding: '6px 12px',
-                borderRadius: 8,
-                fontFamily: 'Montserrat, sans-serif',
-              }}
-            >
-              GW {currentTeam.week_number}
-            </div>
-            <ShareButton />
+          <div
+            style={{
+              background: 'rgba(255,255,255,0.04)',
+              border: '1px solid rgba(255,255,255,0.09)',
+              color: 'rgba(255,255,255,0.45)',
+              fontSize: 11,
+              fontWeight: 600,
+              padding: '6px 12px',
+              borderRadius: 8,
+              fontFamily: 'Montserrat, sans-serif',
+            }}
+          >
+            GW {currentTeam.week_number}
           </div>
         </div>
 
@@ -1124,49 +1133,3 @@ export default function TeamVanDeWeekSection({ team }: Props) {
   )
 }
 
-// ─── Share Button (gescheiden om inline event-handlers te vermijden) ────────
-
-function ShareButton() {
-  return (
-    <button
-      type="button"
-      style={{
-        display: 'flex',
-        alignItems: 'center',
-        gap: 6,
-        background: 'rgba(0,250,97,0.08)',
-        border: '1px solid rgba(0,250,97,0.26)',
-        color: '#00FA61',
-        fontSize: 11.5,
-        fontWeight: 700,
-        padding: '7px 14px',
-        borderRadius: 8,
-        cursor: 'pointer',
-        fontFamily: 'Montserrat, sans-serif',
-        transition: 'background 200ms ease',
-      }}
-      onMouseEnter={(e) => {
-        e.currentTarget.style.background = 'rgba(0,250,97,0.16)'
-      }}
-      onMouseLeave={(e) => {
-        e.currentTarget.style.background = 'rgba(0,250,97,0.08)'
-      }}
-    >
-      <svg
-        width="13"
-        height="13"
-        viewBox="0 0 24 24"
-        fill="none"
-        stroke="currentColor"
-        strokeWidth="2.5"
-        strokeLinecap="round"
-        strokeLinejoin="round"
-      >
-        <path d="M4 12v8a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2v-8" />
-        <polyline points="16 6 12 2 8 6" />
-        <line x1="12" y1="2" x2="12" y2="15" />
-      </svg>
-      Deel mijn Team vd Week
-    </button>
-  )
-}
