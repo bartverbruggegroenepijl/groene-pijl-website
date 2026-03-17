@@ -15,7 +15,7 @@ export default async function PublicLayout({
 
   return (
     <>
-      <Navbar managers={managers ?? []} />
+      <Navbar />
       {children}
       <Footer managers={managers ?? []} />
     </>

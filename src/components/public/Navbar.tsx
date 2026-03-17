@@ -2,53 +2,30 @@
 
 import { useState, useEffect, useRef } from 'react';
 import Link from 'next/link';
-import Image from 'next/image';
 import { Menu, X, ChevronDown } from 'lucide-react';
 import Logo from '@/components/ui/Logo';
 import DeadlineCountdown from '@/components/ui/DeadlineCountdown';
 
-interface Manager {
-  id: string;
-  name: string;
-  avatar_url: string | null;
-}
-
-interface NavbarProps {
-  managers?: Manager[];
-}
-
 const navLinks = [
-  { label: 'Afleveringen', href: '/afleveringen' },
-  { label: 'Artikelen',    href: '/artikelen'    },
-];
-
-const transfersLinks = [
-  { label: 'Transfers & Captains', href: '/#captain-pick',  desc: 'Captain picks & transfer tips'  },
-  { label: 'Bouw Mijn Team',       href: '/teambouwer',     desc: 'Stel jouw FPL-elftal samen'     },
-];
-
-const teamstatusLinks = [
-  { label: 'Spelerstatus',    href: '/spelerstatus',     desc: 'Blessures & beschikbaarheid' },
-  { label: 'Wedstrijdplanner', href: '/wedstrijdplanner', desc: 'Fixture Difficulty Rating'   },
+  { label: 'Afleveringen',   href: '/afleveringen' },
+  { label: 'Artikelen',      href: '/artikelen'    },
+  { label: 'Bouw Mijn Team', href: '/teambouwer'   },
 ];
 
 const dataLinks = [
-  { label: 'Data & Inzichten',       href: '/statistieken', desc: 'Premier League statistieken'  },
-  { label: 'Groene Pijl Competitie', href: '/rankings',     desc: 'Onze mini-league rankings'    },
+  { label: 'Speler Statistieken',    href: '/statistieken',     desc: 'Premier League statistieken'  },
+  { label: 'Groene Pijl Competitie', href: '/rankings',         desc: 'Onze mini-league rankings'    },
+  { label: 'Spelerstatus',           href: '/spelerstatus',     desc: 'Blessures & beschikbaarheid'  },
+  { label: 'Wedstrijdplanner',       href: '/wedstrijdplanner', desc: 'Fixture Difficulty Rating'    },
 ];
 
-export default function Navbar({ managers = [] }: NavbarProps) {
-  const [scrolled, setScrolled] = useState(false);
-  const [menuOpen, setMenuOpen] = useState(false);
-  const [managersOpen, setManagersOpen] = useState(false);
-  const [teamstatusOpen, setTeaminformatieOpen] = useState(false);
-  const [transfersOpen, setTransfersOpen] = useState(false);
-  const [dataOpen, setDataOpen] = useState(false);
-  const dropdownRef = useRef<HTMLDivElement>(null);
-  const teamstatusRef = useRef<HTMLDivElement>(null);
-  const transfersRef = useRef<HTMLDivElement>(null);
+export default function Navbar() {
+  const [scrolled, setScrolled]   = useState(false);
+  const [menuOpen, setMenuOpen]   = useState(false);
+  const [dataOpen, setDataOpen]   = useState(false);
   const dataRef = useRef<HTMLDivElement>(null);
 
+  // Scroll listener
   useEffect(() => {
     const handleScroll = () => setScrolled(window.scrollY > 60);
     window.addEventListener('scroll', handleScroll, { passive: true });
@@ -57,26 +34,13 @@ export default function Navbar({ managers = [] }: NavbarProps) {
 
   // Vergrendel body scroll als mobiel menu open is
   useEffect(() => {
-    if (menuOpen) {
-      document.body.style.overflow = 'hidden';
-    } else {
-      document.body.style.overflow = '';
-    }
+    document.body.style.overflow = menuOpen ? 'hidden' : '';
     return () => { document.body.style.overflow = ''; };
   }, [menuOpen]);
 
-  // Close dropdowns on outside click
+  // Sluit Data & Inzichten dropdown bij klik buiten
   useEffect(() => {
     function handleOutside(e: MouseEvent) {
-      if (dropdownRef.current && !dropdownRef.current.contains(e.target as Node)) {
-        setManagersOpen(false);
-      }
-      if (teamstatusRef.current && !teamstatusRef.current.contains(e.target as Node)) {
-        setTeaminformatieOpen(false);
-      }
-      if (transfersRef.current && !transfersRef.current.contains(e.target as Node)) {
-        setTransfersOpen(false);
-      }
       if (dataRef.current && !dataRef.current.contains(e.target as Node)) {
         setDataOpen(false);
       }
@@ -107,6 +71,8 @@ export default function Navbar({ managers = [] }: NavbarProps) {
 
           {/* Desktop nav — center */}
           <nav className="hidden lg:flex items-center gap-1">
+
+            {/* Afleveringen, Artikelen, Bouw Mijn Team */}
             {navLinks.map((link) => (
               <Link
                 key={link.href}
@@ -117,70 +83,18 @@ export default function Navbar({ managers = [] }: NavbarProps) {
               </Link>
             ))}
 
-            {/* Transfers & Captains dropdown */}
-            <div className="relative" ref={transfersRef}>
-              <button
-                onClick={() => { setTransfersOpen(!transfersOpen); setManagersOpen(false); setTeaminformatieOpen(false); setDataOpen(false); }}
-                className="flex items-center gap-1.5 px-4 py-2 text-sm font-medium text-white/70 hover:text-primary rounded-lg hover:bg-primary/8 transition-all duration-200"
-              >
-                Transfers &amp; Captains
-                <ChevronDown
-                  size={14}
-                  className={`transition-transform duration-200 ${transfersOpen ? 'rotate-180' : ''}`}
-                />
-              </button>
-
-              {transfersOpen && (
-                <div className="absolute top-full left-1/2 -translate-x-1/2 mt-2 bg-navy-card border border-white/10 rounded-xl shadow-card-hover py-2 min-w-[220px] z-50">
-                  {transfersLinks.map((item) => (
-                    <Link
-                      key={item.href}
-                      href={item.href}
-                      onClick={() => setTransfersOpen(false)}
-                      className="flex flex-col px-4 py-3 hover:bg-white/5 transition-colors"
-                    >
-                      <span className="text-white text-sm font-semibold">{item.label}</span>
-                      <span className="text-white/40 text-xs mt-0.5">{item.desc}</span>
-                    </Link>
-                  ))}
-                </div>
-              )}
-            </div>
-
-            {/* Teaminformatie dropdown */}
-            <div className="relative" ref={teamstatusRef}>
-              <button
-                onClick={() => { setTeaminformatieOpen(!teamstatusOpen); setManagersOpen(false); setTransfersOpen(false); setDataOpen(false); }}
-                className="flex items-center gap-1.5 px-4 py-2 text-sm font-medium text-white/70 hover:text-primary rounded-lg hover:bg-primary/8 transition-all duration-200"
-              >
-                Teaminformatie
-                <ChevronDown
-                  size={14}
-                  className={`transition-transform duration-200 ${teamstatusOpen ? 'rotate-180' : ''}`}
-                />
-              </button>
-
-              {teamstatusOpen && (
-                <div className="absolute top-full left-1/2 -translate-x-1/2 mt-2 bg-navy-card border border-white/10 rounded-xl shadow-card-hover py-2 min-w-[220px] z-50">
-                  {teamstatusLinks.map((item) => (
-                    <Link
-                      key={item.href}
-                      href={item.href}
-                      onClick={() => setTeaminformatieOpen(false)}
-                      className="flex flex-col px-4 py-3 hover:bg-white/5 transition-colors"
-                    >
-                      <span className="text-white text-sm font-semibold">{item.label}</span>
-                      <span className="text-white/40 text-xs mt-0.5">{item.desc}</span>
-                    </Link>
-                  ))}
-                </div>
-              )}
-            </div>
+            {/* Transfers & Captains — standalone link */}
+            <Link
+              href="/#captain-pick"
+              className="px-4 py-2 text-sm font-medium text-white/70 hover:text-primary rounded-lg hover:bg-primary/8 transition-all duration-200"
+            >
+              Transfers &amp; Captains
+            </Link>
 
             {/* Data & Inzichten dropdown */}
             <div className="relative" ref={dataRef}>
               <button
-                onClick={() => { setDataOpen(!dataOpen); setManagersOpen(false); setTeaminformatieOpen(false); setTransfersOpen(false); }}
+                onClick={() => setDataOpen(!dataOpen)}
                 className="flex items-center gap-1.5 px-4 py-2 text-sm font-medium text-white/70 hover:text-primary rounded-lg hover:bg-primary/8 transition-all duration-200"
               >
                 Data &amp; Inzichten
@@ -207,54 +121,13 @@ export default function Navbar({ managers = [] }: NavbarProps) {
               )}
             </div>
 
-            {/* Managers dropdown */}
-            <div className="relative" ref={dropdownRef}>
-              <button
-                onClick={() => { setManagersOpen(!managersOpen); setTeaminformatieOpen(false); setTransfersOpen(false); setDataOpen(false); }}
-                className="flex items-center gap-1.5 px-4 py-2 text-sm font-medium text-white/70 hover:text-primary rounded-lg hover:bg-primary/8 transition-all duration-200"
-              >
-                Managers
-                <ChevronDown
-                  size={14}
-                  className={`transition-transform duration-200 ${managersOpen ? 'rotate-180' : ''}`}
-                />
-              </button>
-
-              {managersOpen && (
-                <div className="absolute top-full left-1/2 -translate-x-1/2 mt-2 bg-navy-card border border-white/10 rounded-xl shadow-card-hover py-2 min-w-[200px] z-50">
-                  {managers.length > 0 ? (
-                    managers.map((m) => (
-                      <Link
-                        key={m.id}
-                        href={`/managers/${m.id}`}
-                        onClick={() => setManagersOpen(false)}
-                        className="flex items-center gap-3 px-4 py-2.5 hover:bg-white/5 transition-colors"
-                      >
-                        {m.avatar_url ? (
-                          <div className="relative w-8 h-8 rounded-full overflow-hidden shrink-0">
-                            <Image src={m.avatar_url} alt={m.name} fill className="object-cover" />
-                          </div>
-                        ) : (
-                          <div className="w-8 h-8 rounded-full bg-primary/20 flex items-center justify-center shrink-0">
-                            <span className="text-primary text-xs font-bold">{m.name.charAt(0)}</span>
-                          </div>
-                        )}
-                        <span className="text-white text-sm font-medium">{m.name}</span>
-                      </Link>
-                    ))
-                  ) : (
-                    ['Bart', 'Jeffrey', 'Tom', 'Kieran'].map((name) => (
-                      <div key={name} className="flex items-center gap-3 px-4 py-2.5">
-                        <div className="w-8 h-8 rounded-full bg-primary/10 flex items-center justify-center shrink-0">
-                          <span className="text-primary text-xs font-bold">{name.charAt(0)}</span>
-                        </div>
-                        <span className="text-white/60 text-sm">{name}</span>
-                      </div>
-                    ))
-                  )}
-                </div>
-              )}
-            </div>
+            {/* Managers — standalone link */}
+            <Link
+              href="/managers"
+              className="px-4 py-2 text-sm font-medium text-white/70 hover:text-primary rounded-lg hover:bg-primary/8 transition-all duration-200"
+            >
+              Managers
+            </Link>
           </nav>
 
           {/* Right side — deadline countdown */}
@@ -279,7 +152,6 @@ export default function Navbar({ managers = [] }: NavbarProps) {
       {/* ── Mobiel menu — volledig scherm overlay ─────────────────── */}
       {menuOpen && (
         <>
-          {/* !important fallback voor scroll op iOS/Android */}
           <style>{`.mgp-menu-overlay{overflow-y:scroll!important;-webkit-overflow-scrolling:touch!important;height:100dvh!important;}`}</style>
           <div
             className="lg:hidden mgp-menu-overlay"
@@ -330,7 +202,7 @@ export default function Navbar({ managers = [] }: NavbarProps) {
             {/* Nav content */}
             <nav>
 
-              {/* Hoofd links */}
+              {/* Afleveringen, Artikelen, Bouw Mijn Team */}
               {navLinks.map((link) => (
                 <Link
                   key={link.href}
@@ -351,71 +223,25 @@ export default function Navbar({ managers = [] }: NavbarProps) {
                 </Link>
               ))}
 
-              {/* ── Transfers & Captains ── */}
-              <div
+              {/* Transfers & Captains — standalone link */}
+              <Link
+                href="/#captain-pick"
+                onClick={() => setMenuOpen(false)}
                 style={{
-                  padding: '8px 24px 4px',
-                  fontSize: 9,
+                  display: 'block',
+                  padding: '10px 24px',
+                  fontSize: 15,
                   fontWeight: 700,
-                  letterSpacing: '0.18em',
-                  textTransform: 'uppercase',
-                  color: '#00FA61',
+                  color: 'rgba(255,255,255,0.9)',
+                  textDecoration: 'none',
+                  borderBottom: '1px solid rgba(255,255,255,0.06)',
+                  fontFamily: 'Montserrat, sans-serif',
                 }}
               >
                 Transfers &amp; Captains
-              </div>
-              {transfersLinks.map((item) => (
-                <Link
-                  key={item.href}
-                  href={item.href}
-                  onClick={() => setMenuOpen(false)}
-                  style={{
-                    display: 'block',
-                    padding: '7px 24px 7px 36px',
-                    textDecoration: 'none',
-                    borderBottom: '1px solid rgba(255,255,255,0.05)',
-                    fontFamily: 'Montserrat, sans-serif',
-                  }}
-                >
-                  <span style={{ fontSize: 13, fontWeight: 600, color: 'rgba(255,255,255,0.85)', display: 'block' }}>
-                    {item.label}
-                  </span>
-                </Link>
-              ))}
+              </Link>
 
-              {/* ── Teaminformatie ── */}
-              <div
-                style={{
-                  padding: '8px 24px 4px',
-                  fontSize: 9,
-                  fontWeight: 700,
-                  letterSpacing: '0.18em',
-                  textTransform: 'uppercase',
-                  color: '#00FA61',
-                }}
-              >
-                Teaminformatie
-              </div>
-              {teamstatusLinks.map((item) => (
-                <Link
-                  key={item.href}
-                  href={item.href}
-                  onClick={() => setMenuOpen(false)}
-                  style={{
-                    display: 'block',
-                    padding: '7px 24px 7px 36px',
-                    textDecoration: 'none',
-                    borderBottom: '1px solid rgba(255,255,255,0.05)',
-                    fontFamily: 'Montserrat, sans-serif',
-                  }}
-                >
-                  <span style={{ fontSize: 13, fontWeight: 600, color: 'rgba(255,255,255,0.85)', display: 'block' }}>
-                    {item.label}
-                  </span>
-                </Link>
-              ))}
-
-              {/* ── Data & Inzichten ── */}
+              {/* ── Data & Inzichten sectie ── */}
               <div
                 style={{
                   padding: '8px 24px 4px',
@@ -447,34 +273,22 @@ export default function Navbar({ managers = [] }: NavbarProps) {
                 </Link>
               ))}
 
-              {/* ── Managers — alleen sectielink, geen individuele namen ── */}
-              <div
-                style={{
-                  padding: '8px 24px 4px',
-                  fontSize: 9,
-                  fontWeight: 700,
-                  letterSpacing: '0.18em',
-                  textTransform: 'uppercase',
-                  color: '#00FA61',
-                }}
-              >
-                Managers
-              </div>
+              {/* Managers — standalone link */}
               <Link
                 href="/managers"
                 onClick={() => setMenuOpen(false)}
                 style={{
                   display: 'block',
-                  padding: '7px 24px 7px 36px',
-                  fontSize: 13,
-                  fontWeight: 600,
-                  color: 'rgba(255,255,255,0.85)',
+                  padding: '10px 24px',
+                  fontSize: 15,
+                  fontWeight: 700,
+                  color: 'rgba(255,255,255,0.9)',
                   textDecoration: 'none',
-                  borderBottom: '1px solid rgba(255,255,255,0.05)',
+                  borderBottom: '1px solid rgba(255,255,255,0.06)',
                   fontFamily: 'Montserrat, sans-serif',
                 }}
               >
-                Bekijk alle managers
+                Managers
               </Link>
 
               {/* ── Join Mini-League CTA ── */}
