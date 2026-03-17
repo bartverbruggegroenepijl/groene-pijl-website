@@ -556,7 +556,6 @@ export default function TeamVanDeWeekSection({ team }: Props) {
         paddingRight: 16,
         background: 'linear-gradient(180deg, #050318 0%, #0a0628 30%, #0d0835 70%, #1a1361 100%)',
         borderTop: '2px solid rgba(0,250,97,0.18)',
-        borderRadius: 16,
         overflow: 'hidden',
         fontFamily: 'Montserrat, sans-serif',
       }}
@@ -634,7 +633,7 @@ export default function TeamVanDeWeekSection({ team }: Props) {
           maxWidth: 760,
           margin: '0 auto',
           position: 'relative',
-          zIndex: 1,
+          zIndex: 2,
           opacity: pitchOpacity,
           transition: 'opacity 220ms ease',
         }}
