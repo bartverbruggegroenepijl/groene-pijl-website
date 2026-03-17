@@ -46,11 +46,13 @@ export async function GET(
 
     const history: Array<{
       expected_goals: string;
+      expected_assists: string;
       round: number;
       total_points: number;
       goals_scored: number;
       assists: number;
       clean_sheets: number;
+      saves: number;
       minutes: number;
     }> = data.history ?? [];
 
@@ -58,6 +60,19 @@ export async function GET(
     const last = targetRound !== null
       ? (history.find((h) => h.round === targetRound) ?? null)
       : (history.length > 0 ? history[history.length - 1] : null);
+
+    // Laatste 5 speelrondes met volledige statistieken
+    const last5 = history.slice(-5).map((h) => ({
+      round:            h.round,
+      total_points:     h.total_points,
+      goals_scored:     h.goals_scored,
+      assists:          h.assists,
+      clean_sheets:     h.clean_sheets,
+      saves:            h.saves ?? 0,
+      expected_goals:   parseFloat(h.expected_goals) || 0,
+      expected_assists: parseFloat(h.expected_assists) || 0,
+      minutes:          h.minutes,
+    }));
 
     return NextResponse.json(
       {
@@ -72,6 +87,7 @@ export async function GET(
               minutes: last.minutes,
             }
           : null,
+        history: last5,
       },
       {
         headers: {

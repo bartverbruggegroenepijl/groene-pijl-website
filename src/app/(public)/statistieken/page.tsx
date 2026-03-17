@@ -1,6 +1,6 @@
 'use client';
 
-import { useEffect, useState, useMemo, useCallback } from 'react';
+import { useEffect, useState, useMemo, useCallback, useRef } from 'react';
 import Image from 'next/image';
 import { Search, X, ChevronUp, ChevronDown, ChevronLeft, ChevronRight, Star } from 'lucide-react';
 
@@ -47,6 +47,18 @@ interface StatsTeam {
   goals_scored: number;
   goals_conceded: number;
   clean_sheets: number;
+  minutes: number;
+}
+
+interface HistoryEntry {
+  round: number;
+  total_points: number;
+  goals_scored: number;
+  assists: number;
+  clean_sheets: number;
+  saves: number;
+  expected_goals: number;
+  expected_assists: number;
   minutes: number;
 }
 
@@ -299,6 +311,10 @@ export default function StatistiekenPage() {
   // Modal
   const [modalPlayer, setModalPlayer] = useState<StatsPlayer | null>(null);
 
+  // Laatste 5 GW history cache (lazy-loaded per zichtbare speler)
+  const [historyData, setHistoryData] = useState<Record<number, HistoryEntry[]>>({});
+  const fetchingRef = useRef(new Set<number>());
+
   /* ── fetch data ── */
   useEffect(() => {
     setLoading(true);
@@ -398,7 +414,8 @@ export default function StatistiekenPage() {
     return list;
   }, [teams, search, sortKey, sortDir]);
 
-  const isTeamsTab = activeTab === 'teams';
+  const isTeamsTab   = activeTab === 'teams';
+  const isPointsTab  = activeTab === 'total_points' || activeTab === 'points_per_game';
   const listLen    = isTeamsTab ? filteredTeams.length : filteredPlayers.length;
   const totalPages = Math.max(1, Math.ceil(listLen / PAGE_SIZE));
 
@@ -429,12 +446,68 @@ export default function StatistiekenPage() {
       : <ChevronUp size={12} style={{ color: '#00FA61' }} />;
   }
 
+  /* ── Laatste 5 GW helpers ── */
+  function getHistoryStat(entry: HistoryEntry, tab: TabId): number {
+    switch (tab) {
+      case 'goals':           return entry.goals_scored;
+      case 'expected_goals':  return entry.expected_goals;
+      case 'assists':         return entry.assists;
+      case 'expected_assists': return entry.expected_assists;
+      case 'clean_sheets':    return entry.clean_sheets;
+      case 'saves':           return entry.saves;
+      case 'total_points':    return entry.total_points;
+      case 'points_per_game': return entry.total_points;
+      default:                return entry.total_points;
+    }
+  }
+
+  function getHistoryDecimals(tab: TabId): number {
+    return (tab === 'expected_goals' || tab === 'expected_assists') ? 1 : 0;
+  }
+
+  function ptsBadgeStyle(pts: number): { bg: string; color: string } {
+    if (pts >= 10) return { bg: 'rgba(255,215,0,0.22)',  color: '#FFD700' };
+    if (pts >= 7)  return { bg: 'rgba(0,250,97,0.18)',   color: '#00FA61' };
+    if (pts >= 4)  return { bg: 'rgba(255,165,0,0.18)',  color: '#FFA500' };
+    return              { bg: 'rgba(239,68,68,0.14)',  color: '#F87171' };
+  }
+
   /* ── page data ── */
   const pageData = isTeamsTab
     ? filteredTeams.slice(page * PAGE_SIZE, (page + 1) * PAGE_SIZE)
     : filteredPlayers.slice(page * PAGE_SIZE, (page + 1) * PAGE_SIZE);
 
   const cols = isTeamsTab ? [] : getColumns(activeTab);
+
+  /* ── Lazy-load history voor zichtbare spelers ── */
+  // eslint-disable-next-line react-hooks/rules-of-hooks
+  useEffect(() => {
+    if (isTeamsTab) return;
+    const visiblePlayers = pageData as StatsPlayer[];
+    const toFetch = visiblePlayers.filter(
+      (p) => !(p.id in historyData) && !fetchingRef.current.has(p.id),
+    );
+    if (toFetch.length === 0) return;
+    toFetch.forEach((p) => fetchingRef.current.add(p.id));
+    Promise.all(
+      toFetch.map(async (p) => {
+        try {
+          const res = await fetch(`/api/fpl/element-summary/${p.id}`);
+          const d = await res.json();
+          return { id: p.id, history: (d.history ?? []) as HistoryEntry[] };
+        } catch {
+          return { id: p.id, history: [] as HistoryEntry[] };
+        }
+      }),
+    ).then((results) => {
+      const updates: Record<number, HistoryEntry[]> = {};
+      results.forEach(({ id, history }) => {
+        updates[id] = history;
+        fetchingRef.current.delete(id);
+      });
+      setHistoryData((prev) => ({ ...prev, ...updates }));
+    });
+  }, [pageData, isTeamsTab]); // eslint-disable-line react-hooks/exhaustive-deps
 
   /* ── hero podium order: [#2, #1, #3] ── */
   const podium = heroPlayers.length >= 2
@@ -710,7 +783,7 @@ export default function StatistiekenPage() {
                         {/* Content below photo */}
                         <div style={{ position: 'relative', zIndex: 3, width: '100%', textAlign: 'center' }}>
                           {/* Main stat */}
-                          <div style={{ color: rs.label, fontWeight: 800, fontSize: isFirst ? 22 : 18, lineHeight: 1, marginBottom: 2 }}>
+                          <div style={{ color: '#00FA61', fontWeight: 800, fontSize: isFirst ? 22 : 18, lineHeight: 1, marginBottom: 2 }}>
                             {tabConfig.heroDecimals === 0
                               ? Math.round(tabConfig.heroStat(player))
                               : tabConfig.heroStat(player).toFixed(tabConfig.heroDecimals ?? 2)}
@@ -750,7 +823,7 @@ export default function StatistiekenPage() {
             {/* ── Data table ── */}
             <div style={{ borderRadius: 14, border: '1px solid rgba(255,255,255,0.08)', overflow: 'hidden', background: 'rgba(0,0,0,0.25)' }}>
               <div style={{ overflowX: 'auto' }}>
-                <table style={{ width: '100%', borderCollapse: 'collapse', minWidth: isTeamsTab ? 600 : 700 }}>
+                <table style={{ width: '100%', borderCollapse: 'collapse', minWidth: isTeamsTab ? 600 : 920 }}>
                   {/* Table head */}
                   <thead>
                     <tr style={{ borderBottom: '1px solid rgba(255,255,255,0.08)' }}>
@@ -800,6 +873,17 @@ export default function StatistiekenPage() {
                             </span>
                           </th>
                         ))
+                      )}
+                      {/* Laatste 5 GW kolom — alleen voor spelerstabbladen */}
+                      {!isTeamsTab && (
+                        <th style={{
+                          padding: '10px 10px', textAlign: 'center',
+                          color: 'rgba(255,255,255,0.4)', fontSize: 10, fontWeight: 700,
+                          textTransform: 'uppercase', letterSpacing: '0.08em',
+                          whiteSpace: 'nowrap' as const,
+                        }}>
+                          Laatste 5 GW
+                        </th>
                       )}
                     </tr>
                   </thead>
@@ -908,6 +992,47 @@ export default function StatistiekenPage() {
                                 </td>
                               );
                             })}
+
+                            {/* Laatste 5 GW */}
+                            <td style={{ padding: '9px 10px', textAlign: 'center', whiteSpace: 'nowrap' as const }}>
+                              {historyData[player.id] ? (
+                                historyData[player.id].length > 0 ? (
+                                  <div style={{ display: 'inline-flex', gap: 3, alignItems: 'center' }}>
+                                    {historyData[player.id].map((entry) => {
+                                      const val = getHistoryStat(entry, activeTab);
+                                      const dec = getHistoryDecimals(activeTab);
+                                      const bs  = isPointsTab ? ptsBadgeStyle(entry.total_points) : null;
+                                      return (
+                                        <span
+                                          key={entry.round}
+                                          title={`GW${entry.round}: ${val.toFixed(dec)}`}
+                                          style={{
+                                            display: 'inline-flex', alignItems: 'center', justifyContent: 'center',
+                                            minWidth: 22, height: 20, borderRadius: 4,
+                                            fontSize: 9.5, fontWeight: 700,
+                                            fontFamily: 'Montserrat, sans-serif',
+                                            cursor: 'default',
+                                            background: bs
+                                              ? bs.bg
+                                              : val > 0 ? 'rgba(0,250,97,0.15)' : 'rgba(255,255,255,0.06)',
+                                            color: bs
+                                              ? bs.color
+                                              : val > 0 ? '#00FA61' : 'rgba(255,255,255,0.3)',
+                                            padding: '0 3px',
+                                          }}
+                                        >
+                                          {val.toFixed(dec)}
+                                        </span>
+                                      );
+                                    })}
+                                  </div>
+                                ) : (
+                                  <span style={{ color: 'rgba(255,255,255,0.2)', fontSize: 10 }}>—</span>
+                                )
+                              ) : (
+                                <span style={{ color: 'rgba(255,255,255,0.12)', fontSize: 10 }}>·</span>
+                              )}
+                            </td>
                           </tr>
                         );
                       })
