@@ -636,8 +636,40 @@ export default function TeamVanDeWeekSection({ team }: Props) {
           zIndex: 2,
           opacity: pitchOpacity,
           transition: 'opacity 220ms ease',
+          background: 'linear-gradient(180deg, #050318 0%, #0a0628 30%, #0d0835 70%, #1a1361 100%)',
+          borderRadius: '16px',
+          overflow: 'hidden',
         }}
       >
+        {/* Schijnwerper links */}
+        <div
+          style={{
+            position: 'absolute',
+            top: -80,
+            left: -60,
+            width: 600,
+            height: 600,
+            background: 'radial-gradient(ellipse at top left, rgba(255,255,220,0.22) 0%, rgba(255,255,180,0.08) 30%, transparent 65%)',
+            transform: 'rotate(-20deg)',
+            pointerEvents: 'none',
+            zIndex: 1,
+          }}
+        />
+        {/* Schijnwerper rechts */}
+        <div
+          style={{
+            position: 'absolute',
+            top: -80,
+            right: -60,
+            width: 600,
+            height: 600,
+            background: 'radial-gradient(ellipse at top right, rgba(255,255,220,0.22) 0%, rgba(255,255,180,0.08) 30%, transparent 65%)',
+            transform: 'rotate(20deg)',
+            pointerEvents: 'none',
+            zIndex: 1,
+          }}
+        />
+
         {/* Header */}
         <div
           style={{
@@ -647,6 +679,8 @@ export default function TeamVanDeWeekSection({ team }: Props) {
             marginBottom: 24,
             flexWrap: 'wrap',
             gap: 12,
+            position: 'relative',
+            zIndex: 2,
           }}
         >
           <div>
@@ -734,7 +768,7 @@ export default function TeamVanDeWeekSection({ team }: Props) {
         </div>
 
         {/* ── Veld ───────────────────────────────────────────────────────── */}
-        <div style={{ position: 'relative', borderRadius: 12, boxShadow: '0 12px 50px rgba(0,0,0,0.7)' }}>
+        <div style={{ position: 'relative', zIndex: 2, borderRadius: 12, boxShadow: '0 12px 50px rgba(0,0,0,0.7)' }}>
           {/* Achtergrond (geknipte strepen + lijnen + vignette) */}
           <div
             style={{
