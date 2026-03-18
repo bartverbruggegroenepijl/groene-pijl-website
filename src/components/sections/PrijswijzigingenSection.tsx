@@ -59,7 +59,6 @@ function PlayerRow({
           background: 'rgba(255,255,255,0.1)',
           flexShrink: 0,
         }}
-        onError={(e) => { (e.target as HTMLImageElement).style.display = 'none'; }}
       />
 
       {/* Info */}
