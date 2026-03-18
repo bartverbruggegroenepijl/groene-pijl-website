@@ -629,11 +629,15 @@ export default function TeamVanDeWeekSection({ team }: Props) {
 
       {/* ── Content ───────────────────────────────────────────────────────── */}
       <div
-        className="tvdw-stadion-wrapper"
         style={{
           maxWidth: 760,
           margin: '0 auto',
+          backgroundImage: "url('/gradient-bg.png')",
+          backgroundSize: 'cover',
+          backgroundPosition: 'center',
+          borderRadius: '16px',
           position: 'relative',
+          overflow: 'hidden',
           zIndex: 2,
           opacity: pitchOpacity,
           transition: 'opacity 220ms ease',

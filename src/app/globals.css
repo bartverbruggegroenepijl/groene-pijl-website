@@ -125,50 +125,6 @@ body {
   }
 }
 
-/* ── Team van de Week — stadion effect ──────────────────────────────────── */
-.tvdw-stadion-wrapper {
-  position: relative;
-  overflow: hidden;
-  border-radius: 16px;
-  background:
-    radial-gradient(ellipse at 15% 0%, rgba(255,255,200,0.25) 0%, transparent 40%),
-    radial-gradient(ellipse at 85% 0%, rgba(255,255,200,0.25) 0%, transparent 40%),
-    radial-gradient(ellipse at 50% 100%, rgba(0,80,20,0.3) 0%, transparent 50%),
-    linear-gradient(180deg, #0a0510 0%, #0d0820 25%, #111535 60%, #1a1361 100%);
-}
-.tvdw-stadion-wrapper::before {
-  content: '';
-  position: absolute;
-  top: 0;
-  left: 0;
-  right: 0;
-  height: 45%;
-  background:
-    radial-gradient(ellipse at 12% 0%, rgba(255,255,180,0.35) 0%, rgba(255,255,100,0.1) 20%, transparent 45%),
-    radial-gradient(ellipse at 88% 0%, rgba(255,255,180,0.35) 0%, rgba(255,255,100,0.1) 20%, transparent 45%);
-  pointer-events: none;
-  z-index: 1;
-  animation: stadionlicht 4s ease-in-out infinite alternate;
-}
-.tvdw-stadion-wrapper::after {
-  content: '';
-  position: absolute;
-  top: 0;
-  left: 0;
-  right: 0;
-  bottom: 0;
-  background:
-    radial-gradient(ellipse at 0% 50%, rgba(0,0,0,0.4) 0%, transparent 40%),
-    radial-gradient(ellipse at 100% 50%, rgba(0,0,0,0.4) 0%, transparent 40%),
-    radial-gradient(ellipse at 50% 0%, rgba(0,0,0,0.3) 0%, transparent 30%);
-  pointer-events: none;
-  z-index: 1;
-}
-@keyframes stadionlicht {
-  0%   { opacity: 0.7; }
-  100% { opacity: 1; }
-}
-
 /* Hero section — mobiel responsive (desktop ONGEWIJZIGD) */
 @media (max-width: 768px) {
   /* Section: min-height auto, clean column layout */
