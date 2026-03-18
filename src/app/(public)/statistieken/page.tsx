@@ -546,7 +546,7 @@ export default function StatistiekenPage() {
             Statistieken
           </h1>
           <p style={{ color: 'rgba(255,255,255,0.4)', fontSize: 13, marginTop: 8, margin: '8px 0 0' }}>
-            Speler- en teamdata op basis van FPL API · bijgewerkt elke 30 minuten
+            Belangrijke FPL data inzichten
           </p>
         </div>
 
