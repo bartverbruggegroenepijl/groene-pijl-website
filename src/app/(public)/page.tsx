@@ -17,6 +17,7 @@ import { fetchNextFixturesMap } from '@/lib/fpl/fixtures';
 import type { NextFixture } from '@/lib/fpl/fixtures';
 import HeroSection from '@/components/sections/HeroSection';
 import TeamVanDeWeekSection from '@/components/sections/TeamVanDeWeekSection';
+import TransferTipCard from '@/components/sections/TransferTipCard';
 
 // ─── Types ────────────────────────────────────────────────────────────────────
 
@@ -217,6 +218,20 @@ function PlayerBadgeLight({ imageUrl, name, size = 56, objectPosition = 'center'
 }
 
 
+// ─── FPL stats helper ─────────────────────────────────────────────────────────
+
+function lookupFplStats(
+  name: string | null,
+  map: Record<string, { goals: number; assists: number }>,
+): { goals: number; assists: number } {
+  if (!name) return { goals: 0, assists: 0 }
+  const lower = name.toLowerCase()
+  if (map[lower]) return map[lower]
+  // Probeer op achternaam (laatste woord)
+  const lastName = lower.split(' ').pop() ?? lower
+  return map[lastName] ?? { goals: 0, assists: 0 }
+}
+
 // ─── Page ─────────────────────────────────────────────────────────────────────
 
 export default async function HomePage() {
@@ -338,6 +353,24 @@ export default async function HomePage() {
 
   // ── FPL fixtures: eerstvolgende wedstrijd per team voor captain FDR badge ────
   const nextFixturesMap = await fetchNextFixturesMap();
+
+  // ── FPL spelersdata voor transfertips (goals + assists) ──────────────────────
+  let fplTransferStats: Record<string, { goals: number; assists: number }> = {};
+  try {
+    const fplBootstrapRes = await fetch('https://fantasy.premierleague.com/api/bootstrap-static/', {
+      next: { revalidate: 1800 },
+    });
+    if (fplBootstrapRes.ok) {
+      const fplJson = await fplBootstrapRes.json();
+      for (const el of (fplJson.elements ?? [])) {
+        const webName = String(el.web_name ?? '').toLowerCase();
+        const fullName = `${el.first_name ?? ''} ${el.second_name ?? ''}`.trim().toLowerCase();
+        const stats = { goals: el.goals_scored ?? 0, assists: el.assists ?? 0 };
+        if (webName) fplTransferStats[webName] = stats;
+        if (fullName) fplTransferStats[fullName] = stats;
+      }
+    }
+  } catch { /* silently fail — stats tonen 0/0 als fallback */ }
 
   return (
     <main className="text-white overflow-x-hidden" style={{ background: '#0D0B2A' }}>
@@ -491,32 +524,62 @@ export default async function HomePage() {
         </div>
       </section>
 
-      {/* ── 4. KOOPTIPS VAN DE WEEK (white) ─────────────────────────── */}
-      <section id="kooptips" className="py-20 px-4 bg-white">
+      {/* ── 4. KOOPTIPS VAN DE WEEK (premium dark) ──────────────────── */}
+      <section
+        id="kooptips"
+        className="py-20 px-4"
+        style={{ background: 'linear-gradient(180deg, #070420 0%, #0D0B2A 100%)' }}
+      >
         <div className="max-w-8xl mx-auto">
           <SectionLabel>{kooptips ? `Gameweek ${kooptips.gameweek}` : 'Transfertips'}</SectionLabel>
-          <SectionTitleLight>Transfertips van de Week</SectionTitleLight>
+          <SectionTitleDark>Transfertips van de Week</SectionTitleDark>
 
           {kooptips && kooptips.buy_tip_players.length > 0 ? (
-            <div className="mt-10 grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-5 gap-4">
-              {kooptips.buy_tip_players.map((p, i) => (
-                <div key={i} className="card-lift bg-white border border-gray-100 hover:border-primary/30 rounded-2xl p-4 flex flex-col items-center text-center gap-3 transition-colors shadow-sm hover:shadow-md">
-                  <PlayerBadgeLight imageUrl={p.image_url} name={p.player_name} size={120} objectPosition="top" />
-                  <div>
-                    <p className="font-bold text-gray-900 text-sm leading-tight">{p.player_name ?? '—'}</p>
-                    <p className="text-xs text-gray-400 mt-0.5">{p.player_club}{p.position && ` · ${p.position}`}</p>
-                  </div>
-                  {p.price !== null && (
-                    <span className="text-xs font-bold bg-primary text-black px-3 py-1 rounded-full">£{Number(p.price).toFixed(1)}m</span>
-                  )}
-                  {p.motivation && (
-                    <p className="text-xs text-gray-500 italic leading-relaxed line-clamp-3">{p.motivation}</p>
-                  )}
-                </div>
-              ))}
+            <div className="mt-10 relative">
+              {/* Scrollbare kaarten rij */}
+              <div
+                style={{
+                  display: 'flex',
+                  gap: 16,
+                  overflowX: 'auto',
+                  scrollSnapType: 'x mandatory',
+                  paddingBottom: 8,
+                  scrollbarWidth: 'none',
+                } as React.CSSProperties}
+                className="[&::-webkit-scrollbar]:hidden"
+              >
+                {kooptips.buy_tip_players.map((p, i) => {
+                  const stats = lookupFplStats(p.player_name, fplTransferStats);
+                  return (
+                    <TransferTipCard
+                      key={i}
+                      playerName={p.player_name}
+                      playerClub={p.player_club}
+                      position={p.position}
+                      price={p.price}
+                      motivation={p.motivation}
+                      imageUrl={p.image_url}
+                      goals={stats.goals}
+                      assists={stats.assists}
+                    />
+                  );
+                })}
+              </div>
+              {/* Mobiele fade rechts */}
+              <div
+                className="block lg:hidden pointer-events-none"
+                style={{
+                  position: 'absolute',
+                  top: 0,
+                  right: 0,
+                  bottom: 8,
+                  width: 64,
+                  background: 'linear-gradient(to right, transparent, #0D0B2A)',
+                }}
+              />
             </div>
           ) : (
-            <EmptyPlaceholderLight message="Nog geen transfertips beschikbaar voor deze gameweek." />
+            <EmptyPlaceholderDark message="Nog geen transfertips beschikbaar voor deze gameweek." />
           )}
         </div>
       </section>
