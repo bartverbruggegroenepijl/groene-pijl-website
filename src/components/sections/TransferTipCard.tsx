@@ -44,8 +44,9 @@ export default function TransferTipCard({
         padding: '1.5px',
         border: hovered ? '1.5px solid rgba(255,215,0,1)' : '1.5px solid transparent',
         boxShadow: 'none',
+        transform: hovered ? 'translateY(-8px)' : 'translateY(0)',
         transition: 'all 0.3s ease',
-        cursor: 'default',
+        cursor: hovered ? 'pointer' : 'default',
       }}
       onMouseEnter={() => setHovered(true)}
       onMouseLeave={() => setHovered(false)}
