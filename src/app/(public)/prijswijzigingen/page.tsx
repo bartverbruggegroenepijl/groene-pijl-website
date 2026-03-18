@@ -1,6 +1,3 @@
-import { fetchPriceChanges } from '@/lib/fpl/prices';
-import { fetchGameweekInfo } from '@/lib/fpl/events';
-import PrijswijzigingenClient from './PrijswijzigingenClient';
 import Link from 'next/link';
 import { ArrowLeft } from 'lucide-react';
 
@@ -9,14 +6,7 @@ export const metadata = {
   description: 'Bekijk welke FPL-spelers in prijs zijn gestegen of gedaald deze gameweek.',
 };
 
-export default async function PrijswijzigingenPage() {
-  const [{ risers, fallers }, gwInfo] = await Promise.all([
-    fetchPriceChanges(),
-    fetchGameweekInfo(),
-  ]);
-
-  const currentGW = gwInfo.currentGW;
-
+export default function PrijswijzigingenPage() {
   return (
     <main
       style={{
@@ -47,7 +37,7 @@ export default async function PrijswijzigingenPage() {
         </Link>
 
         {/* Page header */}
-        <div style={{ marginBottom: 36 }}>
+        <div style={{ marginBottom: 40 }}>
           <span
             style={{
               display: 'inline-block',
@@ -60,7 +50,7 @@ export default async function PrijswijzigingenPage() {
               fontFamily: 'Montserrat, sans-serif',
             }}
           >
-            FPL Data{currentGW ? ` · Gameweek ${currentGW}` : ''}
+            FPL Data
           </span>
           <h1
             style={{
@@ -74,7 +64,7 @@ export default async function PrijswijzigingenPage() {
               marginBottom: 12,
             }}
           >
-            Prijswijzigingen
+            Verwachte Prijswijzigingen
           </h1>
           <p
             style={{
@@ -85,15 +75,57 @@ export default async function PrijswijzigingenPage() {
               maxWidth: 520,
             }}
           >
-            Spelers die deze gameweek in prijs zijn gestegen of gedaald op basis van transferactiviteit.
+            Bekijk de meest nauwkeurige voorspelling op LiveFPL.
           </p>
         </div>
 
-        {/* Client component: tabs + filters + kaarten */}
-        <PrijswijzigingenClient
-          risers={risers}
-          fallers={fallers}
-        />
+        {/* Clean blok */}
+        <div
+          style={{
+            borderRadius: 16,
+            background: 'rgba(255,255,255,0.05)',
+            border: '1px solid rgba(255,255,255,0.12)',
+            backdropFilter: 'blur(8px)',
+            WebkitBackdropFilter: 'blur(8px)',
+            padding: '48px 32px',
+            textAlign: 'center',
+            maxWidth: 620,
+            margin: '0 auto',
+          }}
+        >
+          <p
+            style={{
+              color: 'rgba(255,255,255,0.75)',
+              fontSize: 16,
+              fontFamily: 'Montserrat, sans-serif',
+              lineHeight: 1.7,
+              marginBottom: 32,
+            }}
+          >
+            Wil je weten welke spelers vanavond in prijs stijgen of dalen? LiveFPL biedt de meest nauwkeurige real-time prijsvoorspellingen.
+          </p>
+          <a
+            href="https://www.livefpl.net/prices"
+            target="_blank"
+            rel="noopener noreferrer"
+            style={{
+              display: 'inline-flex',
+              alignItems: 'center',
+              gap: 8,
+              padding: '16px 32px',
+              borderRadius: 14,
+              background: '#00FA61',
+              color: '#000',
+              fontSize: 16,
+              fontWeight: 700,
+              textDecoration: 'none',
+              fontFamily: 'Montserrat, sans-serif',
+            }}
+          >
+            Bekijk prijswijzigingen op LiveFPL →
+          </a>
+        </div>
+
       </div>
     </main>
   );
