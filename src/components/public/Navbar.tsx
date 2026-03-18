@@ -13,10 +13,11 @@ const navLinks = [
 ];
 
 const dataLinks = [
-  { label: 'Speler Statistieken',    href: '/statistieken',     desc: 'Premier League statistieken'  },
-  { label: 'Groene Pijl Competitie', href: '/rankings',         desc: 'Onze mini-league rankings'    },
-  { label: 'Spelerstatus',           href: '/spelerstatus',     desc: 'Blessures & beschikbaarheid'  },
-  { label: 'Wedstrijdplanner',       href: '/wedstrijdplanner', desc: 'Fixture Difficulty Rating'    },
+  { label: 'Speler Statistieken',    href: '/statistieken',                   desc: 'Premier League statistieken',  external: false },
+  { label: 'Groene Pijl Competitie', href: '/rankings',                       desc: 'Onze mini-league rankings',    external: false },
+  { label: 'Spelerstatus',           href: '/spelerstatus',                   desc: 'Blessures & beschikbaarheid',  external: false },
+  { label: 'Wedstrijdplanner',       href: '/wedstrijdplanner',               desc: 'Fixture Difficulty Rating',    external: false },
+  { label: 'Prijswijzigingen',       href: 'https://www.livefpl.net/prices',  desc: 'Stijgers & dalers deze GW',    external: true  },
 ];
 
 const managersLinks = [
@@ -118,17 +119,32 @@ export default function Navbar() {
 
               {dataOpen && (
                 <div className="absolute top-full left-1/2 -translate-x-1/2 mt-2 bg-navy-card border border-white/10 rounded-xl shadow-card-hover py-2 min-w-[220px] z-50">
-                  {dataLinks.map((item) => (
-                    <Link
-                      key={item.href}
-                      href={item.href}
-                      onClick={() => setDataOpen(false)}
-                      className="flex flex-col px-4 py-3 hover:bg-white/5 transition-colors"
-                    >
-                      <span className="text-white text-sm font-semibold">{item.label}</span>
-                      <span className="text-white/40 text-xs mt-0.5">{item.desc}</span>
-                    </Link>
-                  ))}
+                  {dataLinks.map((item) =>
+                    item.external ? (
+                      <a
+                        key={item.href}
+                        href={item.href}
+                        target="_blank"
+                        rel="noopener noreferrer"
+                        onClick={() => setDataOpen(false)}
+                        className="flex flex-col px-4 py-3 hover:bg-white/5 transition-colors"
+                        style={{ textDecoration: 'none' }}
+                      >
+                        <span className="text-white text-sm font-semibold">{item.label}</span>
+                        <span className="text-white/40 text-xs mt-0.5">{item.desc}</span>
+                      </a>
+                    ) : (
+                      <Link
+                        key={item.href}
+                        href={item.href}
+                        onClick={() => setDataOpen(false)}
+                        className="flex flex-col px-4 py-3 hover:bg-white/5 transition-colors"
+                      >
+                        <span className="text-white text-sm font-semibold">{item.label}</span>
+                        <span className="text-white/40 text-xs mt-0.5">{item.desc}</span>
+                      </Link>
+                    )
+                  )}
                 </div>
               )}
             </div>
@@ -287,24 +303,45 @@ export default function Navbar() {
               >
                 Data &amp; Inzichten
               </div>
-              {dataLinks.map((item) => (
-                <Link
-                  key={item.href}
-                  href={item.href}
-                  onClick={() => setMenuOpen(false)}
-                  style={{
-                    display: 'block',
-                    padding: '7px 24px 7px 36px',
-                    textDecoration: 'none',
-                    borderBottom: '1px solid rgba(255,255,255,0.05)',
-                    fontFamily: 'Montserrat, sans-serif',
-                  }}
-                >
-                  <span style={{ fontSize: 13, fontWeight: 600, color: 'rgba(255,255,255,0.85)', display: 'block' }}>
-                    {item.label}
-                  </span>
-                </Link>
-              ))}
+              {dataLinks.map((item) =>
+                item.external ? (
+                  <a
+                    key={item.href}
+                    href={item.href}
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    onClick={() => setMenuOpen(false)}
+                    style={{
+                      display: 'block',
+                      padding: '7px 24px 7px 36px',
+                      textDecoration: 'none',
+                      borderBottom: '1px solid rgba(255,255,255,0.05)',
+                      fontFamily: 'Montserrat, sans-serif',
+                    }}
+                  >
+                    <span style={{ fontSize: 13, fontWeight: 600, color: 'rgba(255,255,255,0.85)', display: 'block' }}>
+                      {item.label}
+                    </span>
+                  </a>
+                ) : (
+                  <Link
+                    key={item.href}
+                    href={item.href}
+                    onClick={() => setMenuOpen(false)}
+                    style={{
+                      display: 'block',
+                      padding: '7px 24px 7px 36px',
+                      textDecoration: 'none',
+                      borderBottom: '1px solid rgba(255,255,255,0.05)',
+                      fontFamily: 'Montserrat, sans-serif',
+                    }}
+                  >
+                    <span style={{ fontSize: 13, fontWeight: 600, color: 'rgba(255,255,255,0.85)', display: 'block' }}>
+                      {item.label}
+                    </span>
+                  </Link>
+                )
+              )}
 
               {/* ── Managers sectie ── */}
               <div
