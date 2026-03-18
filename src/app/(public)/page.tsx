@@ -132,11 +132,11 @@ function formatDate(iso: string): string {
 
 const CAPTAIN_RANKS = [
   { rank: 1, emoji: '🥇', label: '1e Keuze', textColor: 'text-yellow-500',
-    cardBg: '#ffffff', cardBorder: '3px solid #FFD700', cardShadow: '0 4px 20px rgba(255,215,0,0.3)' },
+    cardBg: 'rgba(255,255,255,0.75)', cardBorder: '3px solid #FFD700', cardShadow: '0 4px 20px rgba(255,215,0,0.3)' },
   { rank: 2, emoji: '🥈', label: '2e Keuze', textColor: 'text-gray-500',
-    cardBg: '#ffffff', cardBorder: '3px solid #C0C0C0', cardShadow: '0 4px 20px rgba(192,192,192,0.3)' },
+    cardBg: 'rgba(255,255,255,0.75)', cardBorder: '3px solid #C0C0C0', cardShadow: '0 4px 20px rgba(192,192,192,0.3)' },
   { rank: 3, emoji: '🥉', label: '3e Keuze', textColor: 'text-orange-500',
-    cardBg: '#ffffff', cardBorder: '3px solid #CD7F32', cardShadow: '0 4px 20px rgba(205,127,50,0.3)' },
+    cardBg: 'rgba(255,255,255,0.75)', cardBorder: '3px solid #CD7F32', cardShadow: '0 4px 20px rgba(205,127,50,0.3)' },
 ];
 
 // FDR kleurschema (1=makkelijk → 5=heel moeilijk)
@@ -504,7 +504,7 @@ export default async function HomePage() {
               {captainPlayers.slice(0, 3).map((p) => {
                 const cfg = CAPTAIN_RANKS.find((r) => r.rank === p.rank) ?? CAPTAIN_RANKS[2];
                 return (
-                  <div key={p.rank} className="card-lift rounded-2xl p-6 flex flex-col gap-4" style={{ background: cfg.cardBg, border: cfg.cardBorder, boxShadow: cfg.cardShadow }}>
+                  <div key={p.rank} className="card-lift rounded-2xl p-6 flex flex-col gap-4" style={{ background: cfg.cardBg, backdropFilter: 'blur(8px)', WebkitBackdropFilter: 'blur(8px)', border: cfg.cardBorder, boxShadow: cfg.cardShadow }}>
                     <div className="flex items-center gap-2">
                       <span className="text-2xl">{cfg.emoji}</span>
                       <span className={`text-sm font-semibold ${cfg.textColor} uppercase tracking-wide`}>{cfg.label}</span>
