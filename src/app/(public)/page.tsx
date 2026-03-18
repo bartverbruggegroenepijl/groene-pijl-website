@@ -507,7 +507,7 @@ export default async function HomePage() {
                   <div key={p.rank} className="card-lift rounded-2xl p-6 flex flex-col gap-4" style={{ background: cfg.cardBg, backdropFilter: 'blur(8px)', WebkitBackdropFilter: 'blur(8px)', border: cfg.cardBorder, boxShadow: cfg.cardShadow }}>
                     <div className="flex items-center gap-2">
                       <span className="text-2xl">{cfg.emoji}</span>
-                      <span className={`text-sm font-semibold ${cfg.textColor} uppercase tracking-wide`}>{cfg.label}</span>
+                      <span style={{ fontSize: 13, fontWeight: 800, color: '#1F0E84', letterSpacing: '0.5px', textTransform: 'uppercase', fontFamily: 'Montserrat, sans-serif' }}>{cfg.label}</span>
                     </div>
                     <div className="flex items-center gap-4">
                       <PlayerBadgeLight imageUrl={p.image_url} name={p.player_name} size={120} objectPosition="top" />
@@ -543,13 +543,22 @@ export default async function HomePage() {
                         })()}
                       </div>
                     </div>
-                    {/* xG per 90 + xA per 90 */}
+                    {/* Seizoen goals/assists links + xG/xA per 90 rechts */}
                     {(() => {
                       const cs = lookupCaptainStats(p.player_name, fplCaptainStats);
+                      const ss = lookupFplStats(p.player_name, fplTransferStats);
                       return (
-                        <div style={{ display: 'flex', gap: 16, fontSize: 13, fontWeight: 600, color: '#1F0E84', padding: '4px 0' }}>
-                          <span>⚽ xG/90: <strong style={{ color: '#1F0E84' }}>{cs.xgPer90}</strong></span>
-                          <span>🅰️ xA/90: <strong style={{ color: '#1F0E84' }}>{cs.xaPer90}</strong></span>
+                        <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', fontSize: 13, fontWeight: 600, color: '#1F0E84', padding: '4px 0' }}>
+                          {/* Seizoen totalen — links */}
+                          <div style={{ display: 'flex', gap: 10 }}>
+                            <span>⚽ {ss.goals}</span>
+                            <span>🅰️ {ss.assists}</span>
+                          </div>
+                          {/* xG/xA per 90 — rechts */}
+                          <div style={{ display: 'flex', gap: 10 }}>
+                            <span>⚽ xG/90: <strong style={{ color: '#1F0E84' }}>{cs.xgPer90}</strong></span>
+                            <span>🅰️ xA/90: <strong style={{ color: '#1F0E84' }}>{cs.xaPer90}</strong></span>
+                          </div>
                         </div>
                       );
                     })()}
