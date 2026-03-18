@@ -197,7 +197,7 @@ export default function TransferTipCard({
             left: 0,
             right: 0,
             background:
-              'linear-gradient(to bottom, transparent, rgba(5,2,20,0.88) 28%, rgba(5,2,20,0.97) 100%)',
+              'linear-gradient(to bottom, transparent 0%, rgba(0,0,0,0.3) 50%, rgba(0,0,0,0.6) 100%)',
             padding: '22px 8px 8px',
             zIndex: 3,
             textAlign: 'center',
