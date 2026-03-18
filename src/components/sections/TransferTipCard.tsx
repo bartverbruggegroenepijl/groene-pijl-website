@@ -72,6 +72,7 @@ export default function TransferTipCard({
           <img
             src={imageUrl}
             alt={playerName ?? ''}
+            className="transfer-tip-photo"
             style={{
               position: 'absolute',
               top: 0,

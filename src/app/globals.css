@@ -132,11 +132,46 @@ body {
   gap: 20px;
   width: 100%;
 }
+
+/* Mobiel: horizontale swipe */
 @media (max-width: 768px) {
-  .transfertips-grid { grid-template-columns: repeat(2, 1fr); }
+  .transfertips-grid {
+    display: flex;
+    overflow-x: auto;
+    scroll-snap-type: x mandatory;
+    -webkit-overflow-scrolling: touch;
+    gap: 16px;
+    padding: 0 24px 8px;
+    scrollbar-width: none;
+    width: calc(100% + 0px);
+  }
+  .transfertips-grid::-webkit-scrollbar { display: none; }
+  .transfertips-grid > * {
+    flex: 0 0 85vw;
+    scroll-snap-align: center;
+  }
 }
-@media (max-width: 480px) {
-  .transfertips-grid { grid-template-columns: 1fr; }
+
+/* Dots indicator */
+.transfertips-dots {
+  display: none; /* verborgen op desktop */
+}
+@media (max-width: 768px) {
+  .transfertips-dots {
+    display: flex;
+    justify-content: center;
+    gap: 6px;
+    margin-top: 16px;
+  }
+}
+
+/* Mobiel: foto minder ingezoomd */
+@media (max-width: 768px) {
+  .transfer-tip-photo {
+    object-fit: contain !important;
+    object-position: center top !important;
+    transform: none !important;
+  }
 }
 
 /* Hero section — mobiel responsive (desktop ONGEWIJZIGD) */

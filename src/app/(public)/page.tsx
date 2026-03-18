@@ -18,6 +18,7 @@ import type { NextFixture } from '@/lib/fpl/fixtures';
 import HeroSection from '@/components/sections/HeroSection';
 import TeamVanDeWeekSection from '@/components/sections/TeamVanDeWeekSection';
 import TransferTipCard from '@/components/sections/TransferTipCard';
+import TransferTipsSlider from '@/components/sections/TransferTipsSlider';
 
 // ─── Types ────────────────────────────────────────────────────────────────────
 
@@ -539,7 +540,7 @@ export default async function HomePage() {
           </h2>
 
           {kooptips && kooptips.buy_tip_players.length > 0 ? (
-            <div className="transfertips-grid mt-10">
+            <TransferTipsSlider count={kooptips.buy_tip_players.length}>
               {kooptips.buy_tip_players.map((p, i) => {
                 const stats = lookupFplStats(p.player_name, fplTransferStats);
                 return (
@@ -556,7 +557,7 @@ export default async function HomePage() {
                   />
                 );
               })}
-            </div>
+            </TransferTipsSlider>
           ) : (
             <EmptyPlaceholderDark message="Nog geen transfertips beschikbaar voor deze gameweek." />
           )}
