@@ -696,13 +696,13 @@ export default async function HomePage() {
         </div>
       </section>
 
-      {/* ── 6. ARTIKELEN & ANALYSE (white) ──────────────────────────── */}
-      <section id="artikelen" className="py-20 px-4 bg-white">
+      {/* ── 6. ARTIKELEN & ANALYSE (gradient) ───────────────────────── */}
+      <section id="artikelen" className="py-20 px-4" style={{ backgroundImage: "url('/gradient-bg.png')", backgroundSize: 'cover', backgroundPosition: 'center', borderTop: '2px solid rgba(0,250,97,0.18)' }}>
         <div className="max-w-8xl mx-auto">
           <div className="flex items-end justify-between mb-10">
             <div>
               <SectionLabel>Blog</SectionLabel>
-              <SectionTitleLight>Artikelen &amp; Analyse</SectionTitleLight>
+              <h2 className="text-3xl sm:text-4xl lg:text-5xl font-bold leading-tight" style={{ color: '#ffffff' }}>Artikelen &amp; Analyse</h2>
             </div>
             <Link href="/artikelen" className="hidden sm:inline-flex items-center gap-1.5 text-primary hover:text-primary/80 text-sm font-semibold transition-colors">
               Alle artikelen <ArrowRight size={14} />
@@ -712,7 +712,7 @@ export default async function HomePage() {
           {articles.length > 0 ? (
             <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
               {articles.map((a) => (
-                <article key={a.id} className="card-lift bg-white border border-gray-100 hover:border-primary/20 rounded-2xl overflow-hidden group transition-colors shadow-sm hover:shadow-lg">
+                <article key={a.id} className="card-lift rounded-2xl overflow-hidden group transition-all" style={{ background: 'rgba(255,255,255,0.08)', border: '1px solid rgba(255,255,255,0.12)', backdropFilter: 'blur(8px)', WebkitBackdropFilter: 'blur(8px)' }}>
                   <div className="relative h-44 bg-gray-100">
                     {a.cover_image ? (
                       <Image src={a.cover_image} alt={a.title} fill className="object-cover group-hover:scale-105 transition-transform duration-300" />
@@ -726,12 +726,12 @@ export default async function HomePage() {
                     )}
                   </div>
                   <div className="p-5">
-                    <div className="flex items-center gap-2 text-xs text-gray-400 mb-2">
+                    <div className="flex items-center gap-2 text-xs mb-2" style={{ color: 'rgba(255,255,255,0.7)' }}>
                       {a.managers?.name && <span>{a.managers.name}</span>}
                       {a.published_at && <><span>·</span><span>{formatDate(a.published_at)}</span></>}
                     </div>
-                    <h3 className="font-bold text-lg text-gray-900 mb-2 leading-snug group-hover:text-primary transition-colors line-clamp-2">{a.title}</h3>
-                    {a.excerpt && <p className="text-sm text-gray-500 leading-relaxed line-clamp-2 mb-4">{a.excerpt}</p>}
+                    <h3 className="font-bold text-lg mb-2 leading-snug group-hover:text-primary transition-colors line-clamp-2" style={{ color: '#ffffff' }}>{a.title}</h3>
+                    {a.excerpt && <p className="text-sm leading-relaxed line-clamp-2 mb-4" style={{ color: 'rgba(255,255,255,0.65)' }}>{a.excerpt}</p>}
                     <Link href={`/artikelen/${a.slug}`} className="inline-flex items-center gap-1 text-primary text-sm font-semibold hover:underline">
                       Lees meer <ArrowRight size={12} />
                     </Link>
