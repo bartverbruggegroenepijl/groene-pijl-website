@@ -164,7 +164,7 @@ function SectionLabel({ children }: { children: React.ReactNode }) {
 function SectionTitleDark({ children }: { children: React.ReactNode }) {
   return (
     <h2 className="text-3xl sm:text-4xl lg:text-5xl font-bold leading-tight border-l-4 pl-4"
-        style={{ color: '#1F0E84', borderColor: '#00FA61' }}>
+        style={{ color: '#ffffff', borderColor: '#00FA61' }}>
       {children}
     </h2>
   );
