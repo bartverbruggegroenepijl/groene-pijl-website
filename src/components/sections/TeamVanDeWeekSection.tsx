@@ -554,9 +554,10 @@ export default function TeamVanDeWeekSection({ team }: Props) {
         paddingBottom: 0,
         paddingLeft: 16,
         paddingRight: 16,
-        background: 'linear-gradient(180deg, #050318 0%, #0a0628 30%, #0d0835 70%, #1a1361 100%)',
+        backgroundImage: "url('/gradient-bg.png')",
+        backgroundSize: 'cover',
+        backgroundPosition: 'center',
         borderTop: '2px solid rgba(0,250,97,0.18)',
-        overflow: 'hidden',
         fontFamily: 'Montserrat, sans-serif',
       }}
     >
@@ -574,71 +575,18 @@ export default function TeamVanDeWeekSection({ team }: Props) {
           from { opacity: 0; transform: translateX(-50%) translateY(6px); }
           to   { opacity: 1; transform: translateX(-50%) translateY(0); }
         }
-        @keyframes floodlight {
-          0%, 100% { opacity: 0.6; }
-          50%       { opacity: 1; }
-        }
       `}</style>
 
-      {/* ── Schijnwerpers ─────────────────────────────────────────────────── */}
-      {/* Linker schijnwerper */}
-      <div
-        style={{
-          position: 'absolute',
-          top: -80,
-          left: -60,
-          width: 600,
-          height: 600,
-          background:
-            'radial-gradient(ellipse at top left, rgba(255,255,220,0.18) 0%, rgba(255,255,180,0.06) 30%, transparent 65%)',
-          transform: 'rotate(20deg)',
-          pointerEvents: 'none',
-          zIndex: 1,
-          animation: 'floodlight 5s ease-in-out infinite',
-        }}
-      />
-      {/* Rechter schijnwerper */}
-      <div
-        style={{
-          position: 'absolute',
-          top: -80,
-          right: -60,
-          width: 600,
-          height: 600,
-          background:
-            'radial-gradient(ellipse at top right, rgba(255,255,220,0.18) 0%, rgba(255,255,180,0.06) 30%, transparent 65%)',
-          transform: 'rotate(-20deg)',
-          pointerEvents: 'none',
-          zIndex: 1,
-          animation: 'floodlight 5s ease-in-out infinite 2.5s',
-        }}
-      />
-      {/* Stadion publiek suggestie */}
-      <div
-        style={{
-          position: 'absolute',
-          top: 60,
-          left: 0,
-          right: 0,
-          height: 80,
-          background: 'linear-gradient(180deg, rgba(255,255,255,0.04) 0%, rgba(255,255,255,0.01) 60%, transparent 100%)',
-          pointerEvents: 'none',
-          zIndex: 1,
-        }}
-      />
+      {/* ── Overlay ───────────────────────────────────────────────────────── */}
+      <div style={{ position: 'absolute', inset: 0, background: 'radial-gradient(ellipse at 80% 50%, rgba(0,250,97,0.12) 0%, rgba(200,33,195,0.1) 40%, transparent 65%)', pointerEvents: 'none' }} />
 
       {/* ── Content ───────────────────────────────────────────────────────── */}
       <div
         style={{
           maxWidth: 760,
           margin: '0 auto',
-          backgroundImage: "url('/gradient-bg.png')",
-          backgroundSize: 'cover',
-          backgroundPosition: 'center',
-          borderRadius: '16px',
           position: 'relative',
-          overflow: 'hidden',
-          zIndex: 2,
+          zIndex: 1,
           opacity: pitchOpacity,
           transition: 'opacity 220ms ease',
         }}
