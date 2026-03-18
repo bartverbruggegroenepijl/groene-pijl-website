@@ -1380,11 +1380,11 @@ export default function TeambouwerPage() {
             <div className="lg:w-[40%] flex flex-col gap-4" style={{ fontFamily: 'Montserrat, sans-serif' }}>
 
               {/* ── PITCH BOX ── */}
-              <div style={{ borderRadius: 16, overflow: 'hidden', border: '1px solid rgba(255,255,255,0.08)', background: '#050312' }}>
+              <div style={{ borderRadius: 16, overflow: 'hidden', border: '1px solid rgba(255,255,255,0.08)', background: '#1F0E84' }}>
 
                 {/* GW navigatie balk */}
                 <div style={{
-                  background: 'rgba(10,6,45,0.97)',
+                  background: 'rgba(31,14,132,0.95)',
                   backdropFilter: 'blur(12px)',
                   WebkitBackdropFilter: 'blur(12px)',
                   padding: '10px 16px',
@@ -1411,7 +1411,7 @@ export default function TeambouwerPage() {
                   </button>
 
                   <div style={{ textAlign: 'center', flex: 1 }}>
-                    <div style={{ color: '#00FA61', fontWeight: 800, fontSize: 14, fontFamily: 'Montserrat, sans-serif', letterSpacing: '-0.01em', display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 6 }}>
+                    <div style={{ color: '#ffffff', fontWeight: 800, fontSize: 14, fontFamily: 'Montserrat, sans-serif', letterSpacing: '-0.01em', display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 6 }}>
                       {currentGW ? `Gameweek ${currentGW}` : '—'}
                       {hasGwChanges && (
                         <span
@@ -1428,7 +1428,7 @@ export default function TeambouwerPage() {
                       )}
                     </div>
                     {formattedDeadline && (
-                      <div style={{ color: 'rgba(255,255,255,0.35)', fontSize: 10, marginTop: 1, fontFamily: 'Montserrat, sans-serif' }}>
+                      <div style={{ color: 'rgba(255,255,255,0.7)', fontSize: 10, marginTop: 1, fontFamily: 'Montserrat, sans-serif' }}>
                         Deadline: {formattedDeadline}
                       </div>
                     )}
@@ -1535,7 +1535,7 @@ export default function TeambouwerPage() {
                   borderBottom: '1px solid rgba(255,255,255,0.04)',
                 }}>
                   <div style={{ flex: 1, textAlign: 'center' }}>
-                    <div style={{ color: 'rgba(255,255,255,0.28)', fontSize: 8, textTransform: 'uppercase', letterSpacing: '0.12em', marginBottom: 2, fontFamily: 'Montserrat, sans-serif' }}>
+                    <div style={{ color: 'rgba(255,255,255,0.6)', fontSize: 8, textTransform: 'uppercase', letterSpacing: '0.12em', marginBottom: 2, fontFamily: 'Montserrat, sans-serif' }}>
                       In the bank
                     </div>
                     <div style={{ fontWeight: 800, fontSize: 15, fontFamily: 'Montserrat, sans-serif', lineHeight: 1, color: gwBudgetRemaining >= 0 ? '#00FA61' : '#FF4444' }}>
@@ -1543,10 +1543,10 @@ export default function TeambouwerPage() {
                     </div>
                   </div>
                   <div style={{ textAlign: 'center', padding: '0 10px' }}>
-                    <div style={{ color: 'rgba(255,255,255,0.28)', fontSize: 8, textTransform: 'uppercase', letterSpacing: '0.12em', marginBottom: 2, fontFamily: 'Montserrat, sans-serif' }}>
+                    <div style={{ color: 'rgba(255,255,255,0.6)', fontSize: 8, textTransform: 'uppercase', letterSpacing: '0.12em', marginBottom: 2, fontFamily: 'Montserrat, sans-serif' }}>
                       Formatie
                     </div>
-                    <div style={{ fontWeight: 800, fontSize: 15, fontFamily: 'Montserrat, sans-serif', lineHeight: 1, color: hasGwChanges ? '#00FA61' : '#fff' }}>
+                    <div style={{ fontWeight: 800, fontSize: 15, fontFamily: 'Montserrat, sans-serif', lineHeight: 1, color: '#00FA61' }}>
                       {effectiveGwFormation}
                     </div>
                   </div>
@@ -1556,8 +1556,8 @@ export default function TeambouwerPage() {
                         onClick={resetCurrentGw}
                         style={{
                           padding: '4px 9px', borderRadius: 6, fontSize: 9, fontWeight: 600,
-                          background: 'rgba(255,100,100,0.12)', color: '#F87171',
-                          border: '1px solid rgba(255,100,100,0.2)', cursor: 'pointer',
+                          background: 'rgba(255,255,255,0.1)', color: '#ffffff',
+                          border: '1px solid rgba(255,255,255,0.2)', cursor: 'pointer',
                           display: 'flex', alignItems: 'center', gap: 3,
                           fontFamily: 'Montserrat, sans-serif',
                         }}
@@ -1571,8 +1571,8 @@ export default function TeambouwerPage() {
                         onClick={resetAll}
                         style={{
                           padding: '4px 9px', borderRadius: 6, fontSize: 9, fontWeight: 600,
-                          background: 'rgba(255,255,255,0.05)', color: 'rgba(255,255,255,0.4)',
-                          border: '1px solid rgba(255,255,255,0.12)', cursor: 'pointer',
+                          background: 'rgba(255,255,255,0.1)', color: '#ffffff',
+                          border: '1px solid rgba(255,255,255,0.2)', cursor: 'pointer',
                           display: 'flex', alignItems: 'center', gap: 3,
                           fontFamily: 'Montserrat, sans-serif',
                         }}
@@ -1806,13 +1806,13 @@ export default function TeambouwerPage() {
 
                     {/* Bank sectie */}
                     <div style={{
-                      background: 'rgba(5,3,16,0.92)',
+                      background: 'rgba(31,14,132,0.9)',
                       borderTop: '1px solid rgba(255,255,255,0.06)',
                       padding: '12px 12px 16px',
                     }}>
                       <div style={{
                         fontSize: 8, fontWeight: 700,
-                        color: 'rgba(255,255,255,0.22)',
+                        color: '#00FA61',
                         textTransform: 'uppercase', letterSpacing: '0.18em',
                         textAlign: 'center', marginBottom: 12,
                         fontFamily: 'Montserrat, sans-serif',
