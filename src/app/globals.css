@@ -128,14 +128,15 @@ body {
 /* ── Transfertips kaarten grid ───────────────────────────────────────────── */
 .transfertips-grid {
   display: grid;
-  grid-template-columns: repeat(auto-fit, minmax(150px, 1fr));
-  gap: 16px;
+  grid-template-columns: repeat(5, 1fr);
+  gap: 20px;
+  width: 100%;
 }
 @media (max-width: 768px) {
   .transfertips-grid { grid-template-columns: repeat(2, 1fr); }
 }
 @media (max-width: 480px) {
-  .transfertips-grid { grid-template-columns: repeat(1, 1fr); }
+  .transfertips-grid { grid-template-columns: 1fr; }
 }
 
 /* Hero section — mobiel responsive (desktop ONGEWIJZIGD) */

@@ -524,15 +524,19 @@ export default async function HomePage() {
         </div>
       </section>
 
-      {/* ── 4. KOOPTIPS VAN DE WEEK (premium dark) ──────────────────── */}
+      {/* ── 4. KOOPTIPS VAN DE WEEK (wit blok) ──────────────────────── */}
       <section
         id="kooptips"
         className="py-20 px-4"
-        style={{ background: 'linear-gradient(180deg, #070420 0%, #0D0B2A 100%)' }}
+        style={{ background: '#ffffff', color: '#1F0E84' }}
       >
         <div className="max-w-8xl mx-auto">
-          <SectionLabel>{kooptips ? `Gameweek ${kooptips.gameweek}` : 'Transfertips'}</SectionLabel>
-          <SectionTitleDark>Transfertips van de Week</SectionTitleDark>
+          <span style={{ display: 'inline-block', color: '#1F0E84', fontSize: 12, fontWeight: 700, textTransform: 'uppercase', letterSpacing: '0.2em', marginBottom: 8, fontFamily: 'Montserrat, sans-serif' }}>
+            {kooptips ? `Gameweek ${kooptips.gameweek}` : 'Transfertips'}
+          </span>
+          <h2 style={{ color: '#1F0E84', fontSize: 'clamp(28px, 4vw, 48px)', fontWeight: 800, lineHeight: 1.1, fontFamily: 'Montserrat, sans-serif', margin: 0 }}>
+            Transfertips van de Week
+          </h2>
 
           {kooptips && kooptips.buy_tip_players.length > 0 ? (
             <div className="transfertips-grid mt-10">
