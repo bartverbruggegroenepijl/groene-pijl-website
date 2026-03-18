@@ -79,7 +79,9 @@ export default function TransferTipCard({
               width: '100%',
               height: '100%',
               objectFit: 'cover',
-              objectPosition: 'top center',
+              objectPosition: 'center top',
+              transform: 'scale(0.85)',
+              transformOrigin: 'top center',
             }}
           />
         )}
