@@ -12,8 +12,8 @@ const navLinks = [
 ];
 
 const teamLinks = [
-  { label: 'Bouw Mijn Team',   href: '/teambouwer'       },
-  { label: 'Wedstrijdplanner', href: '/wedstrijdplanner' },
+  { label: 'Bouw Mijn Team',   href: '/teambouwer',       desc: 'Stel jouw ideale FPL-elftal samen'  },
+  { label: 'Wedstrijdplanner', href: '/wedstrijdplanner', desc: 'Fixture Difficulty Rating per team'  },
 ];
 
 const dataLinks = [
@@ -124,9 +124,10 @@ export default function Navbar() {
                       key={item.href}
                       href={item.href}
                       onClick={() => setTeamOpen(false)}
-                      className="flex px-4 py-3 hover:bg-white/5 transition-colors"
+                      className="flex flex-col px-4 py-3 hover:bg-white/5 transition-colors"
                     >
                       <span className="text-white text-sm font-semibold">{item.label}</span>
+                      <span className="text-white/40 text-xs mt-0.5">{item.desc}</span>
                     </Link>
                   ))}
                 </div>
