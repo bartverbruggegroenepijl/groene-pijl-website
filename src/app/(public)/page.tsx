@@ -593,6 +593,7 @@ export default async function HomePage() {
             <TransferTipsSlider count={kooptips.buy_tip_players.length}>
               {kooptips.buy_tip_players.map((p, i) => {
                 const stats = lookupFplStats(p.player_name, fplTransferStats);
+                const captainStats = lookupCaptainStats(p.player_name, fplCaptainStats);
                 return (
                   <TransferTipCard
                     key={i}
@@ -604,6 +605,8 @@ export default async function HomePage() {
                     imageUrl={p.image_url}
                     goals={stats.goals}
                     assists={stats.assists}
+                    xgPer90={captainStats.xgPer90}
+                    xaPer90={captainStats.xaPer90}
                   />
                 );
               })}

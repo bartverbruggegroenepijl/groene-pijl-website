@@ -176,6 +176,33 @@ body {
   }
 }
 
+/* xG/xA info panel op TransferTipCard */
+@keyframes xgFadeIn {
+  from { opacity: 0; }
+  to   { opacity: 1; }
+}
+
+.xg-info-panel {
+  position: absolute;
+  left: calc(100% + 10px);
+  top: 50%;
+  transform: translateY(-50%);
+  pointer-events: none;
+  z-index: 20;
+  white-space: nowrap;
+  animation: xgFadeIn 0.2s ease;
+}
+
+@media (max-width: 768px) {
+  .xg-info-panel {
+    position: static;
+    transform: none;
+    margin-top: 6px;
+    width: 100%;
+    pointer-events: auto;
+  }
+}
+
 /* Hero: "Bouw mijn team" knop — :active state voor mobiel touch */
 .hero-team-btn:active {
   background: #00FA61 !important;

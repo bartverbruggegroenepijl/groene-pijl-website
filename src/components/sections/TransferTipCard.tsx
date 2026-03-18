@@ -11,6 +11,8 @@ interface TransferTipCardProps {
   imageUrl: string | null
   goals: number
   assists: number
+  xgPer90?: string
+  xaPer90?: string
 }
 
 const POSITION_LABELS: Record<string, string> = {
@@ -27,12 +29,17 @@ export default function TransferTipCard({
   imageUrl,
   goals,
   assists,
+  xgPer90 = '–',
+  xaPer90 = '–',
 }: TransferTipCardProps) {
   const [hovered, setHovered] = useState(false)
+  const [mobileOpen, setMobileOpen] = useState(false)
 
   const posLabel = position
     ? (POSITION_LABELS[position] ?? position.slice(0, 3).toUpperCase())
     : null
+
+  const showPanel = hovered || mobileOpen
 
   return (
     <div
@@ -47,9 +54,11 @@ export default function TransferTipCard({
         transform: hovered ? 'translateY(-8px)' : 'translateY(0)',
         transition: 'all 0.3s ease',
         cursor: hovered ? 'pointer' : 'default',
+        position: 'relative',
       }}
       onMouseEnter={() => setHovered(true)}
-      onMouseLeave={() => setHovered(false)}
+      onMouseLeave={() => { setHovered(false); setMobileOpen(false); }}
+      onClick={() => setMobileOpen(prev => !prev)}
     >
       {/* ── Inner card ──────────────────────────────────────────────── */}
       <div
@@ -252,6 +261,31 @@ export default function TransferTipCard({
           )}
         </div>
       </div>
+
+      {/* ── xG/xA info panel ─────────────────────────────────────── */}
+      {showPanel && (
+        <div className="xg-info-panel">
+          <div
+            style={{
+              background: 'rgba(10,6,45,0.95)',
+              border: '1px solid rgba(0,250,97,0.3)',
+              borderRadius: 8,
+              padding: '8px 12px',
+              fontFamily: 'Montserrat, sans-serif',
+              animation: 'xgFadeIn 0.2s ease',
+            }}
+          >
+            <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', gap: 16, color: '#fff', fontSize: 12, fontWeight: 600, marginBottom: 4 }}>
+              <span style={{ color: 'rgba(255,255,255,0.7)' }}>⚽ xG/90</span>
+              <span style={{ color: '#00FA61', fontWeight: 700 }}>{xgPer90}</span>
+            </div>
+            <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', gap: 16, color: '#fff', fontSize: 12, fontWeight: 600 }}>
+              <span style={{ color: 'rgba(255,255,255,0.7)' }}>🅰️ xA/90</span>
+              <span style={{ color: '#00FA61', fontWeight: 700 }}>{xaPer90}</span>
+            </div>
+          </div>
+        </div>
+      )}
     </div>
   )
 }
