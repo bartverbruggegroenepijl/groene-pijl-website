@@ -176,6 +176,14 @@ body {
   }
 }
 
+/* Hero: "Bouw mijn team" knop — :active state voor mobiel touch */
+.hero-team-btn:active {
+  background: #00FA61 !important;
+  color: #1F0E84 !important;
+  transform: translateY(-2px) !important;
+  box-shadow: 0 8px 25px rgba(0, 250, 97, 0.4) !important;
+}
+
 /* Hero section — mobiel responsive (desktop ONGEWIJZIGD) */
 @media (max-width: 768px) {
   /* Section: min-height auto, clean column layout */

@@ -124,6 +124,7 @@ export default function HeroSection({ currentGameweek, latestEpisodeUrl }: HeroS
           </a>
           <a
             href="/teambouwer"
+            className="hero-team-btn"
             onMouseEnter={() => setTeamBtnHovered(true)}
             onMouseLeave={() => setTeamBtnHovered(false)}
             style={{
