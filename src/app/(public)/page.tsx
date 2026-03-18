@@ -131,15 +131,12 @@ function formatDate(iso: string): string {
 }
 
 const CAPTAIN_RANKS = [
-  { rank: 1, emoji: '🥇', label: '1e Keuze', borderColor: 'border-yellow-400', textColor: 'text-yellow-500', bgColor: 'bg-yellow-50',
-    gradientBg: 'linear-gradient(135deg, rgba(255,215,0,0.08) 0%, rgba(255,215,0,0.03) 50%, transparent 100%)',
-    borderStyle: '1px solid rgba(255,215,0,0.2)' },
-  { rank: 2, emoji: '🥈', label: '2e Keuze', borderColor: 'border-gray-300',   textColor: 'text-gray-500',   bgColor: 'bg-gray-50',
-    gradientBg: 'linear-gradient(135deg, rgba(192,192,192,0.08) 0%, rgba(192,192,192,0.03) 50%, transparent 100%)',
-    borderStyle: '1px solid rgba(192,192,192,0.2)' },
-  { rank: 3, emoji: '🥉', label: '3e Keuze', borderColor: 'border-orange-400', textColor: 'text-orange-500', bgColor: 'bg-orange-50',
-    gradientBg: 'linear-gradient(135deg, rgba(205,127,50,0.08) 0%, rgba(205,127,50,0.03) 50%, transparent 100%)',
-    borderStyle: '1px solid rgba(205,127,50,0.2)' },
+  { rank: 1, emoji: '🥇', label: '1e Keuze', textColor: 'text-yellow-500',
+    cardBg: '#ffffff', cardBorder: '3px solid #FFD700', cardShadow: '0 4px 20px rgba(255,215,0,0.3)' },
+  { rank: 2, emoji: '🥈', label: '2e Keuze', textColor: 'text-gray-500',
+    cardBg: '#ffffff', cardBorder: '3px solid #C0C0C0', cardShadow: '0 4px 20px rgba(192,192,192,0.3)' },
+  { rank: 3, emoji: '🥉', label: '3e Keuze', textColor: 'text-orange-500',
+    cardBg: '#ffffff', cardBorder: '3px solid #CD7F32', cardShadow: '0 4px 20px rgba(205,127,50,0.3)' },
 ];
 
 // FDR kleurschema (1=makkelijk → 5=heel moeilijk)
@@ -500,7 +497,7 @@ export default async function HomePage() {
               {captainPlayers.slice(0, 3).map((p) => {
                 const cfg = CAPTAIN_RANKS.find((r) => r.rank === p.rank) ?? CAPTAIN_RANKS[2];
                 return (
-                  <div key={p.rank} className="card-lift rounded-2xl p-6 flex flex-col gap-4" style={{ background: cfg.gradientBg, border: cfg.borderStyle }}>
+                  <div key={p.rank} className="card-lift rounded-2xl p-6 flex flex-col gap-4" style={{ background: cfg.cardBg, border: cfg.cardBorder, boxShadow: cfg.cardShadow }}>
                     <div className="flex items-center gap-2">
                       <span className="text-2xl">{cfg.emoji}</span>
                       <span className={`text-sm font-semibold ${cfg.textColor} uppercase tracking-wide`}>{cfg.label}</span>
@@ -508,8 +505,8 @@ export default async function HomePage() {
                     <div className="flex items-center gap-4">
                       <PlayerBadgeLight imageUrl={p.image_url} name={p.player_name} size={120} objectPosition="top" />
                       <div>
-                        <p className="text-xl font-bold text-gray-900 leading-tight">{p.player_name ?? '—'}</p>
-                        <p className="text-sm text-gray-400 mt-0.5">{p.player_club}{p.position && ` · ${p.position}`}</p>
+                        <p className="text-xl leading-tight" style={{ color: '#1F0E84', fontFamily: 'Montserrat, sans-serif', fontWeight: 700 }}>{p.player_name ?? '—'}</p>
+                        <p className="text-sm mt-0.5" style={{ color: '#666666' }}>{p.player_club}{p.position && ` · ${p.position}`}</p>
                         {(() => {
                           const fix: NextFixture | undefined = nextFixturesMap.get(p.player_club?.toLowerCase() ?? '');
                           if (!fix) return null;
@@ -543,9 +540,9 @@ export default async function HomePage() {
                     {(() => {
                       const cs = lookupCaptainStats(p.player_name, fplCaptainStats);
                       return (
-                        <div style={{ display: 'flex', gap: 16, fontSize: 13, fontWeight: 600, color: 'rgba(0,0,0,0.55)', padding: '4px 0' }}>
-                          <span>⚽ xG/90: <strong style={{ color: 'rgba(0,0,0,0.75)' }}>{cs.xgPer90}</strong></span>
-                          <span>🅰️ xA/90: <strong style={{ color: 'rgba(0,0,0,0.75)' }}>{cs.xaPer90}</strong></span>
+                        <div style={{ display: 'flex', gap: 16, fontSize: 13, fontWeight: 600, color: '#1F0E84', padding: '4px 0' }}>
+                          <span>⚽ xG/90: <strong style={{ color: '#1F0E84' }}>{cs.xgPer90}</strong></span>
+                          <span>🅰️ xA/90: <strong style={{ color: '#1F0E84' }}>{cs.xaPer90}</strong></span>
                         </div>
                       );
                     })()}
