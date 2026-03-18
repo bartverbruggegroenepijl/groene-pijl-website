@@ -15,6 +15,7 @@ import type { LeagueApiResponse } from '@/lib/fpl/league';
 import { fetchGameweekInfo, FPL_HEADERS } from '@/lib/fpl/events';
 import { fetchNextFixturesMap } from '@/lib/fpl/fixtures';
 import type { NextFixture } from '@/lib/fpl/fixtures';
+import { fetchEpisodes } from '@/lib/episodes/feed';
 import HeroSection from '@/components/sections/HeroSection';
 import TeamVanDeWeekSection from '@/components/sections/TeamVanDeWeekSection';
 import TransferTipCard from '@/components/sections/TransferTipCard';
@@ -268,13 +269,24 @@ export default async function HomePage() {
   })();
   const mobileHeroUrl = (mobileHeroRes.data as { value: string } | null)?.value ?? null;
 
+  // Afleveringen: direct van RSS feed (altijd actueel, geen handmatige sync nodig)
   const episodesRes = await (async () => {
     try {
-      return await supabase
-        .from('episodes')
-        .select('id, title, description, duration, published_at, spotify_url, image_url')
-        .order('published_at', { ascending: false })
-        .limit(1);
+      const rssEps = await fetchEpisodes();
+      if (!rssEps.length) return fallback;
+      const ep = rssEps[0];
+      return {
+        data: [{
+          id:           ep.guid,
+          title:        ep.title,
+          description:  ep.description  || null,
+          duration:     ep.duration     || null,
+          published_at: ep.pubDate      || null,
+          spotify_url:  ep.spotifyUrl   || null,
+          image_url:    ep.imageUrl     || null,
+        }],
+        error: null,
+      };
     } catch { return fallback; }
   })();
 
