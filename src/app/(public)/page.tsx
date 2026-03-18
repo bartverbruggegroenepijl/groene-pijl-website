@@ -355,7 +355,7 @@ export default async function HomePage() {
   const nextFixturesMap = await fetchNextFixturesMap();
 
   // ── FPL spelersdata voor transfertips (goals + assists) ──────────────────────
-  let fplTransferStats: Record<string, { goals: number; assists: number }> = {};
+  const fplTransferStats: Record<string, { goals: number; assists: number }> = {};
   try {
     const fplBootstrapRes = await fetch('https://fantasy.premierleague.com/api/bootstrap-static/', {
       next: { revalidate: 1800 },
