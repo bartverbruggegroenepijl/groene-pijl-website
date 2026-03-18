@@ -132,11 +132,11 @@ function formatDate(iso: string): string {
 
 const CAPTAIN_RANKS = [
   { rank: 1, emoji: '🥇', label: '1e Keuze', textColor: 'text-yellow-500',
-    cardBg: 'rgba(255,255,255,0.75)', cardBorder: '3px solid #FFD700', cardShadow: '0 4px 20px rgba(255,215,0,0.3)' },
+    cardBg: 'rgba(255,255,255,0.60)', cardBorder: '3px solid #FFD700', cardShadow: '0 4px 20px rgba(255,215,0,0.3)' },
   { rank: 2, emoji: '🥈', label: '2e Keuze', textColor: 'text-gray-500',
-    cardBg: 'rgba(255,255,255,0.75)', cardBorder: '3px solid #C0C0C0', cardShadow: '0 4px 20px rgba(192,192,192,0.3)' },
+    cardBg: 'rgba(255,255,255,0.60)', cardBorder: '3px solid #C0C0C0', cardShadow: '0 4px 20px rgba(192,192,192,0.3)' },
   { rank: 3, emoji: '🥉', label: '3e Keuze', textColor: 'text-orange-500',
-    cardBg: 'rgba(255,255,255,0.75)', cardBorder: '3px solid #CD7F32', cardShadow: '0 4px 20px rgba(205,127,50,0.3)' },
+    cardBg: 'rgba(255,255,255,0.60)', cardBorder: '3px solid #CD7F32', cardShadow: '0 4px 20px rgba(205,127,50,0.3)' },
 ];
 
 // FDR kleurschema (1=makkelijk → 5=heel moeilijk)
