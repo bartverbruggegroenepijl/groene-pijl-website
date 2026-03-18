@@ -17,6 +17,7 @@ const dataLinks = [
   { label: 'Groene Pijl Competitie', href: '/rankings',         desc: 'Onze mini-league rankings'    },
   { label: 'Spelerstatus',           href: '/spelerstatus',     desc: 'Blessures & beschikbaarheid'  },
   { label: 'Wedstrijdplanner',       href: '/wedstrijdplanner', desc: 'Fixture Difficulty Rating'    },
+  { label: 'Prijswijzigingen',       href: '/prijswijzigingen', desc: 'Stijgers & dalers deze GW'    },
 ];
 
 const managersLinks = [
