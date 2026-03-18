@@ -163,8 +163,8 @@ function SectionLabel({ children }: { children: React.ReactNode }) {
 
 function SectionTitleDark({ children }: { children: React.ReactNode }) {
   return (
-    <h2 className="text-3xl sm:text-4xl lg:text-5xl font-bold text-white leading-tight border-l-4 border-primary pl-4"
-        style={{ borderColor: '#00FA61' }}>
+    <h2 className="text-3xl sm:text-4xl lg:text-5xl font-bold leading-tight border-l-4 pl-4"
+        style={{ color: '#1F0E84', borderColor: '#00FA61' }}>
       {children}
     </h2>
   );
@@ -172,7 +172,7 @@ function SectionTitleDark({ children }: { children: React.ReactNode }) {
 
 function SectionTitleLight({ children }: { children: React.ReactNode }) {
   return (
-    <h2 className="text-3xl sm:text-4xl lg:text-5xl font-bold text-gray-900 leading-tight">
+    <h2 className="text-3xl sm:text-4xl lg:text-5xl font-bold leading-tight" style={{ color: '#1F0E84' }}>
       {children}
     </h2>
   );
@@ -566,7 +566,7 @@ export default async function HomePage() {
         style={{ background: '#ffffff', color: '#1F0E84' }}
       >
         <div className="max-w-8xl mx-auto">
-          <span style={{ display: 'inline-block', color: '#1F0E84', fontSize: 12, fontWeight: 700, textTransform: 'uppercase', letterSpacing: '0.2em', marginBottom: 8, fontFamily: 'Montserrat, sans-serif' }}>
+          <span style={{ display: 'inline-block', color: '#00FA61', fontSize: 12, fontWeight: 700, textTransform: 'uppercase', letterSpacing: '0.2em', marginBottom: 8, fontFamily: 'Montserrat, sans-serif' }}>
             {kooptips ? `Gameweek ${kooptips.gameweek}` : 'Transfertips'}
           </span>
           <h2 style={{ color: '#1F0E84', fontSize: 'clamp(28px, 4vw, 48px)', fontWeight: 800, lineHeight: 1.1, fontFamily: 'Montserrat, sans-serif', margin: 0 }}>
