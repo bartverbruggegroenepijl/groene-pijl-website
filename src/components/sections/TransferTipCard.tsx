@@ -43,9 +43,8 @@ export default function TransferTipCard({
         background: 'linear-gradient(135deg, #C8A84B 0%, #FFD700 50%, #C8A84B 100%)',
         padding: '1.5px',
         boxShadow: hovered
-          ? '0 16px 40px rgba(200,168,75,0.5), 0 0 30px rgba(200,168,75,0.25)'
+          ? '0 0 15px rgba(200,168,75,0.5), 0 0 30px rgba(200,168,75,0.25), inset 0 0 15px rgba(200,168,75,0.05)'
           : '0 8px 32px rgba(0,0,0,0.6), 0 0 20px rgba(200,168,75,0.2)',
-        transform: hovered ? 'translateY(-8px)' : 'translateY(0)',
         transition: 'all 0.3s ease',
         cursor: 'default',
       }}
@@ -80,9 +79,8 @@ export default function TransferTipCard({
               height: '100%',
               objectFit: 'cover',
               objectPosition: 'center top',
-              transform: hovered ? 'scale(1.05)' : 'scale(0.85)',
+              transform: 'scale(0.85)',
               transformOrigin: 'top center',
-              transition: 'transform 0.3s ease',
             }}
           />
         )}
@@ -198,7 +196,7 @@ export default function TransferTipCard({
             left: 0,
             right: 0,
             background:
-              'linear-gradient(to top, rgba(0,0,0,0.4) 0%, rgba(0,0,0,0.15) 40%, transparent 100%)',
+              'linear-gradient(to top, rgba(0,0,0,0.75) 0%, rgba(0,0,0,0.4) 30%, rgba(0,0,0,0.1) 60%, transparent 100%)',
             padding: '22px 8px 8px',
             zIndex: 3,
             textAlign: 'center',
