@@ -20,7 +20,6 @@ const POSITION_STYLE: Record<string, { bg: string; text: string }> = {
 interface Props {
   risers: PriceChangePlayer[];
   fallers: PriceChangePlayer[];
-  currentGW: number | null;
 }
 
 function PlayerCard({
@@ -189,7 +188,7 @@ function PlayerCard({
   );
 }
 
-export default function PrijswijzigingenClient({ risers, fallers, currentGW: _currentGW }: Props) {
+export default function PrijswijzigingenClient({ risers, fallers }: Props) {
   const [activeTab, setActiveTab]   = useState<Tab>('stijgers');
   const [activePos, setActivePos]   = useState<Position>('Alle');
 
