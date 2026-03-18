@@ -11,6 +11,11 @@ import "./globals.css";
 export const metadata: Metadata = {
   title: "De Groene Pijl — De Nederlandse FPL Podcast",
   description: "Wekelijkse analyse, captain picks, kooptips en breaking FPL nieuws. De enige Nederlandse Fantasy Premier League podcast.",
+  icons: {
+    icon: '/icon.png',
+    shortcut: '/favicon.ico',
+    apple: '/icon.png',
+  },
 };
 
 export default function RootLayout({
