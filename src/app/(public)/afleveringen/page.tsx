@@ -4,6 +4,8 @@ import { Clock, Calendar, ExternalLink, Mic } from 'lucide-react';
 
 // Force Node.js runtime – rss-parser requires it
 export const runtime = 'nodejs';
+// Dynamisch renderen zodat de RSS cache (1u) altijd actueel is
+export const dynamic = 'force-dynamic';
 
 function formatDate(iso: string): string {
   return new Date(iso).toLocaleDateString('nl-NL', {
