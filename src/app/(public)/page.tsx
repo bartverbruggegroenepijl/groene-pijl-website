@@ -19,6 +19,7 @@ import HeroSection from '@/components/sections/HeroSection';
 import TeamVanDeWeekSection from '@/components/sections/TeamVanDeWeekSection';
 import TransferTipCard from '@/components/sections/TransferTipCard';
 import TransferTipsSlider from '@/components/sections/TransferTipsSlider';
+import PrijswijzigingenSection from '@/components/sections/PrijswijzigingenSection';
 
 // ─── Types ────────────────────────────────────────────────────────────────────
 
@@ -752,6 +753,9 @@ export default async function HomePage() {
           )}
         </div>
       </section>
+
+      {/* ── 6b. PRIJSWIJZIGINGEN ─────────────────────────────────── */}
+      <PrijswijzigingenSection />
 
       {/* ── 7. DE MANAGERS (white) ───────────────────────────────── */}
       <section id="managers" className="py-20 px-4 bg-white">
