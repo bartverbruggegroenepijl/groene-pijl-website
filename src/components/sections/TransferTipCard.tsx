@@ -37,8 +37,7 @@ export default function TransferTipCard({
   return (
     <div
       style={{
-        width: 160,
-        minWidth: 160,
+        width: '100%',
         borderRadius: '14px',
         /* Gold gradient border via outer wrapper + 1.5px padding */
         background: 'linear-gradient(135deg, #C8A84B 0%, #FFD700 50%, #C8A84B 100%)',
@@ -48,8 +47,6 @@ export default function TransferTipCard({
           : '0 8px 32px rgba(0,0,0,0.6), 0 0 20px rgba(200,168,75,0.2)',
         transform: hovered ? 'translateY(-6px)' : 'translateY(0)',
         transition: 'all 0.25s ease',
-        flexShrink: 0,
-        scrollSnapAlign: 'start',
         cursor: 'default',
       }}
       onMouseEnter={() => setHovered(true)}

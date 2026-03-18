@@ -535,48 +535,23 @@ export default async function HomePage() {
           <SectionTitleDark>Transfertips van de Week</SectionTitleDark>
 
           {kooptips && kooptips.buy_tip_players.length > 0 ? (
-            <div className="mt-10 relative">
-              {/* Scrollbare kaarten rij */}
-              <div
-                style={{
-                  display: 'flex',
-                  gap: 16,
-                  overflowX: 'auto',
-                  scrollSnapType: 'x mandatory',
-                  paddingBottom: 8,
-                  scrollbarWidth: 'none',
-                } as React.CSSProperties}
-                className="[&::-webkit-scrollbar]:hidden"
-              >
-                {kooptips.buy_tip_players.map((p, i) => {
-                  const stats = lookupFplStats(p.player_name, fplTransferStats);
-                  return (
-                    <TransferTipCard
-                      key={i}
-                      playerName={p.player_name}
-                      playerClub={p.player_club}
-                      position={p.position}
-                      price={p.price}
-                      motivation={p.motivation}
-                      imageUrl={p.image_url}
-                      goals={stats.goals}
-                      assists={stats.assists}
-                    />
-                  );
-                })}
-              </div>
-              {/* Mobiele fade rechts */}
-              <div
-                className="block lg:hidden pointer-events-none"
-                style={{
-                  position: 'absolute',
-                  top: 0,
-                  right: 0,
-                  bottom: 8,
-                  width: 64,
-                  background: 'linear-gradient(to right, transparent, #0D0B2A)',
-                }}
-              />
+            <div className="transfertips-grid mt-10">
+              {kooptips.buy_tip_players.map((p, i) => {
+                const stats = lookupFplStats(p.player_name, fplTransferStats);
+                return (
+                  <TransferTipCard
+                    key={i}
+                    playerName={p.player_name}
+                    playerClub={p.player_club}
+                    position={p.position}
+                    price={p.price}
+                    motivation={p.motivation}
+                    imageUrl={p.image_url}
+                    goals={stats.goals}
+                    assists={stats.assists}
+                  />
+                );
+              })}
             </div>
           ) : (
             <EmptyPlaceholderDark message="Nog geen transfertips beschikbaar voor deze gameweek." />
