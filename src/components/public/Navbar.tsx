@@ -7,16 +7,16 @@ import Logo from '@/components/ui/Logo';
 import DeadlineCountdown from '@/components/ui/DeadlineCountdown';
 
 const navLinks = [
-  { label: 'Afleveringen',   href: '/afleveringen' },
-  { label: 'Artikelen',      href: '/artikelen'    },
-  { label: 'Bouw Mijn Team', href: '/teambouwer'   },
+  { label: 'Afleveringen',   href: '/afleveringen'   },
+  { label: 'Artikelen',      href: '/artikelen'      },
+  { label: 'Bouw Mijn Team', href: '/teambouwer'     },
+  { label: 'Wedstrijdplanner', href: '/wedstrijdplanner' },
 ];
 
 const dataLinks = [
   { label: 'Speler Statistieken',    href: '/statistieken',                   desc: 'Premier League statistieken',  external: false },
   { label: 'Groene Pijl Competitie', href: '/rankings',                       desc: 'Onze mini-league rankings',    external: false },
   { label: 'Spelerstatus',           href: '/spelerstatus',                   desc: 'Blessures & beschikbaarheid',  external: false },
-  { label: 'Wedstrijdplanner',       href: '/wedstrijdplanner',               desc: 'Fixture Difficulty Rating',    external: false },
   { label: 'Prijswijzigingen',       href: 'https://www.livefpl.net/prices',  desc: 'Stijgers & dalers deze GW',    external: true  },
 ];
 
