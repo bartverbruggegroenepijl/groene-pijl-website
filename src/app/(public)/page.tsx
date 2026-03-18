@@ -131,9 +131,15 @@ function formatDate(iso: string): string {
 }
 
 const CAPTAIN_RANKS = [
-  { rank: 1, emoji: '🥇', label: '1e Keuze', borderColor: 'border-yellow-400', textColor: 'text-yellow-500', bgColor: 'bg-yellow-50' },
-  { rank: 2, emoji: '🥈', label: '2e Keuze', borderColor: 'border-gray-300',   textColor: 'text-gray-500',   bgColor: 'bg-gray-50'   },
-  { rank: 3, emoji: '🥉', label: '3e Keuze', borderColor: 'border-orange-400', textColor: 'text-orange-500', bgColor: 'bg-orange-50' },
+  { rank: 1, emoji: '🥇', label: '1e Keuze', borderColor: 'border-yellow-400', textColor: 'text-yellow-500', bgColor: 'bg-yellow-50',
+    gradientBg: 'linear-gradient(135deg, rgba(255,215,0,0.08) 0%, rgba(255,215,0,0.03) 50%, transparent 100%)',
+    borderStyle: '1px solid rgba(255,215,0,0.2)' },
+  { rank: 2, emoji: '🥈', label: '2e Keuze', borderColor: 'border-gray-300',   textColor: 'text-gray-500',   bgColor: 'bg-gray-50',
+    gradientBg: 'linear-gradient(135deg, rgba(192,192,192,0.08) 0%, rgba(192,192,192,0.03) 50%, transparent 100%)',
+    borderStyle: '1px solid rgba(192,192,192,0.2)' },
+  { rank: 3, emoji: '🥉', label: '3e Keuze', borderColor: 'border-orange-400', textColor: 'text-orange-500', bgColor: 'bg-orange-50',
+    gradientBg: 'linear-gradient(135deg, rgba(205,127,50,0.08) 0%, rgba(205,127,50,0.03) 50%, transparent 100%)',
+    borderStyle: '1px solid rgba(205,127,50,0.2)' },
 ];
 
 // FDR kleurschema (1=makkelijk → 5=heel moeilijk)
@@ -219,7 +225,7 @@ function PlayerBadgeLight({ imageUrl, name, size = 56, objectPosition = 'center'
 }
 
 
-// ─── FPL stats helper ─────────────────────────────────────────────────────────
+// ─── FPL stats helpers ────────────────────────────────────────────────────────
 
 function lookupFplStats(
   name: string | null,
@@ -231,6 +237,17 @@ function lookupFplStats(
   // Probeer op achternaam (laatste woord)
   const lastName = lower.split(' ').pop() ?? lower
   return map[lastName] ?? { goals: 0, assists: 0 }
+}
+
+function lookupCaptainStats(
+  name: string | null,
+  map: Record<string, { xgPer90: string; xaPer90: string }>,
+): { xgPer90: string; xaPer90: string } {
+  if (!name) return { xgPer90: '–', xaPer90: '–' }
+  const lower = name.toLowerCase()
+  if (map[lower]) return map[lower]
+  const lastName = lower.split(' ').pop() ?? lower
+  return map[lastName] ?? { xgPer90: '–', xaPer90: '–' }
 }
 
 // ─── Page ─────────────────────────────────────────────────────────────────────
@@ -355,8 +372,9 @@ export default async function HomePage() {
   // ── FPL fixtures: eerstvolgende wedstrijd per team voor captain FDR badge ────
   const nextFixturesMap = await fetchNextFixturesMap();
 
-  // ── FPL spelersdata voor transfertips (goals + assists) ──────────────────────
+  // ── FPL spelersdata voor transfertips (goals + assists) + captain picks (xG/xA per 90) ──
   const fplTransferStats: Record<string, { goals: number; assists: number }> = {};
+  const fplCaptainStats: Record<string, { xgPer90: string; xaPer90: string }> = {};
   try {
     const fplBootstrapRes = await fetch('https://fantasy.premierleague.com/api/bootstrap-static/', {
       next: { revalidate: 1800 },
@@ -369,6 +387,15 @@ export default async function HomePage() {
         const stats = { goals: el.goals_scored ?? 0, assists: el.assists ?? 0 };
         if (webName) fplTransferStats[webName] = stats;
         if (fullName) fplTransferStats[fullName] = stats;
+        // xG per 90 + xA per 90 voor captain picks
+        const mins: number = el.minutes ?? 0;
+        const xg = parseFloat(el.expected_goals ?? '0');
+        const xa = parseFloat(el.expected_assists ?? '0');
+        const captainStats = mins > 0
+          ? { xgPer90: ((xg / mins) * 90).toFixed(2), xaPer90: ((xa / mins) * 90).toFixed(2) }
+          : { xgPer90: '–', xaPer90: '–' };
+        if (webName) fplCaptainStats[webName] = captainStats;
+        if (fullName) fplCaptainStats[fullName] = captainStats;
       }
     }
   } catch { /* silently fail — stats tonen 0/0 als fallback */ }
@@ -473,7 +500,7 @@ export default async function HomePage() {
               {captainPlayers.slice(0, 3).map((p) => {
                 const cfg = CAPTAIN_RANKS.find((r) => r.rank === p.rank) ?? CAPTAIN_RANKS[2];
                 return (
-                  <div key={p.rank} className={`card-lift bg-white border-2 ${cfg.borderColor} rounded-2xl p-6 flex flex-col gap-4`}>
+                  <div key={p.rank} className="card-lift rounded-2xl p-6 flex flex-col gap-4" style={{ background: cfg.gradientBg, border: cfg.borderStyle }}>
                     <div className="flex items-center gap-2">
                       <span className="text-2xl">{cfg.emoji}</span>
                       <span className={`text-sm font-semibold ${cfg.textColor} uppercase tracking-wide`}>{cfg.label}</span>
@@ -512,6 +539,16 @@ export default async function HomePage() {
                         })()}
                       </div>
                     </div>
+                    {/* xG per 90 + xA per 90 */}
+                    {(() => {
+                      const cs = lookupCaptainStats(p.player_name, fplCaptainStats);
+                      return (
+                        <div style={{ display: 'flex', gap: 16, fontSize: 11, fontWeight: 600, color: 'rgba(0,0,0,0.5)' }}>
+                          <span>🎯 xG/90: <strong style={{ color: 'rgba(0,0,0,0.72)' }}>{cs.xgPer90}</strong></span>
+                          <span>📊 xA/90: <strong style={{ color: 'rgba(0,0,0,0.72)' }}>{cs.xaPer90}</strong></span>
+                        </div>
+                      );
+                    })()}
                     {p.motivation && (
                       <p className="text-sm text-gray-500 leading-relaxed border-t border-gray-100 pt-4 italic">&quot;{p.motivation}&quot;</p>
                     )}
