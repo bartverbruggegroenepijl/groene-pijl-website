@@ -42,8 +42,9 @@ export default function TransferTipCard({
         /* Gold gradient border via outer wrapper + 1.5px padding */
         background: 'linear-gradient(135deg, #C8A84B 0%, #FFD700 50%, #C8A84B 100%)',
         padding: '1.5px',
+        border: hovered ? '1.5px solid rgba(255,215,0,1)' : '1.5px solid transparent',
         boxShadow: hovered
-          ? '0 0 15px rgba(200,168,75,0.5), 0 0 30px rgba(200,168,75,0.25), inset 0 0 15px rgba(200,168,75,0.05)'
+          ? '0 0 20px rgba(255,215,0,0.7), 0 0 45px rgba(255,215,0,0.4), 0 0 80px rgba(255,215,0,0.15), inset 0 0 20px rgba(255,215,0,0.08)'
           : '0 8px 32px rgba(0,0,0,0.6), 0 0 20px rgba(200,168,75,0.2)',
         transition: 'all 0.3s ease',
         cursor: 'default',
@@ -112,32 +113,15 @@ export default function TransferTipCard({
           </div>
         )}
 
-        {/* Groene gloed achter speler */}
+        {/* Volledige gradient overlay — foto loopt vloeiend over in tekst */}
         <div
           style={{
             position: 'absolute',
-            bottom: 72,
-            left: '50%',
-            transform: 'translateX(-50%)',
-            width: '90%',
-            height: 60,
-            background: 'radial-gradient(ellipse, rgba(0,250,97,0.18) 0%, transparent 70%)',
+            inset: 0,
+            background: 'linear-gradient(to top, rgba(0,0,0,0.92) 0%, rgba(0,0,0,0.75) 20%, rgba(0,0,0,0.45) 40%, rgba(0,0,0,0.15) 60%, transparent 80%)',
+            borderRadius: '12.5px',
             pointerEvents: 'none',
-            zIndex: 1,
-          }}
-        />
-
-        {/* Magenta gloed rechtsonder */}
-        <div
-          style={{
-            position: 'absolute',
-            bottom: 0,
-            right: 0,
-            width: 110,
-            height: 110,
-            background: 'radial-gradient(ellipse at bottom right, rgba(200,33,195,0.22) 0%, transparent 70%)',
-            pointerEvents: 'none',
-            zIndex: 1,
+            zIndex: 2,
           }}
         />
 
@@ -188,15 +172,13 @@ export default function TransferTipCard({
           )}
         </div>
 
-        {/* ── Onderste info-overlay ─────────────────────────────────── */}
+        {/* ── Onderste info ─────────────────────────────────────────── */}
         <div
           style={{
             position: 'absolute',
             bottom: 0,
             left: 0,
             right: 0,
-            background:
-              'linear-gradient(to top, rgba(0,0,0,0.75) 0%, rgba(0,0,0,0.4) 30%, rgba(0,0,0,0.1) 60%, transparent 100%)',
             padding: '22px 8px 8px',
             zIndex: 3,
             textAlign: 'center',
