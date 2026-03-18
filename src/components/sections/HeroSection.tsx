@@ -1,11 +1,15 @@
 'use client'
 
+import { useState } from 'react'
+
 interface HeroSectionProps {
   currentGameweek?: number
   latestEpisodeUrl?: string
 }
 
 export default function HeroSection({ currentGameweek, latestEpisodeUrl }: HeroSectionProps) {
+  const [teamBtnHovered, setTeamBtnHovered] = useState(false)
+
   return (
     <section
       className="hero-section"
@@ -120,17 +124,22 @@ export default function HeroSection({ currentGameweek, latestEpisodeUrl }: HeroS
           </a>
           <a
             href="/teambouwer"
+            onMouseEnter={() => setTeamBtnHovered(true)}
+            onMouseLeave={() => setTeamBtnHovered(false)}
             style={{
               display: 'inline-flex',
               alignItems: 'center',
               padding: '13px 26px',
               borderRadius: 25,
               border: '2px solid rgba(255,255,255,0.6)',
-              color: 'white',
+              color: teamBtnHovered ? '#1F0E84' : 'white',
               fontWeight: 600,
               fontSize: 14,
               textDecoration: 'none',
-              background: 'transparent',
+              background: teamBtnHovered ? '#00FA61' : 'transparent',
+              transform: teamBtnHovered ? 'translateY(-2px)' : 'translateY(0)',
+              boxShadow: teamBtnHovered ? '0 8px 25px rgba(0,250,97,0.4)' : 'none',
+              transition: 'all 0.3s ease',
               fontFamily: 'Montserrat, sans-serif',
             }}
           >
