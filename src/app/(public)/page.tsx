@@ -12,7 +12,7 @@ import {
 import StandingsTable from '@/components/public/StandingsTable';
 import { fetchLeagueStandings } from '@/lib/fpl/league';
 import type { LeagueApiResponse } from '@/lib/fpl/league';
-import { fetchGameweekInfo } from '@/lib/fpl/events';
+import { fetchGameweekInfo, FPL_HEADERS } from '@/lib/fpl/events';
 import { fetchNextFixturesMap } from '@/lib/fpl/fixtures';
 import type { NextFixture } from '@/lib/fpl/fixtures';
 import HeroSection from '@/components/sections/HeroSection';
@@ -370,11 +370,14 @@ export default async function HomePage() {
   const nextFixturesMap = await fetchNextFixturesMap();
 
   // ── FPL spelersdata voor transfertips (goals + assists) + captain picks (xG/xA per 90) ──
+  // revalidate: 300 = zelfde als fetchGameweekInfo() → Next.js dedupliceert de fetch
+  // FPL_HEADERS vereist: FPL blokkeert requests zonder browser-achtige User-Agent
   const fplTransferStats: Record<string, { goals: number; assists: number }> = {};
   const fplCaptainStats: Record<string, { xgPer90: string; xaPer90: string }> = {};
   try {
     const fplBootstrapRes = await fetch('https://fantasy.premierleague.com/api/bootstrap-static/', {
-      next: { revalidate: 1800 },
+      next: { revalidate: 300 },
+      headers: FPL_HEADERS,
     });
     if (fplBootstrapRes.ok) {
       const fplJson = await fplBootstrapRes.json();
@@ -394,8 +397,12 @@ export default async function HomePage() {
         if (webName) fplCaptainStats[webName] = captainStats;
         if (fullName) fplCaptainStats[fullName] = captainStats;
       }
+    } else {
+      console.warn(`[FPL] bootstrap-static returned ${fplBootstrapRes.status} — stats vallen terug op lege waarden`);
     }
-  } catch { /* silently fail — stats tonen 0/0 als fallback */ }
+  } catch (err) {
+    console.error('[FPL] bootstrap-static fetch mislukt:', err);
+  }
 
   return (
     <main className="text-white overflow-x-hidden" style={{ background: '#0D0B2A' }}>
