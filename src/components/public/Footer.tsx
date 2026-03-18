@@ -7,15 +7,18 @@ import Logo from '@/components/ui/Logo';
 const inhoudLinks = [
   { label: 'Afleveringen',        href: '/afleveringen'   },
   { label: 'Artikelen',           href: '/artikelen'      },
-  { label: 'Bouw Mijn Team',      href: '/teambouwer'     },
   { label: 'Transfers & Captains', href: '/#captain-pick' },
 ];
 
+const teamLinks = [
+  { label: 'Bouw Mijn Team',   href: '/teambouwer'       },
+  { label: 'Wedstrijdplanner', href: '/wedstrijdplanner' },
+];
+
 const dataLinks = [
-  { label: 'Speler Statistieken',    href: '/statistieken'    },
-  { label: 'Groene Pijl Competitie', href: '/rankings'        },
-  { label: 'Spelerstatus',           href: '/spelerstatus'    },
-  { label: 'Wedstrijdplanner',       href: '/wedstrijdplanner'},
+  { label: 'Speler Statistieken',    href: '/statistieken' },
+  { label: 'Groene Pijl Competitie', href: '/rankings'     },
+  { label: 'Spelerstatus',           href: '/spelerstatus' },
 ];
 
 const managersLinks = [
@@ -43,7 +46,7 @@ export default function Footer() {
       }}
     >
       <div className="max-w-8xl mx-auto px-4 sm:px-6 lg:px-8 py-14">
-        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-5 gap-10 mb-10">
+        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-6 gap-10 mb-10">
 
           {/* Brand — logo + tekst */}
           <div className="lg:col-span-1">
@@ -60,6 +63,25 @@ export default function Footer() {
             <h4 className="font-semibold text-sm mb-4 uppercase tracking-wider" style={{ color: '#00FA61', letterSpacing: '0.1em' }}>Inhoud</h4>
             <ul className="space-y-2.5 text-sm">
               {inhoudLinks.map((item) => (
+                <li key={item.href}>
+                  <Link
+                    href={item.href}
+                    style={linkStyle}
+                    onMouseEnter={(e) => (e.currentTarget.style.color = '#00FA61')}
+                    onMouseLeave={(e) => (e.currentTarget.style.color = 'rgba(255,255,255,0.7)')}
+                  >
+                    {item.label}
+                  </Link>
+                </li>
+              ))}
+            </ul>
+          </div>
+
+          {/* Bouw Mijn Team */}
+          <div>
+            <h4 className="font-semibold text-sm mb-4 uppercase tracking-wider" style={{ color: '#00FA61', letterSpacing: '0.1em' }}>Bouw Mijn Team</h4>
+            <ul className="space-y-2.5 text-sm">
+              {teamLinks.map((item) => (
                 <li key={item.href}>
                   <Link
                     href={item.href}

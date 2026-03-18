@@ -7,9 +7,12 @@ import Logo from '@/components/ui/Logo';
 import DeadlineCountdown from '@/components/ui/DeadlineCountdown';
 
 const navLinks = [
-  { label: 'Afleveringen',   href: '/afleveringen'   },
-  { label: 'Artikelen',      href: '/artikelen'      },
-  { label: 'Bouw Mijn Team', href: '/teambouwer'     },
+  { label: 'Afleveringen', href: '/afleveringen' },
+  { label: 'Artikelen',    href: '/artikelen'    },
+];
+
+const teamLinks = [
+  { label: 'Bouw Mijn Team',   href: '/teambouwer'       },
   { label: 'Wedstrijdplanner', href: '/wedstrijdplanner' },
 ];
 
@@ -30,8 +33,10 @@ const managersLinks = [
 export default function Navbar() {
   const [scrolled, setScrolled]         = useState(false);
   const [menuOpen, setMenuOpen]         = useState(false);
+  const [teamOpen, setTeamOpen]         = useState(false);
   const [dataOpen, setDataOpen]         = useState(false);
   const [managersOpen, setManagersOpen] = useState(false);
+  const teamRef     = useRef<HTMLDivElement>(null);
   const dataRef     = useRef<HTMLDivElement>(null);
   const managersRef = useRef<HTMLDivElement>(null);
 
@@ -51,6 +56,9 @@ export default function Navbar() {
   // Sluit dropdowns bij klik buiten
   useEffect(() => {
     function handleOutside(e: MouseEvent) {
+      if (teamRef.current && !teamRef.current.contains(e.target as Node)) {
+        setTeamOpen(false);
+      }
       if (dataRef.current && !dataRef.current.contains(e.target as Node)) {
         setDataOpen(false);
       }
@@ -85,7 +93,7 @@ export default function Navbar() {
           {/* Desktop nav — center */}
           <nav className="hidden lg:flex items-center gap-1">
 
-            {/* Afleveringen, Artikelen, Bouw Mijn Team */}
+            {/* Afleveringen, Artikelen */}
             {navLinks.map((link) => (
               <Link
                 key={link.href}
@@ -95,6 +103,35 @@ export default function Navbar() {
                 {link.label}
               </Link>
             ))}
+
+            {/* Bouw Mijn Team dropdown */}
+            <div className="relative" ref={teamRef}>
+              <button
+                onClick={() => { setTeamOpen(!teamOpen); setDataOpen(false); setManagersOpen(false); }}
+                className="flex items-center gap-1.5 px-4 py-2 text-sm font-medium text-white/70 hover:text-primary rounded-lg hover:bg-primary/8 transition-all duration-200"
+              >
+                Bouw Mijn Team
+                <ChevronDown
+                  size={14}
+                  className={`transition-transform duration-200 ${teamOpen ? 'rotate-180' : ''}`}
+                />
+              </button>
+
+              {teamOpen && (
+                <div className="absolute top-full left-1/2 -translate-x-1/2 mt-2 bg-navy-card border border-white/10 rounded-xl shadow-card-hover py-2 min-w-[200px] z-50">
+                  {teamLinks.map((item) => (
+                    <Link
+                      key={item.href}
+                      href={item.href}
+                      onClick={() => setTeamOpen(false)}
+                      className="flex px-4 py-3 hover:bg-white/5 transition-colors"
+                    >
+                      <span className="text-white text-sm font-semibold">{item.label}</span>
+                    </Link>
+                  ))}
+                </div>
+              )}
+            </div>
 
             {/* Transfers & Captains — standalone link */}
             <Link
@@ -107,7 +144,7 @@ export default function Navbar() {
             {/* Data & Inzichten dropdown */}
             <div className="relative" ref={dataRef}>
               <button
-                onClick={() => { setDataOpen(!dataOpen); setManagersOpen(false); }}
+                onClick={() => { setDataOpen(!dataOpen); setManagersOpen(false); setTeamOpen(false); }}
                 className="flex items-center gap-1.5 px-4 py-2 text-sm font-medium text-white/70 hover:text-primary rounded-lg hover:bg-primary/8 transition-all duration-200"
               >
                 Data &amp; Inzichten
@@ -152,7 +189,7 @@ export default function Navbar() {
             {/* Managers dropdown */}
             <div className="relative" ref={managersRef}>
               <button
-                onClick={() => { setManagersOpen(!managersOpen); setDataOpen(false); }}
+                onClick={() => { setManagersOpen(!managersOpen); setDataOpen(false); setTeamOpen(false); }}
                 className="flex items-center gap-1.5 px-4 py-2 text-sm font-medium text-white/70 hover:text-primary rounded-lg hover:bg-primary/8 transition-all duration-200"
               >
                 Managers
@@ -251,7 +288,7 @@ export default function Navbar() {
             {/* Nav content */}
             <nav>
 
-              {/* Afleveringen, Artikelen, Bouw Mijn Team */}
+              {/* Afleveringen, Artikelen */}
               {navLinks.map((link) => (
                 <Link
                   key={link.href}
@@ -269,6 +306,38 @@ export default function Navbar() {
                   }}
                 >
                   {link.label}
+                </Link>
+              ))}
+
+              {/* ── Bouw Mijn Team sectie ── */}
+              <div
+                style={{
+                  padding: '8px 24px 4px',
+                  fontSize: 9,
+                  fontWeight: 700,
+                  letterSpacing: '0.18em',
+                  textTransform: 'uppercase',
+                  color: '#00FA61',
+                }}
+              >
+                Bouw Mijn Team
+              </div>
+              {teamLinks.map((item) => (
+                <Link
+                  key={item.href}
+                  href={item.href}
+                  onClick={() => setMenuOpen(false)}
+                  style={{
+                    display: 'block',
+                    padding: '7px 24px 7px 36px',
+                    textDecoration: 'none',
+                    borderBottom: '1px solid rgba(255,255,255,0.05)',
+                    fontFamily: 'Montserrat, sans-serif',
+                  }}
+                >
+                  <span style={{ fontSize: 13, fontWeight: 600, color: 'rgba(255,255,255,0.85)', display: 'block' }}>
+                    {item.label}
+                  </span>
                 </Link>
               ))}
 
