@@ -93,6 +93,7 @@ export default async function PrijswijzigingenPage() {
         <PrijswijzigingenClient
           risers={risers}
           fallers={fallers}
+          currentGW={currentGW}
         />
       </div>
     </main>
