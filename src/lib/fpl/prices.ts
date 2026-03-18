@@ -1,6 +1,6 @@
 // FPL Price Changes utility
-// Voorspelt stijgers en dalers op basis van netto transfer-activiteit,
-// identiek aan de LiveFPL-methode.
+// Voorspelt stijgers en dalers op basis van netto transfer-activiteit.
+// Formule gebaseerd op FPL eigendom en transfer-drempel.
 
 import { FPL_HEADERS } from './events';
 
@@ -25,6 +25,7 @@ export interface PriceChangePlayer {
   ownershipPercent: string;  // selected_by_percent
   imageUrl: string;
   status: 'confirmed' | 'expected';
+  drempel: number;           // drempelwaarde voor debug
   // 'confirmed' = prijs IS al veranderd (cost_change_event !== 0)
   // 'expected'  = prijs nog niet veranderd maar verwacht op basis van netto transfers
 }
@@ -63,11 +64,15 @@ interface FplTeam {
   short_name: string;
 }
 
+// Totaal aantal FPL spelers (benadering)
+const FPL_TOTAL_PLAYERS = 8_000_000;
+// Drempel: 0.3% van eigendom moet netto transfers zijn voor prijswijziging
+const DREMPEL_FACTOR = 0.003;
+
 export async function fetchPriceChanges(): Promise<PriceChangesData> {
   try {
     const res = await fetch(
       'https://fantasy.premierleague.com/api/bootstrap-static/',
-      // revalidate: 1800 = elke 30 minuten (prijswijzigingen zijn niet vaker relevant)
       { next: { revalidate: 1800 }, headers: FPL_HEADERS },
     );
     if (!res.ok) return { risers: [], fallers: [] };
@@ -80,16 +85,50 @@ export async function fetchPriceChanges(): Promise<PriceChangesData> {
       teamNames[t.id] = t.short_name;
     }
 
+    const allPlayers: Array<{
+      el: FplElement;
+      netto: number;
+      drempel: number;
+    }> = [];
+
+    for (const el of (data.elements as FplElement[] ?? [])) {
+      const ownershipNum    = parseFloat(el.selected_by_percent ?? '0');
+      // Correcte drempel: 0.3% van het aantal eigenaren
+      const eigendom_aantal = (ownershipNum / 100) * FPL_TOTAL_PLAYERS;
+      const drempel         = eigendom_aantal * DREMPEL_FACTOR;
+      const netto           = (el.transfers_in_event ?? 0) - (el.transfers_out_event ?? 0);
+
+      allPlayers.push({ el, netto, drempel });
+    }
+
+    // ── DEBUG: top 20 spelers op absolute netto transfers ──────────────────
+    const top20 = [...allPlayers]
+      .sort((a, b) => Math.abs(b.netto) - Math.abs(a.netto))
+      .slice(0, 20);
+
+    console.log('[FPL prices] Top 20 spelers op netto transfers:');
+    top20.forEach(({ el, netto, drempel }, i) => {
+      const ownership = parseFloat(el.selected_by_percent ?? '0');
+      const kwalificeert = netto >= drempel && netto > 0
+        ? '↑ STIJGER'
+        : netto <= -drempel && netto < 0
+          ? '↓ DALER'
+          : '—';
+      console.log(
+        `  ${String(i + 1).padStart(2)}. ${el.web_name.padEnd(20)} ` +
+        `netto=${String(netto).padStart(7)}  drempel=${String(Math.round(drempel)).padStart(5)}  ` +
+        `bezit=${String(ownership.toFixed(1)).padStart(5)}%  ` +
+        `cost_chg=${el.cost_change_event}  ${kwalificeert}`,
+      );
+    });
+    // ───────────────────────────────────────────────────────────────────────
+
     const risers: PriceChangePlayer[] = [];
     const fallers: PriceChangePlayer[] = [];
 
-    for (const el of (data.elements as FplElement[] ?? [])) {
-      const ownershipNum   = parseFloat(el.selected_by_percent ?? '0');
-      // Drempel = 1% van het huidig eigendom (LiveFPL methode)
-      const drempel        = ownershipNum * 1000 * 0.01;
-      const netto          = (el.transfers_in_event ?? 0) - (el.transfers_out_event ?? 0);
-      const costChange     = el.cost_change_event ?? 0;
-      const isConfirmed    = Math.abs(costChange) >= 1;
+    for (const { el, netto, drempel } of allPlayers) {
+      const costChange  = el.cost_change_event ?? 0;
+      const isConfirmed = Math.abs(costChange) >= 1;
 
       const player: PriceChangePlayer = {
         id:               el.id,
@@ -105,14 +144,15 @@ export async function fetchPriceChanges(): Promise<PriceChangesData> {
         ownershipPercent: el.selected_by_percent ?? '0.0',
         imageUrl:         `https://resources.premierleague.com/premierleague/photos/players/110x140/p${el.code}.png`,
         status:           isConfirmed ? 'confirmed' : 'expected',
+        drempel:          Math.round(drempel),
       };
 
-      // Verwachte STIJGER: netto > drempel EN price nog niet gedaald
-      if (netto > drempel && costChange >= 0) {
+      // STIJGER: netto transfers overtreft de drempel
+      if (netto >= drempel && netto > 0) {
         risers.push(player);
       }
-      // Verwachte DALER: netto < -drempel EN price nog niet gestegen
-      else if (netto < -drempel && costChange <= 0) {
+      // DALER: negatieve netto transfers overtreft de drempel
+      else if (netto <= -drempel && netto < 0) {
         fallers.push(player);
       }
     }
@@ -122,8 +162,11 @@ export async function fetchPriceChanges(): Promise<PriceChangesData> {
     // Sorteer dalers op minste netto transfers (laagste eerst)
     fallers.sort((a, b) => a.netTransfers - b.netTransfers);
 
+    console.log(`[FPL prices] Resultaat: ${risers.length} stijgers, ${fallers.length} dalers`);
+
     return { risers, fallers };
-  } catch {
+  } catch (err) {
+    console.error('[FPL prices] Fetch mislukt:', err);
     return { risers: [], fallers: [] };
   }
 }
