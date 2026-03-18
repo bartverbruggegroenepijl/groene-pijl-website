@@ -66,8 +66,10 @@ interface FplTeam {
 
 // Totaal aantal FPL spelers (benadering)
 const FPL_TOTAL_PLAYERS = 8_000_000;
-// Drempel: 0.3% van eigendom moet netto transfers zijn voor prijswijziging
-const DREMPEL_FACTOR = 0.003;
+// Drempel: 5% van eigendom moet netto transfers zijn voor prijswijziging
+const DREMPEL_FACTOR = 0.05;
+// Minimum absolute netto transfers — filtert laag-eigendom spelers met kleine drempel eruit
+const MIN_NETTO = 40_000;
 
 export async function fetchPriceChanges(): Promise<PriceChangesData> {
   try {
@@ -147,12 +149,12 @@ export async function fetchPriceChanges(): Promise<PriceChangesData> {
         drempel:          Math.round(drempel),
       };
 
-      // STIJGER: netto transfers overtreft de drempel
-      if (netto >= drempel && netto > 0) {
+      // STIJGER: netto boven drempel én boven absoluut minimum
+      if (netto >= drempel && netto >= MIN_NETTO) {
         risers.push(player);
       }
-      // DALER: negatieve netto transfers overtreft de drempel
-      else if (netto <= -drempel && netto < 0) {
+      // DALER: netto onder negatieve drempel én onder absoluut minimum
+      else if (netto <= -drempel && netto <= -MIN_NETTO) {
         fallers.push(player);
       }
     }
