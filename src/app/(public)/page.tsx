@@ -697,7 +697,45 @@ export default async function HomePage() {
         </div>
       </section>
 
-      {/* ── 6. ARTIKELEN & ANALYSE (gradient) ───────────────────────── */}
+      {/* ── 6. DE MANAGERS (white) ───────────────────────────────── */}
+      <section id="managers" className="py-20 px-4 bg-white">
+        <div className="max-w-8xl mx-auto">
+          <SectionLabel>Het Team</SectionLabel>
+          <SectionTitleLight>De Managers</SectionTitleLight>
+
+          {managers.length > 0 ? (
+            <div className="mt-10 grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6">
+              {managers.map((m) => (
+                <Link key={m.id} href={`/managers/${m.id}`} className="card-lift bg-white border border-gray-100 hover:border-primary/30 hover:shadow-lg rounded-2xl p-6 flex flex-col items-center text-center gap-3 transition-all duration-300 group">
+                  {m.avatar_url ? (
+                    <div className="relative w-20 h-20 rounded-full overflow-hidden ring-2 ring-gray-200 group-hover:ring-primary/40 transition-all duration-300">
+                      <Image src={m.avatar_url} alt={m.name} fill className="object-cover" />
+                    </div>
+                  ) : (
+                    <div className="w-20 h-20 rounded-full bg-gray-100 ring-2 ring-gray-200 group-hover:ring-primary/40 flex items-center justify-center transition-all duration-300">
+                      <span className="text-3xl font-bold text-primary">{m.name.charAt(0)}</span>
+                    </div>
+                  )}
+                  <div>
+                    <h3 className="font-bold text-xl text-gray-900 group-hover:text-primary transition-colors">{m.name}</h3>
+                    {m.role && <p className="text-xs text-primary mt-0.5">{m.role}</p>}
+                  </div>
+                  {m.bio && <p className="text-xs text-gray-500 leading-relaxed line-clamp-3">{m.bio}</p>}
+                  {m.instagram_url && (
+                    <span className="flex items-center gap-1.5 text-gray-400 group-hover:text-primary text-xs transition-colors mt-auto">
+                      <Instagram size={13} />Instagram
+                    </span>
+                  )}
+                </Link>
+              ))}
+            </div>
+          ) : (
+            <EmptyPlaceholderLight message="Managers worden binnenkort toegevoegd." />
+          )}
+        </div>
+      </section>
+
+      {/* ── 7. ARTIKELEN & ANALYSE (gradient) ───────────────────────── */}
       <section id="artikelen" className="py-20 px-4" style={{ backgroundImage: "url('/gradient-bg.png')", backgroundSize: 'cover', backgroundPosition: 'center', borderTop: '2px solid rgba(0,250,97,0.18)' }}>
         <div className="max-w-8xl mx-auto">
           <div className="flex items-end justify-between mb-10">
@@ -754,46 +792,8 @@ export default async function HomePage() {
         </div>
       </section>
 
-      {/* ── 6b. PRIJSWIJZIGINGEN ─────────────────────────────────── */}
+      {/* ── 7b. PRIJSWIJZIGINGEN ─────────────────────────────────── */}
       <PrijswijzigingenSection />
-
-      {/* ── 7. DE MANAGERS (white) ───────────────────────────────── */}
-      <section id="managers" className="py-20 px-4 bg-white">
-        <div className="max-w-8xl mx-auto">
-          <SectionLabel>Het Team</SectionLabel>
-          <SectionTitleLight>De Managers</SectionTitleLight>
-
-          {managers.length > 0 ? (
-            <div className="mt-10 grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6">
-              {managers.map((m) => (
-                <Link key={m.id} href={`/managers/${m.id}`} className="card-lift bg-white border border-gray-100 hover:border-primary/30 hover:shadow-lg rounded-2xl p-6 flex flex-col items-center text-center gap-3 transition-all duration-300 group">
-                  {m.avatar_url ? (
-                    <div className="relative w-20 h-20 rounded-full overflow-hidden ring-2 ring-gray-200 group-hover:ring-primary/40 transition-all duration-300">
-                      <Image src={m.avatar_url} alt={m.name} fill className="object-cover" />
-                    </div>
-                  ) : (
-                    <div className="w-20 h-20 rounded-full bg-gray-100 ring-2 ring-gray-200 group-hover:ring-primary/40 flex items-center justify-center transition-all duration-300">
-                      <span className="text-3xl font-bold text-primary">{m.name.charAt(0)}</span>
-                    </div>
-                  )}
-                  <div>
-                    <h3 className="font-bold text-xl text-gray-900 group-hover:text-primary transition-colors">{m.name}</h3>
-                    {m.role && <p className="text-xs text-primary mt-0.5">{m.role}</p>}
-                  </div>
-                  {m.bio && <p className="text-xs text-gray-500 leading-relaxed line-clamp-3">{m.bio}</p>}
-                  {m.instagram_url && (
-                    <span className="flex items-center gap-1.5 text-gray-400 group-hover:text-primary text-xs transition-colors mt-auto">
-                      <Instagram size={13} />Instagram
-                    </span>
-                  )}
-                </Link>
-              ))}
-            </div>
-          ) : (
-            <EmptyPlaceholderLight message="Managers worden binnenkort toegevoegd." />
-          )}
-        </div>
-      </section>
 
       {/* ── 8. RANKINGS PREVIEW (dark navy) ──────────────────────────── */}
       {leagueData && (
@@ -804,24 +804,22 @@ export default async function HomePage() {
         >
           <div className="max-w-8xl mx-auto">
             {/* Header */}
-            <div className="flex items-end justify-between mb-8">
-              <div>
-                <span className="inline-block text-xs font-semibold text-primary uppercase tracking-widest mb-2">
-                  Mini-League
-                </span>
-                <h2
-                  className="text-3xl sm:text-4xl lg:text-5xl font-bold text-white leading-tight border-l-4 pl-4"
-                  style={{ borderColor: '#00FA61' }}
-                >
-                  MINI-LEAGUE STAND
-                </h2>
-                <p className="text-white/40 text-sm mt-1 pl-4">
-                  {leagueData.league?.name ?? 'De Groene Pijl competitie'}
-                </p>
-              </div>
+            <div className="flex flex-col items-center text-center mb-8">
+              <span className="inline-block text-xs font-semibold text-primary uppercase tracking-widest mb-2">
+                Mini-League
+              </span>
+              <h2
+                className="text-3xl sm:text-4xl lg:text-5xl font-bold text-white leading-tight border-l-4 pl-4"
+                style={{ borderColor: '#00FA61' }}
+              >
+                MINI-LEAGUE STAND
+              </h2>
+              <p className="text-white/40 text-sm mt-1">
+                {leagueData.league?.name ?? 'De Groene Pijl competitie'}
+              </p>
               <Link
                 href="/rankings"
-                className="hidden sm:inline-flex items-center gap-1.5 text-sm font-semibold transition-colors"
+                className="hidden sm:inline-flex items-center gap-1.5 text-sm font-semibold transition-colors mt-4"
                 style={{ color: '#00FA61' }}
               >
                 Volledige stand <ArrowRight size={14} />
@@ -829,7 +827,7 @@ export default async function HomePage() {
             </div>
 
             {/* Top 10 preview */}
-            <div className="max-w-3xl">
+            <div className="max-w-3xl mx-auto">
               <StandingsTable
                 initialData={leagueData}
                 limit={10}
