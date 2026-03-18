@@ -543,9 +543,9 @@ export default async function HomePage() {
                     {(() => {
                       const cs = lookupCaptainStats(p.player_name, fplCaptainStats);
                       return (
-                        <div style={{ display: 'flex', gap: 16, fontSize: 11, fontWeight: 600, color: 'rgba(0,0,0,0.5)' }}>
-                          <span>🎯 xG/90: <strong style={{ color: 'rgba(0,0,0,0.72)' }}>{cs.xgPer90}</strong></span>
-                          <span>📊 xA/90: <strong style={{ color: 'rgba(0,0,0,0.72)' }}>{cs.xaPer90}</strong></span>
+                        <div style={{ display: 'flex', gap: 16, fontSize: 13, fontWeight: 600, color: 'rgba(0,0,0,0.55)', padding: '4px 0' }}>
+                          <span>⚽ xG/90: <strong style={{ color: 'rgba(0,0,0,0.75)' }}>{cs.xgPer90}</strong></span>
+                          <span>🅰️ xA/90: <strong style={{ color: 'rgba(0,0,0,0.75)' }}>{cs.xaPer90}</strong></span>
                         </div>
                       );
                     })()}
