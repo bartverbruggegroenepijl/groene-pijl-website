@@ -1,5 +1,6 @@
 // PrijswijzigingenSection — homepage blok
 // Server component: fetcht data zelf via fetchPriceChanges().
+// Geen event handlers (server component mag die niet bevatten).
 
 import Link from 'next/link';
 import { ArrowRight, TrendingUp, TrendingDown } from 'lucide-react';
@@ -22,12 +23,15 @@ function PlayerRow({
   player: PriceChangePlayer;
   direction: 'up' | 'down';
 }) {
-  const posBadge = POSITION_STYLE[player.position] ?? { bg: '#e5e7eb', text: '#000' };
-  const changeAmt = Math.abs(player.costChangeEvent) / 10;
-  const changeStr = `${direction === 'up' ? '+' : '-'}£${changeAmt.toFixed(1)}m`;
-  const changeBg  = direction === 'up' ? '#00FA61' : '#FF4444';
-  const changeClr = direction === 'up' ? '#000'    : '#fff';
-  const net       = formatNetTransfers(player.netTransfers);
+  const posBadge   = POSITION_STYLE[player.position] ?? { bg: '#e5e7eb', text: '#000' };
+  // Prijs verandert altijd met £0.1m — bij expected is costChangeEvent nog 0,
+  // maar de verwachting is altijd ±£0.1m.
+  const changeStr  = direction === 'up' ? '+£0.1m' : '-£0.1m';
+  const changeBg   = direction === 'up' ? '#00FA61' : '#FF4444';
+  const changeClr  = direction === 'up' ? '#000'    : '#fff';
+  const netColor   = direction === 'up' ? '#00FA61' : '#FF8888';
+  const net        = formatNetTransfers(player.netTransfers);
+  const isConfirmed = player.status === 'confirmed';
 
   return (
     <div
@@ -43,46 +47,76 @@ function PlayerRow({
         WebkitBackdropFilter: 'blur(6px)',
       }}
     >
-      {/* Foto */}
-      {/* eslint-disable-next-line @next/next/no-img-element */}
-      <img
-        src={player.imageUrl}
-        alt={player.name}
-        width={44}
-        height={55}
+      {/* Ronde foto */}
+      <div
         style={{
           width: 44,
-          height: 55,
-          objectFit: 'cover',
-          objectPosition: 'top center',
-          borderRadius: 8,
-          background: 'rgba(255,255,255,0.1)',
+          height: 44,
+          borderRadius: '50%',
+          overflow: 'hidden',
           flexShrink: 0,
+          background: 'rgba(255,255,255,0.10)',
         }}
-      />
+      >
+        {/* eslint-disable-next-line @next/next/no-img-element */}
+        <img
+          src={player.imageUrl}
+          alt={player.name}
+          width={44}
+          height={44}
+          style={{
+            width: '100%',
+            height: '100%',
+            objectFit: 'cover',
+            objectPosition: 'top center',
+          }}
+        />
+      </div>
 
       {/* Info */}
       <div style={{ flex: 1, minWidth: 0 }}>
         <div style={{ display: 'flex', alignItems: 'center', gap: 6, marginBottom: 2 }}>
-          <span style={{ fontSize: 14, fontWeight: 700, color: '#ffffff', fontFamily: 'Montserrat, sans-serif', whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' }}>
+          <span style={{
+            fontSize: 14, fontWeight: 700, color: '#ffffff',
+            fontFamily: 'Montserrat, sans-serif',
+            whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis',
+          }}>
             {player.name}
           </span>
-          <span style={{ fontSize: 9, fontWeight: 700, padding: '2px 5px', borderRadius: 4, background: posBadge.bg, color: posBadge.text, textTransform: 'uppercase', letterSpacing: '0.05em', flexShrink: 0 }}>
+          <span style={{
+            fontSize: 9, fontWeight: 700, padding: '2px 5px', borderRadius: 4,
+            background: posBadge.bg, color: posBadge.text,
+            textTransform: 'uppercase', letterSpacing: '0.05em', flexShrink: 0,
+          }}>
             {player.position}
           </span>
         </div>
-        <div style={{ fontSize: 11, color: 'rgba(255,255,255,0.55)', fontFamily: 'Montserrat, sans-serif' }}>
-          {player.team} &nbsp;·&nbsp; {player.ownershipPercent}% bezit &nbsp;·&nbsp; <span style={{ color: direction === 'up' ? '#00FA61' : '#FF8888' }}>{net}</span>
+        <div style={{ fontSize: 11, color: 'rgba(255,255,255,0.50)', fontFamily: 'Montserrat, sans-serif' }}>
+          {player.team}
+          &nbsp;·&nbsp;
+          {player.ownershipPercent}% bezit
+          &nbsp;·&nbsp;
+          <span style={{ color: netColor, fontWeight: 600 }}>{net}</span>
         </div>
       </div>
 
-      {/* Prijs + wijziging */}
+      {/* Rechter kolom: prijs + wijziging + status */}
       <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'flex-end', gap: 4, flexShrink: 0 }}>
         <span style={{ fontSize: 14, fontWeight: 700, color: '#ffffff', fontFamily: 'Montserrat, sans-serif' }}>
           £{player.nowCost.toFixed(1)}m
         </span>
-        <span style={{ fontSize: 11, fontWeight: 700, padding: '2px 7px', borderRadius: 20, background: changeBg, color: changeClr, fontFamily: 'Montserrat, sans-serif' }}>
+        <span style={{
+          fontSize: 11, fontWeight: 700, padding: '2px 7px', borderRadius: 20,
+          background: changeBg, color: changeClr, fontFamily: 'Montserrat, sans-serif',
+        }}>
           {changeStr}
+        </span>
+        <span style={{
+          fontSize: 10, fontWeight: 600,
+          color: isConfirmed ? '#00FA61' : 'rgba(255,255,255,0.45)',
+          fontFamily: 'Montserrat, sans-serif',
+        }}>
+          {isConfirmed ? 'Bevestigd ✓' : 'Verwacht'}
         </span>
       </div>
     </div>
@@ -92,9 +126,9 @@ function PlayerRow({
 export default async function PrijswijzigingenSection() {
   const { risers, fallers } = await fetchPriceChanges();
 
-  const shownRisers = risers.slice(0, MAX_SHOWN);
+  const shownRisers  = risers.slice(0, MAX_SHOWN);
   const shownFallers = fallers.slice(0, MAX_SHOWN);
-  const hasData = shownRisers.length > 0 || shownFallers.length > 0;
+  const hasData      = shownRisers.length > 0 || shownFallers.length > 0;
 
   return (
     <section
@@ -134,65 +168,41 @@ export default async function PrijswijzigingenSection() {
 
             {/* Stijgers */}
             <div>
-              <div
-                style={{
-                  display: 'flex',
-                  alignItems: 'center',
-                  gap: 8,
-                  marginBottom: 14,
-                  padding: '8px 14px',
-                  borderRadius: 10,
-                  background: 'rgba(0,250,97,0.12)',
-                  border: '1px solid rgba(0,250,97,0.25)',
-                  width: 'fit-content',
-                }}
-              >
+              <div style={{
+                display: 'flex', alignItems: 'center', gap: 8,
+                marginBottom: 14, padding: '8px 14px', borderRadius: 10,
+                background: 'rgba(0,250,97,0.12)', border: '1px solid rgba(0,250,97,0.25)',
+                width: 'fit-content',
+              }}>
                 <TrendingUp size={16} color="#00FA61" />
                 <span style={{ fontSize: 13, fontWeight: 700, color: '#00FA61', fontFamily: 'Montserrat, sans-serif', letterSpacing: '0.04em' }}>
-                  Stijgers ({risers.length})
+                  Verwachte stijgers ({risers.length})
                 </span>
               </div>
               <div style={{ display: 'flex', flexDirection: 'column', gap: 8 }}>
                 {shownRisers.map((p) => (
                   <PlayerRow key={p.id} player={p} direction="up" />
                 ))}
-                {shownRisers.length === 0 && (
-                  <p style={{ color: 'rgba(255,255,255,0.35)', fontSize: 13, padding: '24px 0', textAlign: 'center' }}>
-                    Geen stijgers deze gameweek
-                  </p>
-                )}
               </div>
             </div>
 
             {/* Dalers */}
             <div>
-              <div
-                style={{
-                  display: 'flex',
-                  alignItems: 'center',
-                  gap: 8,
-                  marginBottom: 14,
-                  padding: '8px 14px',
-                  borderRadius: 10,
-                  background: 'rgba(255,68,68,0.12)',
-                  border: '1px solid rgba(255,68,68,0.25)',
-                  width: 'fit-content',
-                }}
-              >
+              <div style={{
+                display: 'flex', alignItems: 'center', gap: 8,
+                marginBottom: 14, padding: '8px 14px', borderRadius: 10,
+                background: 'rgba(255,68,68,0.12)', border: '1px solid rgba(255,68,68,0.25)',
+                width: 'fit-content',
+              }}>
                 <TrendingDown size={16} color="#FF6B6B" />
                 <span style={{ fontSize: 13, fontWeight: 700, color: '#FF6B6B', fontFamily: 'Montserrat, sans-serif', letterSpacing: '0.04em' }}>
-                  Dalers ({fallers.length})
+                  Verwachte dalers ({fallers.length})
                 </span>
               </div>
               <div style={{ display: 'flex', flexDirection: 'column', gap: 8 }}>
                 {shownFallers.map((p) => (
                   <PlayerRow key={p.id} player={p} direction="down" />
                 ))}
-                {shownFallers.length === 0 && (
-                  <p style={{ color: 'rgba(255,255,255,0.35)', fontSize: 13, padding: '24px 0', textAlign: 'center' }}>
-                    Geen dalers deze gameweek
-                  </p>
-                )}
               </div>
             </div>
           </div>
@@ -201,39 +211,25 @@ export default async function PrijswijzigingenSection() {
             className="rounded-2xl border border-dashed py-16 text-center"
             style={{ borderColor: 'rgba(255,255,255,0.12)' }}
           >
-            <p style={{ color: 'rgba(255,255,255,0.35)', fontSize: 14 }}>
-              Geen prijswijzigingen beschikbaar
+            <p style={{ color: 'rgba(255,255,255,0.35)', fontSize: 14, fontFamily: 'Montserrat, sans-serif' }}>
+              Geen verwachte prijswijzigingen vandaag
             </p>
           </div>
         )}
 
         {/* CTAs */}
-        <div
-          style={{
-            display: 'flex',
-            flexWrap: 'wrap',
-            alignItems: 'center',
-            justifyContent: 'center',
-            gap: 12,
-            marginTop: 28,
-          }}
-        >
+        <div style={{
+          display: 'flex', flexWrap: 'wrap', alignItems: 'center',
+          justifyContent: 'center', gap: 12, marginTop: 28,
+        }}>
           <Link
             href="/prijswijzigingen"
             style={{
-              display: 'inline-flex',
-              alignItems: 'center',
-              gap: 6,
-              background: 'rgba(0,250,97,0.15)',
-              border: '1px solid rgba(0,250,97,0.35)',
-              color: '#00FA61',
-              fontSize: 13,
-              fontWeight: 700,
-              padding: '10px 20px',
-              borderRadius: 10,
-              textDecoration: 'none',
-              fontFamily: 'Montserrat, sans-serif',
-              transition: 'background 0.2s',
+              display: 'inline-flex', alignItems: 'center', gap: 6,
+              background: 'rgba(0,250,97,0.15)', border: '1px solid rgba(0,250,97,0.35)',
+              color: '#00FA61', fontSize: 13, fontWeight: 700,
+              padding: '10px 20px', borderRadius: 10,
+              textDecoration: 'none', fontFamily: 'Montserrat, sans-serif',
             }}
           >
             Alle prijswijzigingen <ArrowRight size={14} />
@@ -243,30 +239,20 @@ export default async function PrijswijzigingenSection() {
             target="_blank"
             rel="noopener noreferrer"
             style={{
-              display: 'inline-flex',
-              alignItems: 'center',
-              gap: 6,
-              background: 'rgba(255,255,255,0.06)',
-              border: '1px solid rgba(255,255,255,0.15)',
-              color: 'rgba(255,255,255,0.7)',
-              fontSize: 13,
-              fontWeight: 600,
-              padding: '10px 20px',
-              borderRadius: 10,
-              textDecoration: 'none',
-              fontFamily: 'Montserrat, sans-serif',
+              display: 'inline-flex', alignItems: 'center', gap: 6,
+              background: 'rgba(255,255,255,0.06)', border: '1px solid rgba(255,255,255,0.15)',
+              color: 'rgba(255,255,255,0.7)', fontSize: 13, fontWeight: 600,
+              padding: '10px 20px', borderRadius: 10,
+              textDecoration: 'none', fontFamily: 'Montserrat, sans-serif',
             }}
           >
             Bekijk op LiveFPL ↗
           </a>
         </div>
 
-        {/* Mobile "alle" link */}
+        {/* Mobiele "alle" link */}
         <div className="text-center mt-5 sm:hidden">
-          <Link
-            href="/prijswijzigingen"
-            className="inline-flex items-center gap-1.5 text-primary font-semibold text-sm"
-          >
+          <Link href="/prijswijzigingen" className="inline-flex items-center gap-1.5 text-primary font-semibold text-sm">
             Alle prijswijzigingen <ArrowRight size={14} />
           </Link>
         </div>
