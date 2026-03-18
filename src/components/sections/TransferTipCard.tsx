@@ -43,9 +43,7 @@ export default function TransferTipCard({
         background: 'linear-gradient(135deg, #C8A84B 0%, #FFD700 50%, #C8A84B 100%)',
         padding: '1.5px',
         border: hovered ? '1.5px solid rgba(255,215,0,1)' : '1.5px solid transparent',
-        boxShadow: hovered
-          ? '0 0 20px rgba(255,215,0,0.7), 0 0 45px rgba(255,215,0,0.4), 0 0 80px rgba(255,215,0,0.15), inset 0 0 20px rgba(255,215,0,0.08)'
-          : '0 8px 32px rgba(0,0,0,0.6), 0 0 20px rgba(200,168,75,0.2)',
+        boxShadow: 'none',
         transition: 'all 0.3s ease',
         cursor: 'default',
       }}

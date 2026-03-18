@@ -133,22 +133,24 @@ body {
   width: 100%;
 }
 
-/* Mobiel: horizontale swipe */
+/* Mobiel: horizontale swipe met peek effect */
 @media (max-width: 768px) {
+  .transfertips-slider-outer {
+    overflow: visible;
+  }
   .transfertips-grid {
     display: flex;
     overflow-x: auto;
     scroll-snap-type: x mandatory;
     -webkit-overflow-scrolling: touch;
     gap: 16px;
-    padding: 0 24px 8px;
+    padding: 0 16px 8px;
     scrollbar-width: none;
-    width: calc(100% + 0px);
   }
   .transfertips-grid::-webkit-scrollbar { display: none; }
   .transfertips-grid > * {
-    flex: 0 0 85vw;
-    scroll-snap-align: center;
+    flex: 0 0 82vw;
+    scroll-snap-align: start;
   }
 }
 

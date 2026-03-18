@@ -26,7 +26,7 @@ export default function TransferTipsSlider({ children, count }: Props) {
   }, [handleScroll])
 
   return (
-    <div>
+    <div className="transfertips-slider-outer">
       <div ref={containerRef} className="transfertips-grid mt-10">
         {children}
       </div>
