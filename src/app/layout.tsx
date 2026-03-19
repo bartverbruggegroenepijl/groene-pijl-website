@@ -1,3 +1,4 @@
+// De Groene Pijl — Next.js root layout
 import type { Metadata } from "next";
 import "@fontsource/montserrat/400.css";
 import "@fontsource/montserrat/500.css";
