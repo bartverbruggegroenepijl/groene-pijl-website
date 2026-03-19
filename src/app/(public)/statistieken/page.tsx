@@ -1042,6 +1042,13 @@ export default function StatistiekenPage() {
               </div>
             </div>
 
+            {/* ── Teams tab disclaimer ── */}
+            {isTeamsTab && (
+              <p style={{ color: 'rgba(255,255,255,0.3)', fontSize: 11, fontStyle: 'italic', marginTop: 8 }}>
+                * Team xG is berekend op basis van FPL spelersdata en kan afwijken van officiële Opta statistieken.
+              </p>
+            )}
+
             {/* ── Pagination ── */}
             <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginTop: 16, flexWrap: 'wrap' as const, gap: 8 }}>
               <span style={{ color: 'rgba(255,255,255,0.3)', fontSize: 12 }}>
