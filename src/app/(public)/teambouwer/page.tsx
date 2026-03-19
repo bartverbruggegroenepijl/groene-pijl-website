@@ -87,6 +87,29 @@ const FORMATIONS: Record<FormationKey, { def: number; mid: number; fwd: number }
 const FORMATION_KEYS = Object.keys(FORMATIONS) as FormationKey[];
 const DEFAULT_FORMATION: FormationKey = '4-4-2';
 
+/* ── Centrale opstellingsvalidatie ── */
+function isGeldigeOpstelling(
+  spelers: Array<SelectedPlayer & { isBank: boolean }>,
+): boolean {
+  // Minder dan 15 spelers: nog aan het bouwen – altijd geldig
+  if (spelers.length !== 15) return true;
+  const starters = spelers.filter((p) => !p.isBank);
+  const bank     = spelers.filter((p) => p.isBank);
+  // Exact 11 basisspelers en 4 bankspelers
+  if (starters.length !== 11 || bank.length !== 4) return false;
+  // Exact 1 GK in basis, exact 1 GK op bank
+  const gkBasis = starters.filter((p) => p.position === 'GK').length;
+  const gkBank  = bank.filter((p) => p.position === 'GK').length;
+  if (gkBasis !== 1 || gkBank !== 1) return false;
+  // Min 3 DEF en min 1 FWD in basis
+  const def = starters.filter((p) => p.position === 'DEF').length;
+  const mid = starters.filter((p) => p.position === 'MID').length;
+  const fwd = starters.filter((p) => p.position === 'FWD').length;
+  if (def < 3 || fwd < 1) return false;
+  // Geldige formatie
+  return !!FORMATIONS[`${def}-${mid}-${fwd}` as FormationKey];
+}
+
 /* ── FDR stijlen voor spelerslijst ── */
 const FDR_STYLE: Record<number, { bg: string; color: string }> = {
   1: { bg: '#375523', color: '#fff' },
@@ -561,6 +584,9 @@ export default function TeambouwerPage() {
 
     setFormation(newFormation);
     setTeam(newTeam);
+    // Wis GW-wisseloverschrijvingen: spelers krijgen nieuwe slotIds na formatieverandering,
+    // waardoor oude player-id-gebaseerde overrides ongeldig worden.
+    setGwPlayerBank({});
   }, [team]);
 
   /* ── team stats (basis) ── */
@@ -710,6 +736,21 @@ export default function TeambouwerPage() {
     });
   }, [effectiveTeamForGw, gwPlayerBank, currentGW]);
 
+  // Auto-herstel ongeldige GW-bank staat (bijv. na laden van localStorage of na formatieverandering)
+  useEffect(() => {
+    if (!currentGW || gwTeamPlayers.length !== 15) return;
+    if (!isGeldigeOpstelling(gwTeamPlayers)) {
+      setGwPlayerBank((prev) => {
+        // Alleen herstellen als er daadwerkelijk overrides zijn voor dit GW
+        if (!prev[currentGW] || Object.keys(prev[currentGW]).length === 0) return prev;
+        const next = { ...prev };
+        delete next[currentGW];
+        return next;
+      });
+    }
+  // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [gwTeamPlayers, currentGW]);
+
   /* ── GW starter/bench rijen ── */
   const gwStarters = gwTeamPlayers.filter((p) => !p.isBank);
   const gwGkRow    = gwStarters.filter((p) => p.position === 'GK');
@@ -781,8 +822,8 @@ export default function TeambouwerPage() {
       const fwdCount = simStarters.filter((p) => p.position === 'FWD').length;
       const newKey   = `${defCount}-${midCount}-${fwdCount}` as FormationKey;
 
-      if (gkCount !== 1 || !FORMATIONS[newKey]) {
-        setSwapError('Deze wissel resulteert in een ongeldige opstelling');
+      if (simStarters.length !== 11 || gkCount !== 1 || !FORMATIONS[newKey]) {
+        setSwapError('Ongeldige opstelling na wissel');
         setSelectedPlayerId(null);
         return;
       }
