@@ -46,7 +46,15 @@ export default async function ArtikelDetailPage({ params }: Props) {
   const author = article.managers as any;
 
   return (
-    <main className="min-h-screen bg-background-dark text-white">
+    <main
+      className="min-h-screen text-white"
+      style={{
+        backgroundImage: "url('/gradient-bg.png')",
+        backgroundSize: 'cover',
+        backgroundPosition: 'center',
+        minHeight: '100vh',
+      }}
+    >
       <div className="max-w-3xl mx-auto px-4 sm:px-6 lg:px-8 py-12">
         {/* Back */}
         <Link href="/artikelen" className="inline-flex items-center gap-2 text-white/40 hover:text-primary text-sm font-medium transition-colors mb-8">
@@ -99,7 +107,7 @@ export default async function ArtikelDetailPage({ params }: Props) {
             </div>
           )}
           {article.published_at && (
-            <div className="flex items-center gap-1.5 text-white/40 text-sm">
+            <div className="flex items-center gap-1.5 text-white/70 text-sm">
               <Calendar size={13} />
               {formatDate(article.published_at)}
             </div>
