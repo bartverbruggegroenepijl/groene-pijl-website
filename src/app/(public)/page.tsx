@@ -40,6 +40,7 @@ interface CaptainPickPlayer {
   position: string | null;
   motivation: string | null;
   image_url: string | null;
+  fpl_player_id: number | null;
 }
 
 interface CaptainPick {
@@ -55,6 +56,7 @@ interface BuyTipPlayer {
   price: number | null;
   motivation: string | null;
   image_url: string | null;
+  fpl_player_id: number | null;
 }
 
 interface BuyTip {
@@ -226,26 +228,51 @@ function PlayerBadgeLight({ imageUrl, name, size = 56, objectPosition = 'center'
 // ─── FPL stats helpers ────────────────────────────────────────────────────────
 
 function lookupFplStats(
+  fplId: number | null,
   name: string | null,
-  map: Record<string, { goals: number; assists: number }>,
+  club: string | null,
+  byId: Record<number, { goals: number; assists: number }>,
+  byNameTeam: Record<string, { goals: number; assists: number }>,
 ): { goals: number; assists: number } {
-  if (!name) return { goals: 0, assists: 0 }
-  const lower = name.toLowerCase()
-  if (map[lower]) return map[lower]
-  // Probeer op achternaam (laatste woord)
-  const lastName = lower.split(' ').pop() ?? lower
-  return map[lastName] ?? { goals: 0, assists: 0 }
+  // 1. ID-gebaseerd (meest betrouwbaar, voorkomt naam-conflicten)
+  if (fplId != null && byId[fplId]) return byId[fplId];
+  // 2. Naam + team afkorting (bijv. "wilson|ful" vs "wilson|new")
+  if (name && club) {
+    const key = `${name.toLowerCase()}|${club.toLowerCase()}`;
+    if (byNameTeam[key]) return byNameTeam[key];
+  }
+  // 3. Naam alleen (laatste redmiddel)
+  if (name) {
+    const lower = name.toLowerCase();
+    if (byNameTeam[lower]) return byNameTeam[lower];
+    const lastName = lower.split(' ').pop() ?? lower;
+    return byNameTeam[lastName] ?? { goals: 0, assists: 0 };
+  }
+  return { goals: 0, assists: 0 };
 }
 
 function lookupCaptainStats(
+  fplId: number | null,
   name: string | null,
-  map: Record<string, { xgPer90: string; xaPer90: string }>,
+  club: string | null,
+  byId: Record<number, { xgPer90: string; xaPer90: string }>,
+  byNameTeam: Record<string, { xgPer90: string; xaPer90: string }>,
 ): { xgPer90: string; xaPer90: string } {
-  if (!name) return { xgPer90: '–', xaPer90: '–' }
-  const lower = name.toLowerCase()
-  if (map[lower]) return map[lower]
-  const lastName = lower.split(' ').pop() ?? lower
-  return map[lastName] ?? { xgPer90: '–', xaPer90: '–' }
+  // 1. ID-gebaseerd (meest betrouwbaar, voorkomt naam-conflicten)
+  if (fplId != null && byId[fplId]) return byId[fplId];
+  // 2. Naam + team afkorting
+  if (name && club) {
+    const key = `${name.toLowerCase()}|${club.toLowerCase()}`;
+    if (byNameTeam[key]) return byNameTeam[key];
+  }
+  // 3. Naam alleen (laatste redmiddel)
+  if (name) {
+    const lower = name.toLowerCase();
+    if (byNameTeam[lower]) return byNameTeam[lower];
+    const lastName = lower.split(' ').pop() ?? lower;
+    return byNameTeam[lastName] ?? { xgPer90: '–', xaPer90: '–' };
+  }
+  return { xgPer90: '–', xaPer90: '–' };
 }
 
 // ─── Page ─────────────────────────────────────────────────────────────────────
@@ -294,7 +321,7 @@ export default async function HomePage() {
     try {
       return await supabase
         .from('captain_picks')
-        .select('id, gameweek, captain_pick_players(rank, player_name, player_club, position, motivation, image_url)')
+        .select('id, gameweek, captain_pick_players(rank, player_name, player_club, position, motivation, image_url, fpl_player_id)')
         .eq('published', true)
         .order('created_at', { ascending: false })
         .limit(1);
@@ -305,7 +332,7 @@ export default async function HomePage() {
     try {
       return await supabase
         .from('buy_tips')
-        .select('id, gameweek, buy_tip_players(player_name, player_club, position, price, motivation, image_url)')
+        .select('id, gameweek, buy_tip_players(player_name, player_club, position, price, motivation, image_url, fpl_player_id)')
         .eq('published', true)
         .order('created_at', { ascending: false })
         .limit(1);
@@ -384,8 +411,12 @@ export default async function HomePage() {
   // ── FPL spelersdata voor transfertips (goals + assists) + captain picks (xG/xA per 90) ──
   // revalidate: 300 = zelfde als fetchGameweekInfo() → Next.js dedupliceert de fetch
   // FPL_HEADERS vereist: FPL blokkeert requests zonder browser-achtige User-Agent
-  const fplTransferStats: Record<string, { goals: number; assists: number }> = {};
-  const fplCaptainStats: Record<string, { xgPer90: string; xaPer90: string }> = {};
+  // Primair: op FPL player ID (betrouwbaarst, voorkomt naam-conflicten zoals Wilson/FUL vs Wilson/NEW)
+  // Fallback: op naam + team afkorting, daarna naam alleen
+  const fplTransferStatsById:       Record<number, { goals: number; assists: number }>      = {};
+  const fplCaptainStatsById:        Record<number, { xgPer90: string; xaPer90: string }>    = {};
+  const fplTransferStatsByNameTeam: Record<string, { goals: number; assists: number }>      = {};
+  const fplCaptainStatsByNameTeam:  Record<string, { xgPer90: string; xaPer90: string }>   = {};
   try {
     const fplBootstrapRes = await fetch('https://fantasy.premierleague.com/api/bootstrap-static/', {
       next: { revalidate: 300 },
@@ -393,12 +424,23 @@ export default async function HomePage() {
     });
     if (fplBootstrapRes.ok) {
       const fplJson = await fplBootstrapRes.json();
+      // Bouw team id → short name map (bijv. 6 → 'che', 7 → 'cry')
+      const teamShortMap: Record<number, string> = {};
+      for (const t of (fplJson.teams ?? [])) {
+        teamShortMap[t.id] = String(t.short_name ?? '').toLowerCase();
+      }
       for (const el of (fplJson.elements ?? [])) {
-        const webName = String(el.web_name ?? '').toLowerCase();
-        const fullName = `${el.first_name ?? ''} ${el.second_name ?? ''}`.trim().toLowerCase();
-        const stats = { goals: el.goals_scored ?? 0, assists: el.assists ?? 0 };
-        if (webName) fplTransferStats[webName] = stats;
-        if (fullName) fplTransferStats[fullName] = stats;
+        const teamShort = teamShortMap[el.team] ?? '';
+        const webName   = String(el.web_name ?? '').toLowerCase();
+        const fullName  = `${el.first_name ?? ''} ${el.second_name ?? ''}`.trim().toLowerCase();
+        const transferStats = { goals: el.goals_scored ?? 0, assists: el.assists ?? 0 };
+        // Primair: FPL player ID
+        fplTransferStatsById[el.id] = transferStats;
+        // Fallback: naam + team afkorting (bijv. "wilson|ful" vs "wilson|new")
+        if (webName  && teamShort) fplTransferStatsByNameTeam[`${webName}|${teamShort}`]  = transferStats;
+        if (fullName && teamShort) fplTransferStatsByNameTeam[`${fullName}|${teamShort}`] = transferStats;
+        // Laatste redmiddel: naam alleen
+        if (webName) fplTransferStatsByNameTeam[webName] = transferStats;
         // xG per 90 + xA per 90 voor captain picks
         const mins: number = el.minutes ?? 0;
         const xg = parseFloat(el.expected_goals ?? '0');
@@ -406,8 +448,13 @@ export default async function HomePage() {
         const captainStats = mins > 0
           ? { xgPer90: ((xg / mins) * 90).toFixed(2), xaPer90: ((xa / mins) * 90).toFixed(2) }
           : { xgPer90: '–', xaPer90: '–' };
-        if (webName) fplCaptainStats[webName] = captainStats;
-        if (fullName) fplCaptainStats[fullName] = captainStats;
+        // Primair: FPL player ID
+        fplCaptainStatsById[el.id] = captainStats;
+        // Fallback: naam + team afkorting
+        if (webName  && teamShort) fplCaptainStatsByNameTeam[`${webName}|${teamShort}`]  = captainStats;
+        if (fullName && teamShort) fplCaptainStatsByNameTeam[`${fullName}|${teamShort}`] = captainStats;
+        // Laatste redmiddel: naam alleen
+        if (webName) fplCaptainStatsByNameTeam[webName] = captainStats;
       }
     } else {
       console.warn(`[FPL] bootstrap-static returned ${fplBootstrapRes.status} — stats vallen terug op lege waarden`);
@@ -557,8 +604,8 @@ export default async function HomePage() {
                     </div>
                     {/* Seizoen goals/assists links + xG/xA per 90 rechts */}
                     {(() => {
-                      const cs = lookupCaptainStats(p.player_name, fplCaptainStats);
-                      const ss = lookupFplStats(p.player_name, fplTransferStats);
+                      const cs = lookupCaptainStats(p.fpl_player_id, p.player_name, p.player_club, fplCaptainStatsById, fplCaptainStatsByNameTeam);
+                      const ss = lookupFplStats(p.fpl_player_id, p.player_name, p.player_club, fplTransferStatsById, fplTransferStatsByNameTeam);
                       return (
                         <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', fontSize: 13, fontWeight: 600, color: '#1F0E84', padding: '4px 0' }}>
                           {/* Seizoen totalen — links */}
@@ -604,8 +651,8 @@ export default async function HomePage() {
           {kooptips && kooptips.buy_tip_players.length > 0 ? (
             <TransferTipsSlider count={kooptips.buy_tip_players.length}>
               {kooptips.buy_tip_players.map((p, i) => {
-                const stats = lookupFplStats(p.player_name, fplTransferStats);
-                const captainStats = lookupCaptainStats(p.player_name, fplCaptainStats);
+                const stats = lookupFplStats(p.fpl_player_id, p.player_name, p.player_club, fplTransferStatsById, fplTransferStatsByNameTeam);
+                const captainStats = lookupCaptainStats(p.fpl_player_id, p.player_name, p.player_club, fplCaptainStatsById, fplCaptainStatsByNameTeam);
                 return (
                   <TransferTipCard
                     key={i}
