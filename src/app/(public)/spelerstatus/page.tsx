@@ -97,7 +97,22 @@ export default function SpelerstatusPage() {
     });
 
   return (
-    <main className="min-h-screen text-white" style={{ background: '#1F0E84' }}>
+    <main
+      className="min-h-screen text-white relative"
+      style={{
+        backgroundImage: "url('/gradient-bg.png')",
+        backgroundSize: 'cover',
+        backgroundPosition: 'center',
+        backgroundAttachment: 'fixed',
+      }}
+    >
+      {/* Semi-transparante overlay */}
+      <div style={{
+        position: 'fixed', inset: 0,
+        background: 'rgba(0,0,0,0.35)',
+        zIndex: 0, pointerEvents: 'none',
+      }} />
+      <div className="relative" style={{ zIndex: 1 }}>
 
       {/* ── Header ── */}
       <div
@@ -298,6 +313,7 @@ export default function SpelerstatusPage() {
             })}
           </div>
         )}
+      </div>
       </div>
     </main>
   );

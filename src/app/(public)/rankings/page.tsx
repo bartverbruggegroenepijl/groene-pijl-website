@@ -16,9 +16,21 @@ export default async function RankingsPage() {
 
   return (
     <main
-      className="min-h-screen pt-24 pb-20 px-4"
-      style={{ background: '#1F0E84' }}
+      className="min-h-screen pt-24 pb-20 px-4 relative"
+      style={{
+        backgroundImage: "url('/gradient-bg.png')",
+        backgroundSize: 'cover',
+        backgroundPosition: 'center',
+        backgroundAttachment: 'fixed',
+      }}
     >
+      {/* Semi-transparante overlay */}
+      <div style={{
+        position: 'fixed', inset: 0,
+        background: 'rgba(0,0,0,0.35)',
+        zIndex: 0, pointerEvents: 'none',
+      }} />
+      <div className="relative" style={{ zIndex: 1 }}>
       <div className="max-w-4xl mx-auto">
 
         {/* Back link */}
@@ -124,6 +136,7 @@ export default async function RankingsPage() {
           </a>
         </div>
 
+      </div>
       </div>
     </main>
   );
