@@ -151,7 +151,7 @@ export default function Footer() {
               </li>
               <li>
                 <a
-                  href="https://www.instagram.com/groenepijlpodcast"
+                  href="https://www.instagram.com/fpl_groenepijl"
                   target="_blank"
                   rel="noopener noreferrer"
                   className="flex items-center gap-2 transition-colors"
@@ -159,7 +159,7 @@ export default function Footer() {
                   onMouseEnter={(e) => (e.currentTarget.style.color = '#C821C3')}
                   onMouseLeave={(e) => (e.currentTarget.style.color = 'rgba(200,33,195,0.7)')}
                 >
-                  <Instagram size={14} /> @groenepijlpodcast
+                  <Instagram size={14} /> @fpl_groenepijl
                 </a>
               </li>
               <li>
@@ -179,11 +179,11 @@ export default function Footer() {
           style={{ borderTop: '1px solid rgba(255,255,255,0.07)' }}
         >
           <p className="text-xs" style={{ color: 'rgba(255,255,255,0.25)' }}>
-            © {new Date().getFullYear()} De Groene Pijl — De Nederlandse FPL Podcast
+            © {new Date().getFullYear()} De Groene Pijl — FPL Praat
           </p>
           <div className="flex items-center gap-4">
             <a
-              href="https://www.instagram.com/groenepijlpodcast"
+              href="https://www.instagram.com/fpl_groenepijl"
               target="_blank"
               rel="noopener noreferrer"
               className="transition-colors"
