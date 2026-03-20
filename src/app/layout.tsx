@@ -10,8 +10,8 @@ import "@fontsource/bebas-neue";
 import "./globals.css";
 
 export const metadata: Metadata = {
-  title: "De Groene Pijl — De Nederlandse FPL Podcast",
-  description: "Wekelijkse analyse, captain picks, kooptips en breaking FPL nieuws. De enige Nederlandse Fantasy Premier League podcast.",
+  title: "De Groene Pijl — FPL Praat",
+  description: "De Groene Pijl — FPL Praat",
   icons: {
     icon: '/icon.png',
     shortcut: '/favicon.ico',
