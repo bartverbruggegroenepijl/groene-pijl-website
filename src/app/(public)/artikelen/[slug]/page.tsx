@@ -11,7 +11,8 @@ interface Props {
 }
 
 async function markdownToHtml(markdown: string): Promise<string> {
-  const result = await remark().use(remarkHtml).process(markdown);
+  // sanitize: false zodat embedded afbeeldingen en HTML in content behouden blijven
+  const result = await remark().use(remarkHtml, { sanitize: false }).process(markdown);
   return result.toString();
 }
 
@@ -49,7 +50,14 @@ export default async function ArtikelDetailPage({ params }: Props) {
       {/* Cover */}
       {article.cover_image && (
         <div className="relative w-full h-64 sm:h-80 lg:h-96">
-          <Image src={article.cover_image} alt={article.title} fill className="object-cover" />
+          <Image
+            src={article.cover_image}
+            alt={article.title}
+            fill
+            sizes="100vw"
+            priority
+            className="object-cover"
+          />
           <div className="absolute inset-0 bg-gradient-to-b from-transparent to-background-dark" />
         </div>
       )}

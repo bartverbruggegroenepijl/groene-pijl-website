@@ -1,11 +1,24 @@
 'use client';
 
 import { useEffect, useState, useTransition } from 'react';
+import dynamic from 'next/dynamic';
 import Link from 'next/link';
 import { ArrowLeft, Save, Loader2 } from 'lucide-react';
 import type { Article, Manager } from '@/types';
 import { ARTICLE_CATEGORIES } from '@/types';
 import ArticleImageUpload from '@/components/admin/ArticleImageUpload';
+import '@uiw/react-md-editor/markdown-editor.css';
+
+// Dynamic import om SSR-issues te vermijden
+const MDEditor = dynamic(
+  () => import('@uiw/react-md-editor').then((mod) => mod.default),
+  {
+    ssr: false,
+    loading: () => (
+      <div className="w-full rounded-lg animate-pulse" style={{ height: 500, background: '#111111', border: '1px solid rgba(255,255,255,0.1)' }} />
+    ),
+  }
+);
 
 // ─── Slug helper ─────────────────────────────────────────────
 
@@ -187,18 +200,28 @@ export default function ArticleForm({ managers, article, action, mode }: Article
             />
           </div>
 
-          {/* Content */}
+          {/* Content — rich text editor */}
           <div className="bg-[#1a1a1a] border border-white/8 rounded-xl p-5">
-            <label htmlFor="content" className={labelClass}>Content</label>
-            <textarea
-              id="content"
-              name="content"
-              value={content}
-              onChange={(e) => setContent(e.target.value)}
-              rows={16}
-              placeholder="Schrijf hier de volledige inhoud van het artikel..."
-              className={inputClass + ' resize-y font-mono text-xs leading-relaxed'}
-            />
+            <label className={labelClass}>Content</label>
+            {/* Hidden input zodat FormData de markdown-waarde meekrijgt */}
+            <input type="hidden" name="content" value={content} />
+            <div data-color-mode="dark">
+              <MDEditor
+                value={content}
+                onChange={(val) => setContent(val ?? '')}
+                height={500}
+                visibleDragbar={false}
+                preview="edit"
+                style={{
+                  background: '#111111',
+                  borderRadius: '0.5rem',
+                  border: '1px solid rgba(255,255,255,0.1)',
+                }}
+              />
+            </div>
+            <p className="mt-2 text-xs text-gray-600">
+              Markdown ondersteund · H1–H3, **vet**, *cursief*, lijsten, links, afbeeldingen, blockquotes, code
+            </p>
           </div>
         </div>
 
