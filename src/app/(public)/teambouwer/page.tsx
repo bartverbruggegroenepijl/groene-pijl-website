@@ -346,6 +346,48 @@ function PitchCard({
   );
 }
 
+/* ─────────────── localStorage helper (sync opslaan) ────────── */
+
+function saveGwPlanNow(
+  gwPlayerBank: Record<number, Record<number, boolean>>,
+  gwTransfers: Record<number, GwTransfer[]>,
+  formation: FormationKey,
+): void {
+  if (Object.keys(gwPlayerBank).length === 0 && Object.keys(gwTransfers).length === 0) return;
+  try {
+    const existing = localStorage.getItem(PLAN_KEY);
+    const plan: {
+      baseTeam: unknown;
+      gameweeks: Record<string, {
+        spelers: Array<{ id: number; isBank: boolean }>;
+        transfers: Array<{ uit: number; in: number; timestamp: string }>;
+        transfersFull: GwTransfer[];
+        formatie: string;
+      }>;
+    } = existing ? JSON.parse(existing) : { baseTeam: null, gameweeks: {} };
+    const allGwSet = new Set([
+      ...Object.keys(gwPlayerBank).map(Number),
+      ...Object.keys(gwTransfers).map(Number),
+    ]);
+    for (const gw of Array.from(allGwSet)) {
+      const playerBank = gwPlayerBank[gw] ?? {};
+      const gwTrs      = gwTransfers[gw] ?? [];
+      plan.gameweeks[String(gw)] = {
+        ...(plan.gameweeks[String(gw)] ?? {}),
+        spelers: Object.entries(playerBank).map(([id, isBank]) => ({ id: parseInt(id, 10), isBank })),
+        transfers: gwTrs.map(t => ({
+          uit: t.outId,
+          in: t.inPlayer.id,
+          timestamp: new Date(t.timestamp).toISOString(),
+        })),
+        transfersFull: gwTrs,
+        formatie: formation,
+      };
+    }
+    localStorage.setItem(PLAN_KEY, JSON.stringify(plan));
+  } catch {}
+}
+
 /* ─────────────────────── main component ────────────────────── */
 
 export default function TeambouwerPage() {
@@ -476,45 +518,16 @@ export default function TeambouwerPage() {
     return () => clearTimeout(t);
   }, [swapError]);
 
+  /* ── Sla GW-plan op bij page unload (tab sluiten, refreshen, navigeren) ── */
+  useEffect(() => {
+    const handler = () => saveGwPlanNow(gwPlayerBank, gwTransfers, formation);
+    window.addEventListener('beforeunload', handler);
+    return () => window.removeEventListener('beforeunload', handler);
+  }, [gwPlayerBank, gwTransfers, formation]);
+
   /* ── Auto-sla GW-plan op zodra gwPlayerBank of gwTransfers wijzigt ── */
   useEffect(() => {
-    if (Object.keys(gwPlayerBank).length === 0 && Object.keys(gwTransfers).length === 0) return;
-    try {
-      const existing = localStorage.getItem(PLAN_KEY);
-      const plan: {
-        baseTeam: unknown;
-        gameweeks: Record<string, {
-          spelers: Array<{ id: number; isBank: boolean }>;
-          transfers: Array<{ uit: number; in: number; timestamp: string }>;
-          transfersFull: GwTransfer[];
-          formatie: string;
-        }>;
-      } = existing ? JSON.parse(existing) : { baseTeam: null, gameweeks: {} };
-
-      // Samenvoeg alle GWs (zowel bank als transfers)
-      const allGwSet = new Set([
-        ...Object.keys(gwPlayerBank).map(Number),
-        ...Object.keys(gwTransfers).map(Number),
-      ]);
-      const allGws = Array.from(allGwSet);
-
-      for (const gw of allGws) {
-        const playerBank = gwPlayerBank[gw] ?? {};
-        const gwTrs      = gwTransfers[gw] ?? [];
-        plan.gameweeks[String(gw)] = {
-          ...(plan.gameweeks[String(gw)] ?? {}),
-          spelers: Object.entries(playerBank).map(([id, isBank]) => ({ id: parseInt(id, 10), isBank })),
-          transfers: gwTrs.map(t => ({
-            uit: t.outId,
-            in: t.inPlayer.id,
-            timestamp: new Date(t.timestamp).toISOString(),
-          })),
-          transfersFull: gwTrs,
-          formatie: formation,
-        };
-      }
-      localStorage.setItem(PLAN_KEY, JSON.stringify(plan));
-    } catch {}
+    saveGwPlanNow(gwPlayerBank, gwTransfers, formation);
   }, [gwPlayerBank, gwTransfers, formation]);
 
   /* ── Auto-sla baseTeam op zodra team 11+ spelers heeft ── */
@@ -828,17 +841,21 @@ export default function TeambouwerPage() {
         return;
       }
 
-      setGwPlayerBank((prev) => ({
-        ...prev,
+      // Bereken nieuwe bank state expliciet zodat we direct kunnen opslaan
+      const newGwPlayerBank = {
+        ...gwPlayerBank,
         [currentGW]: {
-          ...(prev[currentGW] ?? {}),
+          ...(gwPlayerBank[currentGW] ?? {}),
           [playerIdA]: pB.isBank,
           [playerIdB]: pA.isBank,
         },
-      }));
+      };
+      setGwPlayerBank(newGwPlayerBank);
+      // Sla direct op — niet wachten op useEffect (async na paint)
+      saveGwPlanNow(newGwPlayerBank, gwTransfers, formation);
       setSelectedPlayerId(null);
     },
-    [currentGW, gwTeamPlayers],
+    [currentGW, gwTeamPlayers, gwPlayerBank, gwTransfers, formation],
   );
 
   /* ── Reset wissels voor huidig GW ── */
@@ -1433,7 +1450,7 @@ export default function TeambouwerPage() {
                   borderBottom: '1px solid rgba(255,255,255,0.07)',
                 }}>
                   <button
-                    onClick={() => { setPlannerOffset((o) => Math.max(0, o - 1)); setSelectedPlayerId(null); setTransferTarget(null); }}
+                    onClick={() => { saveGwPlanNow(gwPlayerBank, gwTransfers, formation); setPlannerOffset((o) => Math.max(0, o - 1)); setSelectedPlayerId(null); setTransferTarget(null); }}
                     disabled={plannerOffset === 0}
                     style={{
                       width: 32, height: 32, borderRadius: 8, flexShrink: 0,
@@ -1479,6 +1496,8 @@ export default function TeambouwerPage() {
                     onClick={() => {
                       const nextOffset = Math.min(plannerMaxOffset, plannerOffset + 1);
                       const nextGW     = gameweeks[nextOffset];
+                      // Sla huidige staat op VOOR navigatie (synchronous)
+                      saveGwPlanNow(gwPlayerBank, gwTransfers, formation);
                       // Kopieer huidige GW-staat naar volgende GW als die nog geen staat heeft
                       if (nextGW && currentGW) {
                         const nextHasState = gwPlayerBank[nextGW] && Object.keys(gwPlayerBank[nextGW]).length > 0;
