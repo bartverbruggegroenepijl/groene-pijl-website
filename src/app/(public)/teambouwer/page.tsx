@@ -145,13 +145,15 @@ function FdrBadge({ cell }: { cell: FixtureCell }) {
 }
 
 function injuryDotColor(chance: number | null | undefined): string | null {
-  if (chance == null || chance >= 100) return null;
-  return chance <= 25 ? '#EF4444' : '#F97316';
+  if (chance === 0 || chance === 25) return '#EF4444';
+  if (chance === 50 || chance === 75) return '#F97316';
+  return null;
 }
 
 function injuryEmoji(chance: number | null | undefined): string | null {
-  if (chance == null || chance >= 100) return null;
-  return chance <= 25 ? '🚩' : '⚠️';
+  if (chance === 0 || chance === 25) return '🚩';
+  if (chance === 50 || chance === 75) return '⚠️';
+  return null;
 }
 
 /* ─────────────── PitchCard (veldweergave spelerkaart) ─────────────── */
@@ -809,7 +811,8 @@ export default function TeambouwerPage() {
 
   /* ── Verrijkt speler met live blessure data (overschrijft localStorage waarden) ── */
   const withLiveInjury = (p: SelectedPlayer & { isBank: boolean }) => {
-    const live = players.find((fp) => fp.id === p.id);
+    const pid = Number(p.id);
+    const live = players.find((fp) => fp.id === pid);
     return { ...p, chanceOfPlayingNextRound: live?.chanceOfPlayingNextRound ?? null, news: live?.news ?? '' };
   };
 
@@ -1820,7 +1823,7 @@ export default function TeambouwerPage() {
                                 onCardClick={() => handleCardClick(p)}
                                 onHoverEnter={(e) => {
                                   const rect = (e.currentTarget as HTMLElement).getBoundingClientRect();
-                                  setTooltip({ player: p, x: rect.left, y: rect.top, side: 'left' });
+                                  setTooltip({ player: withLiveInjury(p), x: rect.left, y: rect.top, side: 'left' });
                                 }}
                                 onHoverLeave={() => setTooltip(null)}
                               />
@@ -1844,7 +1847,7 @@ export default function TeambouwerPage() {
                                 onCardClick={() => handleCardClick(p)}
                                 onHoverEnter={(e) => {
                                   const rect = (e.currentTarget as HTMLElement).getBoundingClientRect();
-                                  setTooltip({ player: p, x: rect.left, y: rect.top, side: 'left' });
+                                  setTooltip({ player: withLiveInjury(p), x: rect.left, y: rect.top, side: 'left' });
                                 }}
                                 onHoverLeave={() => setTooltip(null)}
                               />
@@ -1868,7 +1871,7 @@ export default function TeambouwerPage() {
                                 onCardClick={() => handleCardClick(p)}
                                 onHoverEnter={(e) => {
                                   const rect = (e.currentTarget as HTMLElement).getBoundingClientRect();
-                                  setTooltip({ player: p, x: rect.left, y: rect.top, side: 'left' });
+                                  setTooltip({ player: withLiveInjury(p), x: rect.left, y: rect.top, side: 'left' });
                                 }}
                                 onHoverLeave={() => setTooltip(null)}
                               />
@@ -1892,7 +1895,7 @@ export default function TeambouwerPage() {
                                 onCardClick={() => handleCardClick(p)}
                                 onHoverEnter={(e) => {
                                   const rect = (e.currentTarget as HTMLElement).getBoundingClientRect();
-                                  setTooltip({ player: p, x: rect.left, y: rect.top, side: 'left' });
+                                  setTooltip({ player: withLiveInjury(p), x: rect.left, y: rect.top, side: 'left' });
                                 }}
                                 onHoverLeave={() => setTooltip(null)}
                               />
@@ -1932,7 +1935,7 @@ export default function TeambouwerPage() {
                               onCardClick={() => handleCardClick(p)}
                               onHoverEnter={(e) => {
                                 const rect = (e.currentTarget as HTMLElement).getBoundingClientRect();
-                                setTooltip({ player: p, x: rect.left, y: rect.top, side: 'left' });
+                                setTooltip({ player: withLiveInjury(p), x: rect.left, y: rect.top, side: 'left' });
                               }}
                               onHoverLeave={() => setTooltip(null)}
                             />
