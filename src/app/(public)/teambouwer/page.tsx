@@ -2135,6 +2135,21 @@ export default function TeambouwerPage() {
           </div>
         </div>
       )}
+
+      {/* ── Mobiele disclaimer ── */}
+      <p
+        className="md:hidden"
+        style={{
+          textAlign: 'center',
+          fontSize: 11,
+          fontStyle: 'italic',
+          color: 'rgba(255,255,255,0.5)',
+          padding: '16px 16px',
+          margin: 0,
+        }}
+      >
+        💡 Voor de beste ervaring, inclusief spelerstatistieken en uitgebreide functies, bezoek groenepijl.nl op je desktop.
+      </p>
     </main>
   );
 }
