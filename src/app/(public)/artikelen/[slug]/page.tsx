@@ -47,26 +47,29 @@ export default async function ArtikelDetailPage({ params }: Props) {
 
   return (
     <main className="min-h-screen bg-background-dark text-white">
-      {/* Cover */}
-      {article.cover_image && (
-        <div className="relative w-full h-64 sm:h-80 lg:h-96">
-          <Image
-            src={article.cover_image}
-            alt={article.title}
-            fill
-            sizes="100vw"
-            priority
-            className="object-cover"
-          />
-          <div className="absolute inset-0 bg-gradient-to-b from-transparent to-background-dark" />
-        </div>
-      )}
-
       <div className="max-w-3xl mx-auto px-4 sm:px-6 lg:px-8 py-12">
         {/* Back */}
         <Link href="/artikelen" className="inline-flex items-center gap-2 text-white/40 hover:text-primary text-sm font-medium transition-colors mb-8">
           <ArrowLeft size={14} />Alle artikelen
         </Link>
+
+        {/* Cover afbeelding */}
+        {article.cover_image && (
+          <div className="mb-8">
+            {/* eslint-disable-next-line @next/next/no-img-element */}
+            <img
+              src={article.cover_image}
+              alt={article.title}
+              style={{
+                width: '100%',
+                maxHeight: '400px',
+                objectFit: 'cover',
+                borderRadius: '12px',
+                display: 'block',
+              }}
+            />
+          </div>
+        )}
 
         {/* Category */}
         {article.category && (

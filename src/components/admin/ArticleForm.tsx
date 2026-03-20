@@ -1,12 +1,14 @@
 'use client';
 
-import { useEffect, useState, useTransition } from 'react';
+import { useEffect, useRef, useState, useTransition } from 'react';
 import dynamic from 'next/dynamic';
 import Link from 'next/link';
-import { ArrowLeft, Save, Loader2 } from 'lucide-react';
+import { ArrowLeft, Save, Loader2, AlertCircle } from 'lucide-react';
 import type { Article, Manager } from '@/types';
 import { ARTICLE_CATEGORIES } from '@/types';
 import ArticleImageUpload from '@/components/admin/ArticleImageUpload';
+import { createClient } from '@/lib/supabase/client';
+import { uploadArticleImage } from '@/lib/supabase/storage';
 import '@uiw/react-md-editor/markdown-editor.css';
 
 // Dynamic import om SSR-issues te vermijden
@@ -66,6 +68,53 @@ export default function ArticleForm({ managers, article, action, mode }: Article
   const [category, setCategory]   = useState(article?.category ?? '');
   const [published, setPublished] = useState(article?.published ?? false);
   const [error, setError]         = useState('');
+
+  // ─── Inline afbeelding invoegen ───────────────────────────
+  const [imageUploading, setImageUploading] = useState(false);
+  const [imageError, setImageError]         = useState('');
+  const editorContainerRef = useRef<HTMLDivElement>(null);
+  const imageInputRef      = useRef<HTMLInputElement>(null);
+
+  async function handleInlineImageUpload(e: React.ChangeEvent<HTMLInputElement>) {
+    const file = e.target.files?.[0];
+    if (!file) return;
+    // Reset input zodat hetzelfde bestand opnieuw gekozen kan worden
+    if (imageInputRef.current) imageInputRef.current.value = '';
+
+    const TOEGESTAAN = ['image/jpeg', 'image/png', 'image/webp'];
+    if (!TOEGESTAAN.includes(file.type)) {
+      setImageError('Alleen JPG, PNG of WebP toegestaan.');
+      return;
+    }
+    if (file.size > 5 * 1024 * 1024) {
+      setImageError('Maximaal 5 MB per afbeelding.');
+      return;
+    }
+
+    setImageError('');
+    setImageUploading(true);
+    try {
+      const supabase = createClient();
+      const url = await uploadArticleImage(supabase, file, title || 'inline');
+      const markdownAfbeelding = `\n![afbeelding](${url})\n`;
+
+      // Voeg in op de cursorpositie in de editor-textarea
+      const textarea = editorContainerRef.current?.querySelector('textarea');
+      if (textarea) {
+        const start = textarea.selectionStart ?? content.length;
+        const end   = textarea.selectionEnd   ?? content.length;
+        const nieuweInhoud =
+          content.substring(0, start) + markdownAfbeelding + content.substring(end);
+        setContent(nieuweInhoud);
+      } else {
+        setContent((prev) => prev + markdownAfbeelding);
+      }
+    } catch (err) {
+      setImageError(err instanceof Error ? err.message : 'Upload mislukt.');
+    } finally {
+      setImageUploading(false);
+    }
+  }
 
   // Auto-generate slug from title unless user has manually edited it
   useEffect(() => {
@@ -202,10 +251,48 @@ export default function ArticleForm({ managers, article, action, mode }: Article
 
           {/* Content — rich text editor */}
           <div className="bg-[#1a1a1a] border border-white/8 rounded-xl p-5">
-            <label className={labelClass}>Content</label>
+
+            {/* Header: label + foto-invoeg-knop */}
+            <div className="flex items-center justify-between mb-2">
+              <span className={labelClass} style={{ marginBottom: 0 }}>Content</span>
+              <button
+                type="button"
+                onClick={() => imageInputRef.current?.click()}
+                disabled={imageUploading}
+                className="flex items-center gap-1.5 text-xs text-gray-400 hover:text-[#00A651]
+                           border border-white/10 hover:border-[#00A651]/40 bg-white/3
+                           hover:bg-[#00A651]/5 px-3 py-1.5 rounded-lg transition-all
+                           disabled:opacity-50 disabled:cursor-wait"
+              >
+                {imageUploading ? (
+                  <><Loader2 className="w-3.5 h-3.5 animate-spin" /> Uploaden...</>
+                ) : (
+                  <>📷 Foto invoegen</>
+                )}
+              </button>
+              {/* Verborgen file input voor inline afbeeldingen */}
+              <input
+                ref={imageInputRef}
+                type="file"
+                accept="image/jpeg,image/png,image/webp"
+                onChange={handleInlineImageUpload}
+                className="hidden"
+              />
+            </div>
+
+            {/* Upload fout */}
+            {imageError && (
+              <div className="flex items-center gap-1.5 bg-red-500/10 border border-red-500/30
+                              rounded-lg px-3 py-2 mb-2 text-red-400 text-xs">
+                <AlertCircle className="w-3.5 h-3.5 flex-shrink-0" />
+                {imageError}
+              </div>
+            )}
+
             {/* Hidden input zodat FormData de markdown-waarde meekrijgt */}
             <input type="hidden" name="content" value={content} />
-            <div data-color-mode="dark">
+
+            <div data-color-mode="dark" ref={editorContainerRef}>
               <MDEditor
                 value={content}
                 onChange={(val) => setContent(val ?? '')}
@@ -220,7 +307,7 @@ export default function ArticleForm({ managers, article, action, mode }: Article
               />
             </div>
             <p className="mt-2 text-xs text-gray-600">
-              Markdown ondersteund · H1–H3, **vet**, *cursief*, lijsten, links, afbeeldingen, blockquotes, code
+              Markdown ondersteund · H1–H3, **vet**, *cursief*, lijsten, links, blockquotes, code · gebruik &quot;📷 Foto invoegen&quot; voor afbeeldingen
             </p>
           </div>
         </div>
