@@ -144,15 +144,17 @@ function FdrBadge({ cell }: { cell: FixtureCell }) {
   );
 }
 
-function injuryDotColor(chance: number | null | undefined): string | null {
+function injuryDotColor(chance: number | null | undefined, news?: string): string | null {
   if (chance === 0 || chance === 25) return '#EF4444';
-  if (chance === 50 || chance === 75) return '#F97316';
+  if (chance === 50 || chance === 75) return '#F59E0B';
+  if ((chance == null) && news) return '#EF4444';
   return null;
 }
 
-function injuryEmoji(chance: number | null | undefined): string | null {
+function injuryEmoji(chance: number | null | undefined, news?: string): string | null {
   if (chance === 0 || chance === 25) return '🚩';
-  if (chance === 50 || chance === 75) return '⚠️';
+  if (chance === 50 || chance === 75) return '🚩';
+  if ((chance == null) && news) return '🚩';
   return null;
 }
 
@@ -285,16 +287,19 @@ function PitchCard({
           )}
         </div>
         {(() => {
-          const emoji = injuryEmoji(player.chanceOfPlayingNextRound);
-          return emoji ? (
-            <span style={{
+          const color = injuryDotColor(player.chanceOfPlayingNextRound, player.news);
+          return color ? (
+            <div style={{
               position: 'absolute',
-              top: -4,
-              right: -4,
-              fontSize: 10,
-              lineHeight: 1,
+              top: -3,
+              right: -3,
+              width: 10,
+              height: 10,
+              borderRadius: 2,
+              background: color,
+              border: '1.5px solid rgba(0,0,0,0.6)',
               zIndex: 10,
-            }}>{emoji}</span>
+            }} />
           ) : null;
         })()}
       </div>
@@ -1248,9 +1253,9 @@ export default function TeambouwerPage() {
                           </div>
                           <span className="text-white text-xs font-medium truncate">{p.name}</span>
                           {(() => {
-                            const emoji = injuryEmoji(p.chanceOfPlayingNextRound);
-                            return emoji ? (
-                              <span className="shrink-0 text-[10px] leading-none">{emoji}</span>
+                            const color = injuryDotColor(p.chanceOfPlayingNextRound, p.news);
+                            return color ? (
+                              <div className="shrink-0 rounded-sm" style={{ width: 8, height: 8, background: color }} />
                             ) : null;
                           })()}
                         </div>
@@ -2118,10 +2123,10 @@ export default function TeambouwerPage() {
               <span className="text-white font-medium text-[10px]">{tooltip.player.minutes}</span>
             </div>
             {(() => {
-              const emoji = injuryEmoji(tooltip.player.chanceOfPlayingNextRound);
+              const emoji = injuryEmoji(tooltip.player.chanceOfPlayingNextRound, tooltip.player.news);
               return emoji && tooltip.player.news ? (
                 <div className="mt-2 pt-1.5 border-t border-white/10 text-[10px] leading-snug" style={{
-                  color: injuryDotColor(tooltip.player.chanceOfPlayingNextRound)!,
+                  color: injuryDotColor(tooltip.player.chanceOfPlayingNextRound, tooltip.player.news)!,
                 }}>
                   {emoji} {tooltip.player.news}
                 </div>
