@@ -146,7 +146,8 @@ function FdrBadge({ cell }: { cell: FixtureCell }) {
 
 function injuryDotColor(chance: number | null | undefined, news?: string): string | null {
   if (chance === 0 || chance === 25) return '#EF4444';
-  if (chance === 50 || chance === 75) return '#F59E0B';
+  if (chance === 50) return '#F97316';
+  if (chance === 75) return '#EAB308';
   if ((chance == null) && news) return '#EF4444';
   return null;
 }
