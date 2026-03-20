@@ -49,9 +49,7 @@ export default async function ArtikelDetailPage({ params }: Props) {
     <main
       className="min-h-screen text-white"
       style={{
-        backgroundImage: "url('/gradient-bg.png')",
-        backgroundSize: 'cover',
-        backgroundPosition: 'center',
+        background: '#1F0E84',
         minHeight: '100vh',
       }}
     >
