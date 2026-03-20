@@ -49,7 +49,7 @@ export default async function ArtikelDetailPage({ params }: Props) {
     <main
       className="min-h-screen text-white"
       style={{
-        background: '#1F0E84',
+        background: '#000000',
         minHeight: '100vh',
       }}
     >
