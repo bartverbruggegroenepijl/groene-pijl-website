@@ -18,6 +18,8 @@ interface FplApiPlayer {
   minutes: number;
   clean_sheets: number;
   expected_goals: string;       // bijv. "2.45"
+  chance_of_playing_next_round: number | null;
+  news: string;
 }
 
 interface FplApiTeam {
@@ -92,6 +94,8 @@ export async function GET() {
         minutes: p.minutes,
         cleanSheets: p.clean_sheets ?? 0,
         xGoals: p.expected_goals,
+        chanceOfPlayingNextRound: p.chance_of_playing_next_round,
+        news: p.news ?? '',
       };
     });
 

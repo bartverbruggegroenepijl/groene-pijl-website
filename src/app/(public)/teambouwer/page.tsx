@@ -29,6 +29,8 @@ interface FplPlayer {
   cleanSheets: number;
   ownership: string;
   xGoals: string;
+  chanceOfPlayingNextRound: number | null;
+  news: string;
 }
 
 interface FixtureCell {
@@ -142,6 +144,11 @@ function FdrBadge({ cell }: { cell: FixtureCell }) {
   );
 }
 
+function injuryDotColor(chance: number | null | undefined): string | null {
+  if (chance == null || chance >= 100) return null;
+  return chance <= 25 ? '#EF4444' : '#F97316';
+}
+
 /* ─────────────── PitchCard (veldweergave spelerkaart) ─────────────── */
 
 function PitchCard({
@@ -220,55 +227,72 @@ function PitchCard({
         }}>↓ UIT</span>
       )}
 
-      {/* Avatar cirkel */}
-      <div
-        style={{
-          width: 44,
-          height: 44,
-          borderRadius: '50%',
-          flexShrink: 0,
-          border: isTransferTarget
-            ? '2.5px solid #FF4444'
-            : isSelected
-            ? '2.5px solid #00FA61'
-            : '2px solid rgba(255,255,255,0.22)',
-          boxShadow,
-          overflow: 'hidden',
-          background: 'linear-gradient(135deg, rgba(0,250,97,0.15) 0%, rgba(31,14,132,0.55) 100%)',
-          position: 'relative',
-        }}
-      >
-        {player.imageUrl ? (
-          // eslint-disable-next-line @next/next/no-img-element
-          <img
-            src={player.imageUrl}
-            alt={player.name}
-            style={{ width: '100%', height: '100%', objectFit: 'cover', objectPosition: '50% 10%' }}
-          />
-        ) : (
-          <div
-            style={{
-              width: '100%',
-              height: '100%',
-              display: 'flex',
-              alignItems: 'center',
-              justifyContent: 'center',
-              background: 'linear-gradient(135deg, rgba(0,250,97,0.22) 0%, rgba(123,47,255,0.32) 100%)',
-            }}
-          >
-            <span
+      {/* Avatar cirkel + blessure badge */}
+      <div style={{ position: 'relative', flexShrink: 0 }}>
+        <div
+          style={{
+            width: 44,
+            height: 44,
+            borderRadius: '50%',
+            border: isTransferTarget
+              ? '2.5px solid #FF4444'
+              : isSelected
+              ? '2.5px solid #00FA61'
+              : '2px solid rgba(255,255,255,0.22)',
+            boxShadow,
+            overflow: 'hidden',
+            background: 'linear-gradient(135deg, rgba(0,250,97,0.15) 0%, rgba(31,14,132,0.55) 100%)',
+            position: 'relative',
+          }}
+        >
+          {player.imageUrl ? (
+            // eslint-disable-next-line @next/next/no-img-element
+            <img
+              src={player.imageUrl}
+              alt={player.name}
+              style={{ width: '100%', height: '100%', objectFit: 'cover', objectPosition: '50% 10%' }}
+            />
+          ) : (
+            <div
               style={{
-                color: '#00FA61',
-                fontWeight: 800,
-                fontSize: 16,
-                fontFamily: 'Montserrat, sans-serif',
-                userSelect: 'none',
+                width: '100%',
+                height: '100%',
+                display: 'flex',
+                alignItems: 'center',
+                justifyContent: 'center',
+                background: 'linear-gradient(135deg, rgba(0,250,97,0.22) 0%, rgba(123,47,255,0.32) 100%)',
               }}
             >
-              {player.name.charAt(0)}
-            </span>
-          </div>
-        )}
+              <span
+                style={{
+                  color: '#00FA61',
+                  fontWeight: 800,
+                  fontSize: 16,
+                  fontFamily: 'Montserrat, sans-serif',
+                  userSelect: 'none',
+                }}
+              >
+                {player.name.charAt(0)}
+              </span>
+            </div>
+          )}
+        </div>
+        {(() => {
+          const dotColor = injuryDotColor(player.chanceOfPlayingNextRound);
+          return dotColor ? (
+            <div style={{
+              position: 'absolute',
+              top: -2,
+              right: -2,
+              width: 10,
+              height: 10,
+              borderRadius: '50%',
+              background: dotColor,
+              border: '1.5px solid rgba(0,0,0,0.8)',
+              zIndex: 10,
+            }} />
+          ) : null;
+        })()}
       </div>
 
       {/* Naam badge */}
@@ -1212,6 +1236,12 @@ export default function TeambouwerPage() {
                             <Image src={p.imageUrl} alt={p.name} fill className="object-cover" style={{ objectPosition: '50% 10%' }} unoptimized />
                           </div>
                           <span className="text-white text-xs font-medium truncate">{p.name}</span>
+                          {(() => {
+                            const dotColor = injuryDotColor(p.chanceOfPlayingNextRound);
+                            return dotColor ? (
+                              <div className="shrink-0 rounded-full" style={{ width: 8, height: 8, background: dotColor }} />
+                            ) : null;
+                          })()}
                         </div>
 
                         {/* Club */}
@@ -2075,6 +2105,13 @@ export default function TeambouwerPage() {
               <span className="text-white/40 text-[10px]">Minuten</span>
               <span className="text-white font-medium text-[10px]">{tooltip.player.minutes}</span>
             </div>
+            {tooltip.player.news && (
+              <div className="mt-2 pt-1.5 border-t border-white/10 text-[10px] leading-snug" style={{
+                color: injuryDotColor(tooltip.player.chanceOfPlayingNextRound) ?? 'rgba(255,255,255,0.45)',
+              }}>
+                {tooltip.player.news}
+              </div>
+            )}
           </div>
         </div>
       )}
