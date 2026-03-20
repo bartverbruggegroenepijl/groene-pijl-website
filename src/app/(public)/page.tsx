@@ -736,7 +736,12 @@ export default async function HomePage() {
           {articles.length > 0 ? (
             <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
               {articles.map((a) => (
-                <article key={a.id} className="card-lift rounded-2xl overflow-hidden group transition-all" style={{ background: 'rgba(255,255,255,0.08)', border: '1px solid rgba(255,255,255,0.12)', backdropFilter: 'blur(8px)', WebkitBackdropFilter: 'blur(8px)' }}>
+                <Link
+                  key={a.id}
+                  href={`/artikelen/${a.slug}`}
+                  className="card-lift rounded-2xl overflow-hidden group transition-all block hover:opacity-90 hover:shadow-xl hover:shadow-primary/10"
+                  style={{ background: 'rgba(255,255,255,0.08)', border: '1px solid rgba(255,255,255,0.12)', backdropFilter: 'blur(8px)', WebkitBackdropFilter: 'blur(8px)', cursor: 'pointer' }}
+                >
                   <div className="relative h-44 bg-gray-100">
                     {a.cover_image ? (
                       <Image src={a.cover_image} alt={a.title} fill className="object-cover group-hover:scale-105 transition-transform duration-300" />
@@ -756,11 +761,11 @@ export default async function HomePage() {
                     </div>
                     <h3 className="font-bold text-lg mb-2 leading-snug group-hover:text-primary transition-colors line-clamp-2" style={{ color: '#ffffff' }}>{a.title}</h3>
                     {a.excerpt && <p className="text-sm leading-relaxed line-clamp-2 mb-4" style={{ color: 'rgba(255,255,255,0.65)' }}>{a.excerpt}</p>}
-                    <Link href={`/artikelen/${a.slug}`} className="inline-flex items-center gap-1 text-primary text-sm font-semibold hover:underline">
+                    <span className="inline-flex items-center gap-1 text-primary text-sm font-semibold group-hover:underline">
                       Lees meer <ArrowRight size={12} />
-                    </Link>
+                    </span>
                   </div>
-                </article>
+                </Link>
               ))}
             </div>
           ) : (

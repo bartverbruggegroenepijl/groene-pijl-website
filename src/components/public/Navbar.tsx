@@ -40,6 +40,34 @@ export default function Navbar() {
   const dataRef     = useRef<HTMLDivElement>(null);
   const managersRef = useRef<HTMLDivElement>(null);
 
+  // Timer refs voor hover-vertraging (150ms) op desktop
+  const teamCloseTimer     = useRef<ReturnType<typeof setTimeout> | null>(null);
+  const dataCloseTimer     = useRef<ReturnType<typeof setTimeout> | null>(null);
+  const managersCloseTimer = useRef<ReturnType<typeof setTimeout> | null>(null);
+
+  // ─── Desktop hover handlers ───────────────────────────────
+  function handleTeamEnter() {
+    if (teamCloseTimer.current) clearTimeout(teamCloseTimer.current);
+    setTeamOpen(true); setDataOpen(false); setManagersOpen(false);
+  }
+  function handleTeamLeave() {
+    teamCloseTimer.current = setTimeout(() => setTeamOpen(false), 150);
+  }
+  function handleDataEnter() {
+    if (dataCloseTimer.current) clearTimeout(dataCloseTimer.current);
+    setDataOpen(true); setTeamOpen(false); setManagersOpen(false);
+  }
+  function handleDataLeave() {
+    dataCloseTimer.current = setTimeout(() => setDataOpen(false), 150);
+  }
+  function handleManagersEnter() {
+    if (managersCloseTimer.current) clearTimeout(managersCloseTimer.current);
+    setManagersOpen(true); setTeamOpen(false); setDataOpen(false);
+  }
+  function handleManagersLeave() {
+    managersCloseTimer.current = setTimeout(() => setManagersOpen(false), 150);
+  }
+
   // Scroll listener
   useEffect(() => {
     const handleScroll = () => setScrolled(window.scrollY > 60);
@@ -105,7 +133,7 @@ export default function Navbar() {
             ))}
 
             {/* Bouw Mijn Team dropdown */}
-            <div className="relative" ref={teamRef}>
+            <div className="relative" ref={teamRef} onMouseEnter={handleTeamEnter} onMouseLeave={handleTeamLeave}>
               <button
                 onClick={() => { setTeamOpen(!teamOpen); setDataOpen(false); setManagersOpen(false); }}
                 className="flex items-center gap-1.5 px-4 py-2 text-sm font-medium text-white/70 hover:text-primary rounded-lg hover:bg-primary/8 transition-all duration-200"
@@ -143,7 +171,7 @@ export default function Navbar() {
             </Link>
 
             {/* Data & Inzichten dropdown */}
-            <div className="relative" ref={dataRef}>
+            <div className="relative" ref={dataRef} onMouseEnter={handleDataEnter} onMouseLeave={handleDataLeave}>
               <button
                 onClick={() => { setDataOpen(!dataOpen); setManagersOpen(false); setTeamOpen(false); }}
                 className="flex items-center gap-1.5 px-4 py-2 text-sm font-medium text-white/70 hover:text-primary rounded-lg hover:bg-primary/8 transition-all duration-200"
@@ -188,7 +216,7 @@ export default function Navbar() {
             </div>
 
             {/* Managers dropdown */}
-            <div className="relative" ref={managersRef}>
+            <div className="relative" ref={managersRef} onMouseEnter={handleManagersEnter} onMouseLeave={handleManagersLeave}>
               <button
                 onClick={() => { setManagersOpen(!managersOpen); setDataOpen(false); setTeamOpen(false); }}
                 className="flex items-center gap-1.5 px-4 py-2 text-sm font-medium text-white/70 hover:text-primary rounded-lg hover:bg-primary/8 transition-all duration-200"
