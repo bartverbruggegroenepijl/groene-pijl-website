@@ -88,7 +88,11 @@ export default function ArtikelenPage() {
         ) : filtered.length > 0 ? (
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
             {filtered.map((a) => (
-              <article key={a.id} className="card-lift bg-surface-2 border border-white/8 hover:border-primary/20 rounded-2xl overflow-hidden group transition-colors">
+              <Link
+                key={a.id}
+                href={`/artikelen/${a.slug}`}
+                className="card-lift bg-surface-2 border border-white/8 hover:border-primary/20 rounded-2xl overflow-hidden group transition-all cursor-pointer block hover:shadow-xl hover:shadow-primary/10 hover:opacity-90"
+              >
                 <div className="relative h-48 bg-surface-3">
                   {a.cover_image ? (
                     <Image src={a.cover_image} alt={a.title} fill className="object-cover group-hover:scale-105 transition-transform duration-300" />
@@ -108,11 +112,11 @@ export default function ArtikelenPage() {
                   </div>
                   <h2 className="font-bold text-lg text-white mb-2 leading-snug group-hover:text-primary transition-colors line-clamp-2">{a.title}</h2>
                   {a.excerpt && <p className="text-sm text-white/50 leading-relaxed line-clamp-2 mb-4">{a.excerpt}</p>}
-                  <Link href={`/artikelen/${a.slug}`} className="inline-flex items-center gap-1 text-primary text-sm font-semibold hover:underline">
+                  <span className="inline-flex items-center gap-1 text-primary text-sm font-semibold group-hover:underline">
                     Lees meer <ArrowRight size={12} />
-                  </Link>
+                  </span>
                 </div>
-              </article>
+              </Link>
             ))}
           </div>
         ) : (
