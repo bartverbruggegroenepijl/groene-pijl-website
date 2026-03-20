@@ -51,7 +51,7 @@ const POSITION_MAP: Record<number, 'GK' | 'DEF' | 'MID' | 'FWD'> = {
 export async function GET() {
   try {
     const res = await fetch('https://fantasy.premierleague.com/api/bootstrap-static/', {
-      next: { revalidate: 1800 },
+      next: { revalidate: 300 },
       headers: {
         'User-Agent':
           'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 ' +
@@ -178,7 +178,7 @@ export async function GET() {
 
     return NextResponse.json(
       { players, teams },
-      { headers: { 'Cache-Control': 'public, s-maxage=1800, stale-while-revalidate=3600' } },
+      { headers: { 'Cache-Control': 'public, s-maxage=300, stale-while-revalidate=600' } },
     );
   } catch (err) {
     console.error('FPL stats error:', err);

@@ -37,8 +37,8 @@ export async function GET() {
     const res = await fetch(
       'https://fantasy.premierleague.com/api/bootstrap-static/',
       {
-        // Cache for 1 hour via Next.js fetch cache
-        next: { revalidate: 3600 },
+        // Cache for 5 minutes via Next.js fetch cache
+        next: { revalidate: 300 },
         headers: {
           'User-Agent':
             'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 ' +
@@ -99,7 +99,7 @@ export async function GET() {
       { players },
       {
         headers: {
-          'Cache-Control': 'public, s-maxage=3600, stale-while-revalidate=7200',
+          'Cache-Control': 'public, s-maxage=300, stale-while-revalidate=600',
         },
       }
     );
