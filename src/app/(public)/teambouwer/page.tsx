@@ -2075,9 +2075,10 @@ export default function TeambouwerPage() {
         </div>
       )}
 
-      {/* ── Spelerslijst hover tooltip ── */}
+      {/* ── Spelerslijst hover tooltip (verborgen op mobiel) ── */}
       {tooltip && (
         <div
+          className="hidden md:block"
           style={{
             position: 'fixed',
             ...(tooltip.side === 'left'
