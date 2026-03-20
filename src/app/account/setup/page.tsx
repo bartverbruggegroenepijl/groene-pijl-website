@@ -14,24 +14,12 @@ export default function AccountSetupPage() {
   const [loading, setLoading]   = useState(false);
   const router = useRouter();
 
-  /* ── Wissel de PKCE-code uit voor een sessie bij eerste bezoek ── */
+  /* ── Controleer sessie (ingesteld door /auth/callback) ── */
   useEffect(() => {
     const supabase = createClient();
-    const code = new URLSearchParams(window.location.search).get('code');
-
-    if (code) {
-      // Verwijder de code uit de URL (geen herlading)
-      window.history.replaceState({}, '', '/account/setup');
-
-      supabase.auth.exchangeCodeForSession(code).then(({ error }) => {
-        setStage(error ? 'error' : 'form');
-      });
-    } else {
-      // Controleer of er al een actieve sessie is (herbezoek)
-      supabase.auth.getUser().then(({ data: { user } }) => {
-        setStage(user ? 'form' : 'error');
-      });
-    }
+    supabase.auth.getUser().then(({ data: { user } }) => {
+      setStage(user ? 'form' : 'error');
+    });
   }, []);
 
   /* ── Stel het wachtwoord in ── */
