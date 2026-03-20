@@ -805,6 +805,12 @@ export default function TeambouwerPage() {
   const gwFormKey = `${gwDefRow.length}-${gwMidRow.length}-${gwFwdRow.length}` as FormationKey;
   const effectiveGwFormation: FormationKey = FORMATIONS[gwFormKey] ? gwFormKey : formation;
 
+  /* ── Verrijkt speler met live blessure data (overschrijft localStorage waarden) ── */
+  const withLiveInjury = (p: SelectedPlayer & { isBank: boolean }) => {
+    const live = players.find((fp) => fp.id === p.id);
+    return { ...p, chanceOfPlayingNextRound: live?.chanceOfPlayingNextRound ?? null, news: live?.news ?? '' };
+  };
+
   /* ── Spelers die dit GW binnenkomen / volgende GW vertrekken ── */
   const incomingThisGw = useMemo(() => {
     if (currentGW === null) return new Set<number>();
@@ -1802,7 +1808,7 @@ export default function TeambouwerPage() {
                             {gwFwdRow.map((p) => (
                               <PitchCard
                                 key={p.id}
-                                player={p}
+                                player={withLiveInjury(p)}
                                 isSelected={selectedPlayerId === p.id}
                                 isTransferTarget={transferTarget?.id === p.id}
                                 isNewTransfer={incomingThisGw.has(p.id)}
@@ -1826,7 +1832,7 @@ export default function TeambouwerPage() {
                             {gwMidRow.map((p) => (
                               <PitchCard
                                 key={p.id}
-                                player={p}
+                                player={withLiveInjury(p)}
                                 isSelected={selectedPlayerId === p.id}
                                 isTransferTarget={transferTarget?.id === p.id}
                                 isNewTransfer={incomingThisGw.has(p.id)}
@@ -1850,7 +1856,7 @@ export default function TeambouwerPage() {
                             {gwDefRow.map((p) => (
                               <PitchCard
                                 key={p.id}
-                                player={p}
+                                player={withLiveInjury(p)}
                                 isSelected={selectedPlayerId === p.id}
                                 isTransferTarget={transferTarget?.id === p.id}
                                 isNewTransfer={incomingThisGw.has(p.id)}
@@ -1874,7 +1880,7 @@ export default function TeambouwerPage() {
                             {gwGkRow.map((p) => (
                               <PitchCard
                                 key={p.id}
-                                player={p}
+                                player={withLiveInjury(p)}
                                 isSelected={selectedPlayerId === p.id}
                                 isTransferTarget={transferTarget?.id === p.id}
                                 isNewTransfer={incomingThisGw.has(p.id)}
@@ -1914,7 +1920,7 @@ export default function TeambouwerPage() {
                           {gwBenchRow.map((p) => (
                             <PitchCard
                               key={p.id}
-                              player={p}
+                              player={withLiveInjury(p)}
                               isSelected={selectedPlayerId === p.id}
                               isTransferTarget={transferTarget?.id === p.id}
                               isNewTransfer={incomingThisGw.has(p.id)}
