@@ -3,6 +3,8 @@ import Image from 'next/image';
 import Link from 'next/link';
 import { notFound } from 'next/navigation';
 import { ArrowLeft, Instagram, ArrowRight } from 'lucide-react';
+import { remark } from 'remark';
+import remarkHtml from 'remark-html';
 
 interface Props {
   params: { id: string };
@@ -10,6 +12,11 @@ interface Props {
 
 function formatDate(iso: string) {
   return new Date(iso).toLocaleDateString('nl-NL', { day: 'numeric', month: 'long', year: 'numeric' });
+}
+
+async function markdownToHtml(markdown: string): Promise<string> {
+  const result = await remark().use(remarkHtml, { sanitize: false }).process(markdown);
+  return result.toString();
 }
 
 export default async function ManagerProfilePage({ params }: Props) {
@@ -31,6 +38,8 @@ export default async function ManagerProfilePage({ params }: Props) {
   ]);
 
   if (!manager) notFound();
+
+  const bioHtml = manager.bio ? await markdownToHtml(manager.bio) : '';
 
   return (
     <main className="min-h-screen bg-background-dark text-white">
@@ -91,14 +100,15 @@ export default async function ManagerProfilePage({ params }: Props) {
           )}
 
           {/* Bio */}
-          {manager.bio && (
+          {bioHtml && (
             <div>
               <h2 className="text-lg font-bold mb-2" style={{ color: '#00FA61' }}>
                 Over
               </h2>
-              <p className="text-white/70 text-base leading-relaxed whitespace-pre-line">
-                {manager.bio}
-              </p>
+              <div
+                className="text-white/70 text-base leading-relaxed bio-content"
+                dangerouslySetInnerHTML={{ __html: bioHtml }}
+              />
             </div>
           )}
 

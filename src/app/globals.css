@@ -68,6 +68,16 @@ body {
   font-size: 0.9em;
 }
 
+/* Bio content (manager pagina) — Markdown met afbeeldingen */
+.bio-content p   { margin: 0.75rem 0; line-height: 1.75; color: rgba(255,255,255,0.7); }
+.bio-content img {
+  max-width: 100%;
+  height: auto;
+  border-radius: 10px;
+  margin: 1.25rem 0;
+  display: block;
+}
+
 /* Sidebar scrollbar — thin green-tinted scrollbar */
 .sidebar-scroll {
   scrollbar-width: thin;

@@ -1,9 +1,11 @@
 'use client';
 
-import { useState, useTransition } from 'react';
+import { useState, useRef, useTransition } from 'react';
 import Link from 'next/link';
-import { ArrowLeft, Save, Loader2, AlertCircle, Instagram } from 'lucide-react';
+import { ArrowLeft, Save, Loader2, AlertCircle, Instagram, ImagePlus } from 'lucide-react';
 import PlayerImageUpload from '@/components/admin/PlayerImageUpload';
+import { createClient } from '@/lib/supabase/client';
+import { uploadPlayerImage } from '@/lib/supabase/storage';
 import type { Manager } from '@/types';
 
 interface ManagerFormProps {
@@ -11,15 +13,67 @@ interface ManagerFormProps {
   action:  (formData: FormData) => Promise<void>;
 }
 
+const ACCEPTED_TYPES = ['image/jpeg', 'image/png', 'image/webp'];
+const MAX_BIO_IMAGE_MB = 5;
+
 export default function ManagerForm({ manager, action }: ManagerFormProps) {
   const [name,             setName]             = useState(manager.name              ?? '');
   const [role,             setRole]             = useState(manager.role              ?? 'Host & Manager');
   const [bio,              setBio]              = useState(manager.bio               ?? '');
   const [rankGeschiedenis, setRankGeschiedenis] = useState(manager.rank_geschiedenis ?? '');
   const [instagramUrl,     setInstagramUrl]     = useState(manager.instagram_url     ?? '');
-  const [avatarUrl,    setAvatarUrl]    = useState(manager.avatar_url    ?? '');
-  const [formError,    setFormError]    = useState('');
-  const [isPending,    startTransition] = useTransition();
+  const [avatarUrl,        setAvatarUrl]        = useState(manager.avatar_url        ?? '');
+  const [formError,        setFormError]        = useState('');
+  const [isPending,        startTransition]     = useTransition();
+
+  /* ── Bio afbeelding upload ── */
+  const bioTextareaRef    = useRef<HTMLTextAreaElement>(null);
+  const bioImageInputRef  = useRef<HTMLInputElement>(null);
+  const [bioImgUploading, setBioImgUploading] = useState(false);
+  const [bioImgError,     setBioImgError]     = useState('');
+
+  async function handleBioImageUpload(e: React.ChangeEvent<HTMLInputElement>) {
+    const file = e.target.files?.[0];
+    if (!file) return;
+    setBioImgError('');
+
+    if (!ACCEPTED_TYPES.includes(file.type)) {
+      setBioImgError('Alleen JPG, PNG of WebP toegestaan.');
+      return;
+    }
+    if (file.size > MAX_BIO_IMAGE_MB * 1024 * 1024) {
+      setBioImgError(`Maximaal ${MAX_BIO_IMAGE_MB} MB.`);
+      return;
+    }
+
+    setBioImgUploading(true);
+    try {
+      const supabase = createClient();
+      const url = await uploadPlayerImage(supabase, file, `bio-${manager.name}`);
+      const markdown = `![afbeelding](${url})`;
+
+      const textarea = bioTextareaRef.current;
+      if (textarea) {
+        const start = textarea.selectionStart ?? bio.length;
+        const end   = textarea.selectionEnd   ?? bio.length;
+        const newBio = bio.substring(0, start) + markdown + bio.substring(end);
+        setBio(newBio);
+        // Herstel cursor achter de ingevoegde markdown
+        requestAnimationFrame(() => {
+          textarea.focus();
+          textarea.selectionStart = start + markdown.length;
+          textarea.selectionEnd   = start + markdown.length;
+        });
+      } else {
+        setBio(bio + (bio ? '\n\n' : '') + markdown);
+      }
+    } catch (err) {
+      setBioImgError(err instanceof Error ? err.message : 'Upload mislukt.');
+    } finally {
+      setBioImgUploading(false);
+      if (bioImageInputRef.current) bioImageInputRef.current.value = '';
+    }
+  }
 
   async function handleSubmit(e: React.FormEvent<HTMLFormElement>) {
     e.preventDefault();
@@ -215,6 +269,7 @@ export default function ManagerForm({ manager, action }: ManagerFormProps) {
               Bio
             </p>
             <textarea
+              ref={bioTextareaRef}
               name="bio"
               value={bio}
               onChange={(e) => setBio(e.target.value)}
@@ -225,6 +280,44 @@ export default function ManagerForm({ manager, action }: ManagerFormProps) {
                          focus:outline-none focus:ring-2 focus:ring-[#00A651]
                          focus:border-transparent transition-all resize-none"
             />
+
+            {/* Foto toevoegen */}
+            <div className="mt-3 flex items-center gap-3">
+              <input
+                ref={bioImageInputRef}
+                type="file"
+                accept={ACCEPTED_TYPES.join(',')}
+                onChange={handleBioImageUpload}
+                className="hidden"
+              />
+              <button
+                type="button"
+                onClick={() => { setBioImgError(''); bioImageInputRef.current?.click(); }}
+                disabled={bioImgUploading}
+                className="inline-flex items-center gap-2 px-3 py-1.5 rounded-lg text-xs
+                           font-medium border border-white/10 text-gray-400
+                           hover:text-[#00A651] hover:border-[#00A651]/40
+                           disabled:opacity-50 disabled:cursor-wait
+                           transition-all duration-150"
+              >
+                {bioImgUploading
+                  ? <Loader2 className="w-3.5 h-3.5 animate-spin" />
+                  : <ImagePlus className="w-3.5 h-3.5" />
+                }
+                {bioImgUploading ? 'Uploaden…' : 'Foto toevoegen'}
+              </button>
+              <span className="text-xs text-gray-600">
+                Afbeelding wordt als Markdown ingevoegd op de cursorpositie
+              </span>
+            </div>
+
+            {/* Upload foutmelding */}
+            {bioImgError && (
+              <div className="mt-2 flex items-center gap-1.5 text-red-400 text-xs">
+                <AlertCircle className="w-3.5 h-3.5 flex-shrink-0" />
+                {bioImgError}
+              </div>
+            )}
           </div>
 
           {/* Social */}
