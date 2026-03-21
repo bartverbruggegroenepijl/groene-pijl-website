@@ -95,7 +95,7 @@ export default async function ManagerProfilePage({ params }: Props) {
           {manager.bio && (
             <div>
               <h2 className="text-lg font-bold mb-2" style={{ color: '#00FA61' }}>
-                Over {manager.name}
+                Over
               </h2>
               <p className="text-white/70 text-base leading-relaxed whitespace-pre-line">
                 {manager.bio}
