@@ -1074,15 +1074,6 @@ export default function TeamVanDeWeekSection({ team }: Props) {
         )}
       </div>
 
-      {/* Fade naar volgende sectie */}
-      <div
-        style={{
-          height: 56,
-          marginTop: 40,
-          background: 'linear-gradient(to bottom, transparent, #0D0D0D)',
-          pointerEvents: 'none',
-        }}
-      />
     </section>
   )
 }
