@@ -14,12 +14,29 @@ export default function AccountSetupPage() {
   const [loading, setLoading]   = useState(false);
   const router = useRouter();
 
-  /* ── Controleer sessie (ingesteld door /auth/callback) ── */
+  /* ── Controleer sessie — ondersteunt implicit flow (hash) én PKCE (callback) ── */
   useEffect(() => {
     const supabase = createClient();
-    supabase.auth.getUser().then(({ data: { user } }) => {
-      setStage(user ? 'form' : 'error');
-    });
+
+    // Implicit flow: Supabase stuurt #access_token=... in de URL hash
+    const hash = window.location.hash;
+    if (hash && hash.includes('access_token')) {
+      // De Supabase client verwerkt de hash automatisch; haal daarna de sessie op
+      supabase.auth.getSession().then(({ data: { session } }) => {
+        if (session) {
+          setStage('form');
+        } else {
+          supabase.auth.getUser().then(({ data: { user } }) => {
+            setStage(user ? 'form' : 'error');
+          });
+        }
+      });
+    } else {
+      // PKCE flow: sessie is al ingesteld door /auth/callback
+      supabase.auth.getUser().then(({ data: { user } }) => {
+        setStage(user ? 'form' : 'error');
+      });
+    }
   }, []);
 
   /* ── Stel het wachtwoord in ── */
