@@ -72,9 +72,11 @@ body {
 .bio-content p   { margin: 0.75rem 0; line-height: 1.75; color: rgba(255,255,255,0.7); }
 .bio-content img {
   max-width: 100%;
-  height: auto;
-  border-radius: 10px;
-  margin: 1.25rem 0;
+  width: auto;
+  max-height: 400px;
+  object-fit: cover;
+  border-radius: 8px;
+  margin: 16px 0;
   display: block;
 }
 
