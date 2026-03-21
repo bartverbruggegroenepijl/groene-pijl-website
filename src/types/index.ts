@@ -33,6 +33,7 @@ export interface Manager {
   name: string;
   role: string | null;
   bio: string | null;
+  rank_geschiedenis: string | null;
   avatar_url: string | null;
   instagram_url: string | null;
   created_at: string;

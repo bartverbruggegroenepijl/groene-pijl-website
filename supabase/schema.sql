@@ -14,14 +14,18 @@ CREATE EXTENSION IF NOT EXISTS "pgcrypto";
 -- ============================================================
 
 CREATE TABLE IF NOT EXISTS managers (
-  id          uuid        PRIMARY KEY DEFAULT gen_random_uuid(),
-  name        text        NOT NULL,
-  role        text,
-  bio         text,
-  avatar_url  text,
-  instagram_url text,
-  created_at  timestamptz NOT NULL DEFAULT now()
+  id                uuid        PRIMARY KEY DEFAULT gen_random_uuid(),
+  name              text        NOT NULL,
+  role              text,
+  bio               text,
+  rank_geschiedenis text,
+  avatar_url        text,
+  instagram_url     text,
+  created_at        timestamptz NOT NULL DEFAULT now()
 );
+
+-- Migration: add rank_geschiedenis column if it doesn't exist yet
+ALTER TABLE managers ADD COLUMN IF NOT EXISTS rank_geschiedenis text;
 
 -- ============================================================
 -- TABLE: articles

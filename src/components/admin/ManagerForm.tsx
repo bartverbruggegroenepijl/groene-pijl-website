@@ -12,10 +12,11 @@ interface ManagerFormProps {
 }
 
 export default function ManagerForm({ manager, action }: ManagerFormProps) {
-  const [name,         setName]         = useState(manager.name          ?? '');
-  const [role,         setRole]         = useState(manager.role          ?? 'Host & Manager');
-  const [bio,          setBio]          = useState(manager.bio           ?? '');
-  const [instagramUrl, setInstagramUrl] = useState(manager.instagram_url ?? '');
+  const [name,             setName]             = useState(manager.name              ?? '');
+  const [role,             setRole]             = useState(manager.role              ?? 'Host & Manager');
+  const [bio,              setBio]              = useState(manager.bio               ?? '');
+  const [rankGeschiedenis, setRankGeschiedenis] = useState(manager.rank_geschiedenis ?? '');
+  const [instagramUrl,     setInstagramUrl]     = useState(manager.instagram_url     ?? '');
   const [avatarUrl,    setAvatarUrl]    = useState(manager.avatar_url    ?? '');
   const [formError,    setFormError]    = useState('');
   const [isPending,    startTransition] = useTransition();
@@ -31,11 +32,12 @@ export default function ManagerForm({ manager, action }: ManagerFormProps) {
 
     const formData = new FormData(e.currentTarget);
     // Override controlled values
-    formData.set('name',          name);
-    formData.set('role',          role);
-    formData.set('bio',           bio);
-    formData.set('instagram_url', instagramUrl);
-    formData.set('avatar_url',    avatarUrl);
+    formData.set('name',              name);
+    formData.set('role',              role);
+    formData.set('bio',               bio);
+    formData.set('rank_geschiedenis', rankGeschiedenis);
+    formData.set('instagram_url',     instagramUrl);
+    formData.set('avatar_url',        avatarUrl);
 
     startTransition(async () => {
       try {
@@ -184,6 +186,27 @@ export default function ManagerForm({ manager, action }: ManagerFormProps) {
                 />
               </div>
             </div>
+          </div>
+
+          {/* Rank geschiedenis */}
+          <div className="bg-[#1a1a1a] border border-white/8 rounded-xl p-5">
+            <p className="text-xs font-semibold text-gray-500 uppercase tracking-widest mb-1">
+              Rank geschiedenis
+            </p>
+            <p className="text-xs text-gray-600 mb-4">
+              Bijv. &ldquo;top 150k in 2024/2025&rdquo;
+            </p>
+            <textarea
+              name="rank_geschiedenis"
+              value={rankGeschiedenis}
+              onChange={(e) => setRankGeschiedenis(e.target.value)}
+              placeholder="Bijv. top 150k in 2024/2025"
+              rows={3}
+              className="w-full bg-[#111111] border border-white/10 text-white
+                         placeholder-gray-600 rounded-lg px-4 py-2.5 text-sm
+                         focus:outline-none focus:ring-2 focus:ring-[#00A651]
+                         focus:border-transparent transition-all resize-none"
+            />
           </div>
 
           {/* Bio */}

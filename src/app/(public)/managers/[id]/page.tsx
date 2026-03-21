@@ -18,7 +18,7 @@ export default async function ManagerProfilePage({ params }: Props) {
   const [{ data: manager }, { data: articles }] = await Promise.all([
     supabase
       .from('managers')
-      .select('id, name, role, bio, avatar_url, instagram_url')
+      .select('id, name, role, bio, rank_geschiedenis, avatar_url, instagram_url')
       .eq('id', params.id)
       .single(),
     supabase
@@ -75,6 +75,37 @@ export default async function ManagerProfilePage({ params }: Props) {
         </div>
       </div>
 
+      {/* Rank geschiedenis + Bio secties */}
+      {(manager.rank_geschiedenis || manager.bio) && (
+        <div className="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8 pb-10 space-y-8">
+
+          {/* Rank geschiedenis */}
+          {manager.rank_geschiedenis && (
+            <div>
+              <h2 className="text-lg font-bold mb-2" style={{ color: '#00FA61' }}>
+                Rank geschiedenis
+              </h2>
+              <p className="text-white/70 text-base leading-relaxed whitespace-pre-line">
+                {manager.rank_geschiedenis}
+              </p>
+            </div>
+          )}
+
+          {/* Bio */}
+          {manager.bio && (
+            <div>
+              <h2 className="text-lg font-bold mb-2" style={{ color: '#00FA61' }}>
+                Over {manager.name}
+              </h2>
+              <p className="text-white/70 text-base leading-relaxed whitespace-pre-line">
+                {manager.bio}
+              </p>
+            </div>
+          )}
+
+        </div>
+      )}
+
       {/* Articles */}
       <div className="max-w-8xl mx-auto px-4 sm:px-6 lg:px-8 pb-20">
         <h2 className="text-2xl font-bold text-white mb-8">
@@ -84,7 +115,7 @@ export default async function ManagerProfilePage({ params }: Props) {
         {articles && articles.length > 0 ? (
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
             {articles.map((a) => (
-              <article key={a.id} className="card-lift bg-surface-2 border border-white/8 hover:border-primary/20 rounded-2xl overflow-hidden group transition-colors">
+              <Link key={a.id} href={`/artikelen/${a.slug}`} className="card-lift bg-surface-2 border border-white/8 hover:border-primary/20 rounded-2xl overflow-hidden group transition-all duration-200 hover:shadow-lg hover:shadow-black/30 cursor-pointer">
                 <div className="relative h-44 bg-surface-3">
                   {a.cover_image ? (
                     <Image src={a.cover_image} alt={a.title} fill className="object-cover group-hover:scale-105 transition-transform duration-300" />
@@ -101,11 +132,11 @@ export default async function ManagerProfilePage({ params }: Props) {
                   {a.published_at && <p className="text-xs text-white/30 mb-2">{formatDate(a.published_at)}</p>}
                   <h3 className="font-bold text-lg text-white mb-2 leading-snug group-hover:text-primary transition-colors line-clamp-2">{a.title}</h3>
                   {a.excerpt && <p className="text-sm text-white/50 leading-relaxed line-clamp-2 mb-4">{a.excerpt}</p>}
-                  <Link href={`/artikelen/${a.slug}`} className="inline-flex items-center gap-1 text-primary text-sm font-semibold hover:underline">
+                  <span className="inline-flex items-center gap-1 text-primary text-sm font-semibold">
                     Lees meer <ArrowRight size={12} />
-                  </Link>
+                  </span>
                 </div>
-              </article>
+              </Link>
             ))}
           </div>
         ) : (
