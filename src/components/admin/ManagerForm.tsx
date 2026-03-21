@@ -191,7 +191,7 @@ export default function ManagerForm({ manager, action }: ManagerFormProps) {
           {/* Rank geschiedenis */}
           <div className="bg-[#1a1a1a] border border-white/8 rounded-xl p-5">
             <p className="text-xs font-semibold text-gray-500 uppercase tracking-widest mb-1">
-              Rank geschiedenis
+              Beste FPL prestatie
             </p>
             <p className="text-xs text-gray-600 mb-4">
               Bijv. &ldquo;top 150k in 2024/2025&rdquo;
