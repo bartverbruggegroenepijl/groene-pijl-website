@@ -115,7 +115,8 @@ export default async function ArtikelDetailPage({ params }: Props) {
         {/* Content */}
         {contentHtml ? (
           <div
-            className="article-content text-base leading-relaxed"
+            className="article-content"
+            style={{ fontSize: '18px', lineHeight: '1.75' }}
             dangerouslySetInnerHTML={{ __html: contentHtml }}
           />
         ) : article.excerpt ? (

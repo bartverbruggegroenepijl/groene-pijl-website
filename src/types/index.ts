@@ -44,7 +44,10 @@ export type ArticleCategory =
   | 'Wildcard'
   | 'Differentials'
   | 'GW Preview'
-  | 'GW Review';
+  | 'GW Review'
+  | 'FPL Legacy'
+  | 'Interview'
+  | 'Deepdive';
 
 export const ARTICLE_CATEGORIES: ArticleCategory[] = [
   'Transfers',
@@ -53,6 +56,9 @@ export const ARTICLE_CATEGORIES: ArticleCategory[] = [
   'Differentials',
   'GW Preview',
   'GW Review',
+  'FPL Legacy',
+  'Interview',
+  'Deepdive',
 ];
 
 export interface Article {
