@@ -18,8 +18,15 @@ export default function AccountSetupPage() {
   useEffect(() => {
     const supabase = createClient();
 
-    // Implicit flow: Supabase stuurt #access_token=... in de URL hash
     const hash = window.location.hash;
+
+    // Verlopen of ongeldige link: Supabase stuurt #error=access_denied in de hash
+    if (hash && hash.includes('error=')) {
+      setStage('error');
+      return;
+    }
+
+    // Implicit flow: Supabase stuurt #access_token=... in de URL hash
     if (hash && hash.includes('access_token')) {
       // De Supabase client verwerkt de hash automatisch; haal daarna de sessie op
       supabase.auth.getSession().then(({ data: { session } }) => {
@@ -31,12 +38,13 @@ export default function AccountSetupPage() {
           });
         }
       });
-    } else {
-      // PKCE flow: sessie is al ingesteld door /auth/callback
-      supabase.auth.getUser().then(({ data: { user } }) => {
-        setStage(user ? 'form' : 'error');
-      });
+      return;
     }
+
+    // PKCE flow: sessie is al ingesteld door /auth/callback
+    supabase.auth.getUser().then(({ data: { user } }) => {
+      setStage(user ? 'form' : 'error');
+    });
   }, []);
 
   /* ── Stel het wachtwoord in ── */
@@ -91,8 +99,7 @@ export default function AccountSetupPage() {
           </div>
           <h1 className="text-white text-xl font-semibold mb-2">Link verlopen</h1>
           <p className="text-gray-400 text-sm">
-            De uitnodigingslink is verlopen of ongeldig.
-            Vraag een nieuwe uitnodiging aan bij de beheerder.
+            Deze link is verlopen. Neem contact op met de beheerder voor een nieuwe uitnodiging.
           </p>
         </div>
       </div>

@@ -20,6 +20,7 @@ import HeroSection from '@/components/sections/HeroSection';
 import TeamVanDeWeekSection from '@/components/sections/TeamVanDeWeekSection';
 import TransferTipCard from '@/components/sections/TransferTipCard';
 import TransferTipsSlider from '@/components/sections/TransferTipsSlider';
+import ErrorHashRedirect from '@/components/ErrorHashRedirect';
 
 // ─── Types ────────────────────────────────────────────────────────────────────
 
@@ -465,6 +466,9 @@ export default async function HomePage() {
 
   return (
     <main className="text-white overflow-x-hidden" style={{ background: '#0D0B2A' }}>
+
+      {/* Redirect naar /account/setup als Supabase een #error= hash meestuurt */}
+      <ErrorHashRedirect />
 
       {/* ── 1. HERO ──────────────────────────────────────────────────── */}
       <HeroSection
