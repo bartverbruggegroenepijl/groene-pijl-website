@@ -58,7 +58,6 @@ export default async function ManagerProfilePage({ params }: Props) {
               <span className="text-xs font-semibold text-primary uppercase tracking-widest mb-1 block">Manager</span>
               <h1 className="text-4xl sm:text-5xl font-bold text-white mb-1">{manager.name}</h1>
               {manager.role && <p className="text-primary text-sm font-medium mb-3">{manager.role}</p>}
-              {manager.bio && <p className="text-white/60 text-base leading-relaxed max-w-xl">{manager.bio}</p>}
 
               {manager.instagram_url && (
                 <a
