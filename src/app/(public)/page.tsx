@@ -113,7 +113,7 @@ interface Manager {
   id: string;
   name: string;
   role: string | null;
-  bio: string | null;
+  rank_geschiedenis: string | null;
   avatar_url: string | null;
   instagram_url: string | null;
 }
@@ -367,7 +367,7 @@ export default async function HomePage() {
     try {
       return await supabase
         .from('managers')
-        .select('id, name, role, bio, avatar_url, instagram_url')
+        .select('id, name, role, rank_geschiedenis, avatar_url, instagram_url')
         .order('created_at', { ascending: true });
     } catch { return fallback; }
   })();
@@ -856,7 +856,7 @@ export default async function HomePage() {
                     <h3 className="font-bold text-xl text-gray-900 group-hover:text-primary transition-colors">{m.name}</h3>
                     {m.role && <p className="text-xs text-primary mt-0.5">{m.role}</p>}
                   </div>
-                  {m.bio && <p className="text-xs text-gray-500 leading-relaxed line-clamp-3">{m.bio}</p>}
+                  {m.rank_geschiedenis && <p className="text-xs text-gray-500 leading-relaxed line-clamp-3">{m.rank_geschiedenis}</p>}
                   {m.instagram_url && (
                     <span className="flex items-center gap-1.5 text-gray-400 group-hover:text-primary text-xs transition-colors mt-auto">
                       <Instagram size={13} />Instagram
