@@ -3,6 +3,7 @@
 import { useEffect, useState, useMemo, useCallback, useRef } from 'react';
 import Image from 'next/image';
 import { Search, X, ChevronUp, ChevronDown, ChevronLeft, ChevronRight, Star } from 'lucide-react';
+import { batchedAll } from '@/lib/utils/batch';
 
 /* ─────────────────────── types ─────────────────────────── */
 
@@ -489,8 +490,10 @@ export default function StatistiekenPage() {
     );
     if (toFetch.length === 0) return;
     toFetch.forEach((p) => fetchingRef.current.add(p.id));
-    Promise.all(
-      toFetch.map(async (p) => {
+    // Max 5 gelijktijdige calls, 100ms pauze tussen batches
+    batchedAll(
+      toFetch,
+      async (p) => {
         try {
           const res = await fetch(`/api/fpl/element-summary/${p.id}`);
           const d = await res.json();
@@ -498,7 +501,9 @@ export default function StatistiekenPage() {
         } catch {
           return { id: p.id, history: [] as HistoryEntry[] };
         }
-      }),
+      },
+      5,
+      100,
     ).then((results) => {
       const updates: Record<number, HistoryEntry[]> = {};
       results.forEach(({ id, history }) => {

@@ -2,6 +2,7 @@
 
 import { useState, useEffect } from 'react'
 import { createClient } from '@/lib/supabase/client'
+import { batchedAll } from '@/lib/utils/batch'
 
 // ─── Types ─────────────────────────────────────────────────────────────────
 
@@ -422,8 +423,10 @@ export default function TeamVanDeWeekSection({ team }: Props) {
         const round = currentTeam?.week_number ?? null
         const players_snapshot = currentTeam?.team_players ?? []
 
-        await Promise.all(
-          players_snapshot.map(async (tp) => {
+        // Max 5 gelijktijdige calls, 100ms pauze tussen batches
+        await batchedAll(
+          players_snapshot,
+          async (tp) => {
             const name = tp.player_name
             const club = tp.player_club
             if (!name) return
@@ -461,7 +464,9 @@ export default function TeamVanDeWeekSection({ team }: Props) {
                 },
               }))
             }
-          })
+          },
+          5,
+          100,
         )
       } catch {
         // Stats zijn optioneel — stilzwijgend mislukken

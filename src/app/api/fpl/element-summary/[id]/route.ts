@@ -29,8 +29,8 @@ export async function GET(
     const res = await fetch(
       `https://fantasy.premierleague.com/api/element-summary/${id}/`,
       {
-        // Cache 10 minuten — xG verandert alleen na een wedstrijd
-        next: { revalidate: 600 },
+        // Cache 1 uur — xG verandert alleen na een wedstrijd
+        next: { revalidate: 3600 },
         headers: FPL_HEADERS,
       }
     );
@@ -91,7 +91,7 @@ export async function GET(
       },
       {
         headers: {
-          'Cache-Control': 'public, s-maxage=600, stale-while-revalidate=1200',
+          'Cache-Control': 'public, s-maxage=3600, stale-while-revalidate=7200',
         },
       }
     );
