@@ -804,6 +804,20 @@ export default async function HomePage() {
                     {a.category && (
                       <span className="absolute top-3 left-3 bg-primary text-black text-[10px] font-bold px-2.5 py-1 rounded-full uppercase tracking-wide">{a.category}</span>
                     )}
+                    {/* Excerpt overlay — fade-in op hover, alleen desktop */}
+                    {a.excerpt && (
+                      <div
+                        className="hidden md:block absolute bottom-0 left-0 right-0 p-4 opacity-0 group-hover:opacity-100 transition-opacity duration-[250ms] ease-in-out"
+                        style={{ background: 'linear-gradient(to top, rgba(31,14,132,0.95) 0%, rgba(31,14,132,0.7) 70%, transparent 100%)' }}
+                      >
+                        <p
+                          className="text-white italic line-clamp-3"
+                          style={{ fontFamily: 'Montserrat, sans-serif', fontSize: '14px' }}
+                        >
+                          {a.excerpt}
+                        </p>
+                      </div>
+                    )}
                   </div>
                   <div className="p-5">
                     <div className="flex items-center gap-2 text-xs mb-2" style={{ color: 'rgba(255,255,255,0.7)' }}>
