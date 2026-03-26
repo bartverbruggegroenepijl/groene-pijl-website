@@ -452,7 +452,18 @@ CREATE POLICY "Authenticated delete club-shirts"
 
 ALTER TABLE articles
   ADD COLUMN IF NOT EXISTS category text
-  CHECK (category IN ('Transfers', 'Captain', 'Wildcard', 'Differentials', 'GW Preview', 'GW Review'));
+  CHECK (category IN ('Transfers', 'Captain', 'Wildcard', 'Differentials', 'GW Preview', 'GW Review', 'FPL Legacy', 'Interview', 'Deepdive'));
+
+-- ============================================================
+-- ALTER articles – extend category CHECK constraint
+-- (run this on existing databases where category was already added
+--  with the original 6-value constraint)
+-- ============================================================
+
+ALTER TABLE articles DROP CONSTRAINT IF EXISTS articles_category_check;
+ALTER TABLE articles
+  ADD CONSTRAINT articles_category_check
+  CHECK (category IN ('Transfers', 'Captain', 'Wildcard', 'Differentials', 'GW Preview', 'GW Review', 'FPL Legacy', 'Interview', 'Deepdive'));
 
 -- ============================================================
 -- ALTER team_players – add club reference (optional FK)
