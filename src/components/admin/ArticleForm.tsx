@@ -67,6 +67,13 @@ export default function ArticleForm({ managers, article, action, mode }: Article
   const [authorId, setAuthorId]   = useState(article?.author_id ?? '');
   const [category, setCategory]   = useState(article?.category ?? '');
   const [published, setPublished] = useState(article?.published ?? false);
+  const [publishedAt, setPublishedAt] = useState<string>(() => {
+    if (article?.published_at) {
+      // Converteer ISO-string (bijv. 2024-03-15T10:00:00Z) naar YYYY-MM-DD voor <input type="date">
+      return article.published_at.split('T')[0];
+    }
+    return new Date().toISOString().split('T')[0];
+  });
   const [error, setError]         = useState('');
 
   // ─── Inline afbeelding invoegen ───────────────────────────
@@ -337,6 +344,20 @@ export default function ArticleForm({ managers, article, action, mode }: Article
                                  ${published ? 'translate-x-5' : 'translate-x-0.5'}`} />
               </div>
             </button>
+          </div>
+
+          {/* Publicatiedatum */}
+          <div className="bg-[#1a1a1a] border border-white/8 rounded-xl p-5">
+            <label htmlFor="published_at" className={labelClass}>Publicatiedatum</label>
+            <input
+              id="published_at"
+              name="published_at"
+              type="date"
+              value={publishedAt}
+              onChange={(e) => setPublishedAt(e.target.value)}
+              className={inputClass}
+              style={{ colorScheme: 'dark' }}
+            />
           </div>
 
           {/* Auteur */}

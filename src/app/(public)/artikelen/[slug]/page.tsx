@@ -4,6 +4,7 @@ import Link from 'next/link';
 import { notFound } from 'next/navigation';
 import { ArrowLeft, Calendar, User } from 'lucide-react';
 import { remark } from 'remark';
+import remarkGfm from 'remark-gfm';
 import remarkHtml from 'remark-html';
 
 interface Props {
@@ -11,8 +12,12 @@ interface Props {
 }
 
 async function markdownToHtml(markdown: string): Promise<string> {
+  // remarkGfm voegt GFM-ondersteuning toe (tabellen, strikethrough, task lists, etc.)
   // sanitize: false zodat embedded afbeeldingen en HTML in content behouden blijven
-  const result = await remark().use(remarkHtml, { sanitize: false }).process(markdown);
+  const result = await remark()
+    .use(remarkGfm)
+    .use(remarkHtml, { sanitize: false })
+    .process(markdown);
   return result.toString();
 }
 

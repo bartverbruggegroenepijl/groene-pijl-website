@@ -67,6 +67,28 @@ body {
   border-radius: 4px;
   font-size: 0.9em;
 }
+.article-content table {
+  width: 100%;
+  border-collapse: collapse;
+  margin: 24px 0;
+  font-size: 15px;
+}
+.article-content th {
+  background: #1F0E84;
+  color: #ffffff;
+  padding: 10px 14px;
+  text-align: left;
+  font-weight: 700;
+  font-family: Montserrat, sans-serif;
+}
+.article-content td {
+  padding: 10px 14px;
+  border-bottom: 1px solid rgba(255,255,255,0.1);
+  color: #ffffff;
+}
+.article-content tr:nth-child(even) td {
+  background: rgba(255,255,255,0.05);
+}
 
 /* Bio content (manager pagina) — Markdown met afbeeldingen */
 .bio-content p   { margin: 0.75rem 0; line-height: 1.75; color: rgba(255,255,255,0.7); }

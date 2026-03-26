@@ -9,7 +9,9 @@ import { redirect } from 'next/navigation';
 export async function createArticle(formData: FormData) {
   const supabase = createClient();
 
-  const published = formData.get('published') === 'true';
+  const published     = formData.get('published') === 'true';
+  const dateStr       = (formData.get('published_at') as string) || '';
+  const publishedAt   = dateStr ? new Date(dateStr).toISOString() : null;
 
   const { error } = await supabase.from('articles').insert({
     title:       formData.get('title') as string,
@@ -20,7 +22,7 @@ export async function createArticle(formData: FormData) {
     author_id:   (formData.get('author_id') as string) || null,
     category:    (formData.get('category') as string) || null,
     published,
-    published_at: published ? new Date().toISOString() : null,
+    published_at: publishedAt,
   });
 
   if (error) {
@@ -36,7 +38,9 @@ export async function createArticle(formData: FormData) {
 export async function updateArticle(id: string, formData: FormData) {
   const supabase = createClient();
 
-  const published = formData.get('published') === 'true';
+  const published     = formData.get('published') === 'true';
+  const dateStr       = (formData.get('published_at') as string) || '';
+  const publishedAt   = dateStr ? new Date(dateStr).toISOString() : null;
 
   const { error } = await supabase
     .from('articles')
@@ -49,7 +53,7 @@ export async function updateArticle(id: string, formData: FormData) {
       author_id:   (formData.get('author_id') as string) || null,
       category:    (formData.get('category') as string) || null,
       published,
-      published_at: published ? new Date().toISOString() : null,
+      published_at: publishedAt,
     })
     .eq('id', id);
 
