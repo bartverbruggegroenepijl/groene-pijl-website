@@ -72,6 +72,8 @@ body {
   border-collapse: collapse;
   margin: 24px 0;
   font-size: 15px;
+  border-radius: 8px;
+  overflow: hidden;
 }
 .article-content th {
   background: #1F0E84;
@@ -79,11 +81,10 @@ body {
   padding: 10px 14px;
   text-align: left;
   font-weight: 700;
-  font-family: Montserrat, sans-serif;
 }
 .article-content td {
   padding: 10px 14px;
-  border-bottom: 1px solid rgba(255,255,255,0.1);
+  border-bottom: 1px solid rgba(255,255,255,0.15);
   color: #ffffff;
 }
 .article-content tr:nth-child(even) td {
