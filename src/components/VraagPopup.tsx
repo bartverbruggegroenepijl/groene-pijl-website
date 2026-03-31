@@ -1,5 +1,6 @@
 'use client';
 import { useState, useEffect } from 'react';
+import Logo from '@/components/ui/Logo';
 
 export default function VraagPopup() {
   const [showTrigger, setShowTrigger] = useState(false);
@@ -120,13 +121,13 @@ export default function VraagPopup() {
               </>
             ) : (
               <div className="text-center py-4">
-                <div className="w-16 h-16 rounded-full border-2 border-[#00FA61] bg-[#00FA61]/10 flex items-center justify-center mx-auto mb-4 text-[#00FA61] text-3xl">
-                  ✓
+                <div className="flex justify-center mb-4">
+                  <Logo size="lg" linked={false} showText={false} />
                 </div>
                 <h2 className="text-2xl font-extrabold text-white mb-2">Vraag ontvangen!</h2>
                 <p className="text-white/60 text-sm mb-6 leading-relaxed">
                   Bedankt! Wie weet horen we je terug in de volgende aflevering van{' '}
-                  <span className="text-[#00FA61] font-bold">Groene Pijl</span>.
+                  <span className="text-[#00FA61] font-bold">De Groene Pijl</span>.
                 </p>
                 <button
                   onClick={() => setOpen(false)}
