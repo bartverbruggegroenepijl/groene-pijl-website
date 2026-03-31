@@ -1,5 +1,6 @@
 'use client';
 import { useState, useEffect } from 'react';
+import { usePathname } from 'next/navigation';
 import Logo from '@/components/ui/Logo';
 
 export default function VraagPopup() {
@@ -10,11 +11,14 @@ export default function VraagPopup() {
   const [step, setStep] = useState<'form' | 'success'>('form');
   const [error, setError] = useState('');
   const [loading, setLoading] = useState(false);
+  const pathname = usePathname();
 
   useEffect(() => {
     const t = setTimeout(() => setShowTrigger(true), 5000);
     return () => clearTimeout(t);
   }, []);
+
+  if (pathname?.startsWith('/admin')) return null;
 
   async function submit() {
     setError('');
