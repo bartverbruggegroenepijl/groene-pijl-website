@@ -1,5 +1,6 @@
 // De Groene Pijl — Next.js root layout
 import type { Metadata } from "next";
+import VraagPopup from '@/components/VraagPopup';
 import "@fontsource/montserrat/400.css";
 import "@fontsource/montserrat/500.css";
 import "@fontsource/montserrat/600.css";
@@ -28,6 +29,7 @@ export default function RootLayout({
     <html lang="nl">
       <body className="antialiased bg-background-dark text-white" style={{ fontFamily: 'Montserrat, sans-serif' }}>
         {children}
+        <VraagPopup />
       </body>
     </html>
   );
