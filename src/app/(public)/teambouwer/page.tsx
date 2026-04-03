@@ -167,7 +167,7 @@ function PitchCard({
   isTransferTarget,
   isNewTransfer,
   isOutNext,
-  fixture,
+  fixtures,
   onSwapClick,
   onCardClick,
   onHoverEnter,
@@ -178,7 +178,7 @@ function PitchCard({
   isTransferTarget: boolean;
   isNewTransfer: boolean;
   isOutNext: boolean;
-  fixture: FixtureCell | null;
+  fixtures: FixtureCell[];
   onSwapClick: (e: React.MouseEvent) => void;
   onCardClick: () => void;
   onHoverEnter: (e: React.MouseEvent<HTMLDivElement>) => void;
@@ -329,22 +329,27 @@ function PitchCard({
         {player.name}
       </span>
 
-      {/* Fixture badge */}
-      {fixture ? (
-        <span
-          style={{
-            fontSize: 7.5,
-            fontWeight: 700,
-            background: FDR_PITCH_BG[fixture.difficulty] ?? '#888',
-            color: FDR_PITCH_TEXT[fixture.difficulty] ?? '#fff',
-            padding: '1px 4px',
-            borderRadius: 3,
-            lineHeight: 1.4,
-            fontFamily: 'Montserrat, sans-serif',
-            whiteSpace: 'nowrap' as const,
-          }}
-        >
-          {fixture.opponent}({fixture.location})
+      {/* Fixture badge(s) — ondersteunt BGW (0), normaal (1) en DGW (2) */}
+      {fixtures.length > 0 ? (
+        <span style={{ display: 'flex', gap: 2, flexWrap: 'wrap' as const, justifyContent: 'center' }}>
+          {fixtures.map((f, i) => (
+            <span
+              key={i}
+              style={{
+                fontSize: 7.5,
+                fontWeight: 700,
+                background: FDR_PITCH_BG[f.difficulty] ?? '#888',
+                color: FDR_PITCH_TEXT[f.difficulty] ?? '#fff',
+                padding: '1px 4px',
+                borderRadius: 3,
+                lineHeight: 1.4,
+                fontFamily: 'Montserrat, sans-serif',
+                whiteSpace: 'nowrap' as const,
+              }}
+            >
+              {f.opponent}({f.location})
+            </span>
+          ))}
         </span>
       ) : (
         <span style={{ fontSize: 7.5, color: 'rgba(255,255,255,0.3)', fontFamily: 'Montserrat, sans-serif' }}>
@@ -846,11 +851,11 @@ export default function TeambouwerPage() {
     return list.sort((a, b) => a.gw - b.gw || a.transfer.timestamp - b.transfer.timestamp);
   }, [gwTransfers]);
 
-  /* ── Haal fixture op voor huidig GW ── */
-  const getFixture1 = useCallback(
-    (teamId: number): FixtureCell | null => {
-      if (!currentGW) return null;
-      return (fdrMap[teamId] ?? []).find((f) => f.gw === currentGW) ?? null;
+  /* ── Haal fixture(s) op voor huidig GW (DGW = meerdere) ── */
+  const getFixtures = useCallback(
+    (teamId: number): FixtureCell[] => {
+      if (!currentGW) return [];
+      return (fdrMap[teamId] ?? []).filter((f) => f.gw === currentGW);
     },
     [fdrMap, currentGW],
   );
@@ -1824,7 +1829,7 @@ export default function TeambouwerPage() {
                                 isTransferTarget={transferTarget?.id === p.id}
                                 isNewTransfer={incomingThisGw.has(p.id)}
                                 isOutNext={outgoingNextGw.has(p.id)}
-                                fixture={getFixture1(p.teamId)}
+                                fixtures={getFixtures(p.teamId)}
                                 onSwapClick={(e) => handleWisselClick(e, p.id)}
                                 onCardClick={() => handleCardClick(p)}
                                 onHoverEnter={(e) => {
@@ -1848,7 +1853,7 @@ export default function TeambouwerPage() {
                                 isTransferTarget={transferTarget?.id === p.id}
                                 isNewTransfer={incomingThisGw.has(p.id)}
                                 isOutNext={outgoingNextGw.has(p.id)}
-                                fixture={getFixture1(p.teamId)}
+                                fixtures={getFixtures(p.teamId)}
                                 onSwapClick={(e) => handleWisselClick(e, p.id)}
                                 onCardClick={() => handleCardClick(p)}
                                 onHoverEnter={(e) => {
@@ -1872,7 +1877,7 @@ export default function TeambouwerPage() {
                                 isTransferTarget={transferTarget?.id === p.id}
                                 isNewTransfer={incomingThisGw.has(p.id)}
                                 isOutNext={outgoingNextGw.has(p.id)}
-                                fixture={getFixture1(p.teamId)}
+                                fixtures={getFixtures(p.teamId)}
                                 onSwapClick={(e) => handleWisselClick(e, p.id)}
                                 onCardClick={() => handleCardClick(p)}
                                 onHoverEnter={(e) => {
@@ -1896,7 +1901,7 @@ export default function TeambouwerPage() {
                                 isTransferTarget={transferTarget?.id === p.id}
                                 isNewTransfer={incomingThisGw.has(p.id)}
                                 isOutNext={outgoingNextGw.has(p.id)}
-                                fixture={getFixture1(p.teamId)}
+                                fixtures={getFixtures(p.teamId)}
                                 onSwapClick={(e) => handleWisselClick(e, p.id)}
                                 onCardClick={() => handleCardClick(p)}
                                 onHoverEnter={(e) => {
@@ -1936,7 +1941,7 @@ export default function TeambouwerPage() {
                               isTransferTarget={transferTarget?.id === p.id}
                               isNewTransfer={incomingThisGw.has(p.id)}
                               isOutNext={outgoingNextGw.has(p.id)}
-                              fixture={getFixture1(p.teamId)}
+                              fixtures={getFixtures(p.teamId)}
                               onSwapClick={(e) => handleWisselClick(e, p.id)}
                               onCardClick={() => handleCardClick(p)}
                               onHoverEnter={(e) => {
