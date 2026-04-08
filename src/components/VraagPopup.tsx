@@ -70,13 +70,6 @@ export default function VraagPopup() {
 
             {step === 'form' ? (
               <>
-                <div className="flex items-center gap-2 mb-1">
-                  <span className="w-2.5 h-2.5 rounded-full bg-[#00FA61]" />
-                  <span className="text-[#00FA61] text-xs font-bold uppercase tracking-widest">
-                    Jouw vraag
-                  </span>
-                </div>
-
                 <h2 className="text-3xl font-extrabold text-white mb-1">Stel je vraag!</h2>
                 <p className="text-white/60 text-sm mb-6 leading-relaxed">
                   Wie weet wordt jouw vraag beantwoord in de volgende aflevering.
