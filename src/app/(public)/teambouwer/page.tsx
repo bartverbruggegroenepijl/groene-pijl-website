@@ -66,8 +66,9 @@ interface GwTransfer {
 // eslint-disable-next-line @typescript-eslint/no-unused-vars
 const BUDGET    = 100.0;
 const PAGE_SIZE = 10;
-const LS_KEY    = 'dgp_teambouwer_v1';
-const PLAN_KEY  = 'gp_teambouwer_plan';
+const LS_KEY      = 'dgp_teambouwer_v1';
+const PLAN_KEY    = 'gp_teambouwer_plan';
+const BUDGET_KEY  = 'dgp_teambouwer_budget';
 
 const MAX_PER_POS: Record<Position, number> = { GK: 2, DEF: 5, MID: 5, FWD: 3 };
 const MAX_TOTAL   = 15;
@@ -469,10 +470,28 @@ export default function TeambouwerPage() {
   // Wissel foutmelding
   const [swapError, setSwapError] = useState<string | null>(null);
 
-  // Aanpasbaar startbudget
-  const [customBudget,     setCustomBudget]     = useState(100.0);
+  // Aanpasbaar startbudget — persistent via localStorage
+  const [customBudget,     setCustomBudget]     = useState<number>(() => {
+    try {
+      const stored = localStorage.getItem(BUDGET_KEY);
+      if (stored !== null) {
+        const parsed = parseFloat(stored);
+        if (!isNaN(parsed)) return parsed;
+      }
+    } catch {}
+    return 100.0;
+  });
   const [budgetEditing,    setBudgetEditing]    = useState(false);
-  const [budgetInputValue, setBudgetInputValue] = useState('100.0');
+  const [budgetInputValue, setBudgetInputValue] = useState(() => {
+    try {
+      const stored = localStorage.getItem(BUDGET_KEY);
+      if (stored !== null) {
+        const parsed = parseFloat(stored);
+        if (!isNaN(parsed)) return parsed.toFixed(1);
+      }
+    } catch {}
+    return '100.0';
+  });
 
   /* ── load FPL data ── */
   useEffect(() => {
@@ -598,10 +617,17 @@ export default function TeambouwerPage() {
   const commitBudget = () => {
     const val = parseFloat(budgetInputValue);
     if (!isNaN(val)) {
-      setCustomBudget(Math.min(120, Math.max(50, parseFloat(val.toFixed(1)))));
+      const clamped = Math.min(120, Math.max(50, parseFloat(val.toFixed(1))));
+      setCustomBudget(clamped);
+      try { localStorage.setItem(BUDGET_KEY, String(clamped)); } catch {}
     }
     setBudgetEditing(false);
   };
+
+  /* ── Sla budget op zodra het wijzigt ── */
+  useEffect(() => {
+    try { localStorage.setItem(BUDGET_KEY, String(customBudget)); } catch {}
+  }, [customBudget]);
 
   /* ── formation change ── */
   const changeFormation = useCallback((newFormation: FormationKey) => {
