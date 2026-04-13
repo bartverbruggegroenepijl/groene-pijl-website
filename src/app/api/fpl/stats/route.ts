@@ -178,7 +178,7 @@ export async function GET() {
 
     return NextResponse.json(
       { players, teams },
-      { headers: { 'Cache-Control': 'public, s-maxage=300, stale-while-revalidate=600' } },
+      { headers: { 'Cache-Control': 'no-store, s-maxage=300, stale-while-revalidate=600' } },
     );
   } catch (err) {
     console.error('FPL stats error:', err);
