@@ -470,28 +470,13 @@ export default function TeambouwerPage() {
   // Wissel foutmelding
   const [swapError, setSwapError] = useState<string | null>(null);
 
-  // Aanpasbaar startbudget — persistent via localStorage
-  const [customBudget,     setCustomBudget]     = useState<number>(() => {
-    try {
-      const stored = localStorage.getItem(BUDGET_KEY);
-      if (stored !== null) {
-        const parsed = parseFloat(stored);
-        if (!isNaN(parsed)) return parsed;
-      }
-    } catch {}
-    return 100.0;
-  });
+  // Aanpasbaar startbudget — geladen vanuit localStorage in useEffect (SSR-safe)
+  const [customBudget,     setCustomBudget]     = useState(100.0);
   const [budgetEditing,    setBudgetEditing]    = useState(false);
-  const [budgetInputValue, setBudgetInputValue] = useState(() => {
-    try {
-      const stored = localStorage.getItem(BUDGET_KEY);
-      if (stored !== null) {
-        const parsed = parseFloat(stored);
-        if (!isNaN(parsed)) return parsed.toFixed(1);
-      }
-    } catch {}
-    return '100.0';
-  });
+  const [budgetInputValue, setBudgetInputValue] = useState('100.0');
+
+  // Guards rendering totdat alle localStorage-waarden zijn ingeladen
+  const [isLoaded, setIsLoaded] = useState(false);
 
   /* ── load FPL data ── */
   useEffect(() => {
@@ -567,6 +552,20 @@ export default function TeambouwerPage() {
         if (Object.keys(transferState).length > 0) setGwTransfers(transferState);
       }
     } catch {}
+
+    // Budget laden — hier ipv lazy initializer (SSR-safe, voorkomt hydration mismatch)
+    try {
+      const storedBudget = localStorage.getItem(BUDGET_KEY);
+      if (storedBudget !== null) {
+        const parsed = parseFloat(storedBudget);
+        if (!isNaN(parsed)) {
+          setCustomBudget(parsed);
+          setBudgetInputValue(parsed.toFixed(1));
+        }
+      }
+    } catch {}
+
+    setIsLoaded(true);
   }, []);
 
   // Wis wissel-foutmelding automatisch na 2 seconden
@@ -624,10 +623,11 @@ export default function TeambouwerPage() {
     setBudgetEditing(false);
   };
 
-  /* ── Sla budget op zodra het wijzigt ── */
+  /* ── Sla budget op zodra het wijzigt (alleen na initieel laden) ── */
   useEffect(() => {
+    if (!isLoaded) return;
     try { localStorage.setItem(BUDGET_KEY, String(customBudget)); } catch {}
-  }, [customBudget]);
+  }, [customBudget, isLoaded]);
 
   /* ── formation change ── */
   const changeFormation = useCallback((newFormation: FormationKey) => {
@@ -1057,6 +1057,8 @@ export default function TeambouwerPage() {
   const hasGwTransfers = currentGW != null && (gwTransfers[currentGW] ?? []).length > 0;
   const hasGwChanges   = hasGwSwaps || hasGwTransfers;
   const rowGap = 'clamp(6px, 2.8vw, 28px)';
+
+  if (!isLoaded) return null;
 
   return (
     <main

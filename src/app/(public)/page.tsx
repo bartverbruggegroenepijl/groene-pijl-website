@@ -578,29 +578,33 @@ export default async function HomePage() {
                         <p className="text-xl leading-tight" style={{ color: '#1F0E84', fontFamily: 'Montserrat, sans-serif', fontWeight: 700 }}>{p.player_name ?? '—'}</p>
                         <p className="text-sm mt-0.5" style={{ color: '#666666' }}>{p.player_club}{p.position && ` · ${p.position}`}</p>
                         {(() => {
-                          const fix: NextFixture | undefined = nextFixturesMap.get(p.player_club?.toLowerCase() ?? '');
-                          if (!fix) return null;
-                          const fdrStyle = getFdrStyle(fix.difficulty);
-                          const fdrBg    = fdrStyle.background as string;
-                          const fdrTxt   = fdrStyle.color as string;
+                          const fixes: NextFixture[] | undefined = nextFixturesMap.get(p.player_club?.toLowerCase() ?? '');
+                          if (!fixes || fixes.length === 0) return null;
                           return (
-                            <div className="mt-2">
-                              <div style={{
-                                display: 'inline-flex',
-                                flexDirection: 'column',
-                                alignItems: 'center',
-                                padding: '4px 10px',
-                                borderRadius: '6px',
-                                backgroundColor: fdrBg,
-                                minWidth: '48px',
-                              }}>
-                                <span style={{ fontSize: '12px', fontWeight: 700, color: fdrTxt, lineHeight: 1.2 }}>
-                                  {fix.opponent}
-                                </span>
-                                <span style={{ fontSize: '10px', fontWeight: 500, color: fdrTxt, opacity: 0.85 }}>
-                                  ({fix.location === 'H' ? 'H' : 'U'})
-                                </span>
-                              </div>
+                            <div className="mt-2" style={{ display: 'flex', gap: '4px', flexWrap: 'wrap' }}>
+                              {fixes.map((fix, i) => {
+                                const fdrStyle = getFdrStyle(fix.difficulty);
+                                const fdrBg    = fdrStyle.background as string;
+                                const fdrTxt   = fdrStyle.color as string;
+                                return (
+                                  <div key={i} style={{
+                                    display: 'inline-flex',
+                                    flexDirection: 'column',
+                                    alignItems: 'center',
+                                    padding: '4px 10px',
+                                    borderRadius: '6px',
+                                    backgroundColor: fdrBg,
+                                    minWidth: '48px',
+                                  }}>
+                                    <span style={{ fontSize: '12px', fontWeight: 700, color: fdrTxt, lineHeight: 1.2 }}>
+                                      {fix.opponent}
+                                    </span>
+                                    <span style={{ fontSize: '10px', fontWeight: 500, color: fdrTxt, opacity: 0.85 }}>
+                                      ({fix.location === 'H' ? 'H' : 'U'})
+                                    </span>
+                                  </div>
+                                );
+                              })}
                             </div>
                           );
                         })()}

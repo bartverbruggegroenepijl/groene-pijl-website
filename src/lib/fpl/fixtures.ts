@@ -1,4 +1,5 @@
-// FPL fixtures utility — haalt eerstvolgende wedstrijd per team op
+// FPL fixtures utility — haalt eerstvolgende wedstrijd(en) per team op
+// Ondersteunt DGW: retourneert alle fixtures in het volgende GW per team
 // Gebruikt direct de FPL API (geen self-referential /api/... calls)
 
 const FPL_HEADERS = {
@@ -40,13 +41,15 @@ interface FplEvent {
 
 /**
  * Geeft een Map terug die zowel via de volledige teamnaam (lowercase)
- * als via de korte naam (lowercase) de eerstvolgende wedstrijd bevat.
+ * als via de korte naam (lowercase) ALLE fixtures in het volgende GW bevat.
  *
- * Voorbeeld sleutels: "arsenal" → NextFixture, "ars" → NextFixture
+ * DGW: een team met twee wedstrijden in hetzelfde GW krijgt een array van 2 fixtures.
+ *
+ * Voorbeeld sleutels: "arsenal" → NextFixture[], "ars" → NextFixture[]
  *
  * Retourneert een lege Map bij een API-fout.
  */
-export async function fetchNextFixturesMap(): Promise<Map<string, NextFixture>> {
+export async function fetchNextFixturesMap(): Promise<Map<string, NextFixture[]>> {
   try {
     const [bootstrapRes, fixturesRes] = await Promise.all([
       fetch('https://fantasy.premierleague.com/api/bootstrap-static/', {
@@ -81,34 +84,45 @@ export async function fetchNextFixturesMap(): Promise<Map<string, NextFixture>> 
       .filter((f) => f.event !== null && f.event >= startGW && !f.finished)
       .sort((a, b) => (a.event ?? 0) - (b.event ?? 0));
 
-    // Eerste fixture per team-id
-    const firstFixture: Record<number, NextFixture> = {};
+    // Bepaal het vroegste GW waarop elk team speelt
+    const firstGwPerTeam: Record<number, number> = {};
     for (const f of upcoming) {
-      if (!(f.team_h in firstFixture)) {
-        firstFixture[f.team_h] = {
+      if (!(f.team_h in firstGwPerTeam)) firstGwPerTeam[f.team_h] = f.event!;
+      if (!(f.team_a in firstGwPerTeam)) firstGwPerTeam[f.team_a] = f.event!;
+    }
+
+    // Verzamel ALLE fixtures voor elk team in zijn vroegste GW (DGW support)
+    const fixturesPerTeam: Record<number, NextFixture[]> = {};
+    for (const f of upcoming) {
+      // Thuisteam
+      if (f.event === firstGwPerTeam[f.team_h]) {
+        if (!fixturesPerTeam[f.team_h]) fixturesPerTeam[f.team_h] = [];
+        fixturesPerTeam[f.team_h].push({
           gw:         f.event!,
           opponent:   teamById[f.team_a]?.short_name ?? '?',
           location:   'H',
           difficulty: f.team_h_difficulty,
-        };
+        });
       }
-      if (!(f.team_a in firstFixture)) {
-        firstFixture[f.team_a] = {
+      // Uitteam
+      if (f.event === firstGwPerTeam[f.team_a]) {
+        if (!fixturesPerTeam[f.team_a]) fixturesPerTeam[f.team_a] = [];
+        fixturesPerTeam[f.team_a].push({
           gw:         f.event!,
           opponent:   teamById[f.team_h]?.short_name ?? '?',
           location:   'A',
           difficulty: f.team_a_difficulty,
-        };
+        });
       }
     }
 
     // Bouw Map met zowel volledige naam als korte naam als sleutel
-    const map = new Map<string, NextFixture>();
+    const map = new Map<string, NextFixture[]>();
     for (const team of teams) {
-      const fix = firstFixture[team.id];
-      if (fix) {
-        map.set(team.name.toLowerCase(), fix);
-        map.set(team.short_name.toLowerCase(), fix);
+      const fixes = fixturesPerTeam[team.id];
+      if (fixes && fixes.length > 0) {
+        map.set(team.name.toLowerCase(), fixes);
+        map.set(team.short_name.toLowerCase(), fixes);
       }
     }
 
