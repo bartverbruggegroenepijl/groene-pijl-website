@@ -525,7 +525,7 @@ export default function TeambouwerPage() {
     // Herstel GW-plan (wissels + transfers per GW) vanuit PLAN_KEY
     try {
       const savedPlan = localStorage.getItem(PLAN_KEY);
-      if (!savedPlan) return;
+      if (!savedPlan) throw new Error('no plan');
       const plan = JSON.parse(savedPlan);
       if (plan.gameweeks && typeof plan.gameweeks === 'object') {
         const bankState: Record<number, Record<number, boolean>> = {};
