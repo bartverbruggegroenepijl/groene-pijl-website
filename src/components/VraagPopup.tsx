@@ -1,7 +1,9 @@
 'use client';
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useRef } from 'react';
 import { usePathname } from 'next/navigation';
 import Logo from '@/components/ui/Logo';
+
+const MAX_FILE_BYTES = 5 * 1024 * 1024; // 5 MB
 
 export default function VraagPopup() {
   const [showTrigger, setShowTrigger] = useState(false);
@@ -11,6 +13,9 @@ export default function VraagPopup() {
   const [step, setStep] = useState<'form' | 'success'>('form');
   const [error, setError] = useState('');
   const [loading, setLoading] = useState(false);
+  const [attachment, setAttachment] = useState<{ naam: string; data: string; type: string } | null>(null);
+  const [fileError, setFileError] = useState('');
+  const fileRef = useRef<HTMLInputElement>(null);
   const pathname = usePathname();
 
   useEffect(() => {
@@ -19,6 +24,26 @@ export default function VraagPopup() {
   }, []);
 
   if (pathname?.startsWith('/admin')) return null;
+
+  function handleFile(e: React.ChangeEvent<HTMLInputElement>) {
+    setFileError('');
+    const file = e.target.files?.[0];
+    if (!file) { setAttachment(null); return; }
+    if (file.size > MAX_FILE_BYTES) {
+      setFileError('Bestand is te groot (max 5 MB).');
+      setAttachment(null);
+      if (fileRef.current) fileRef.current.value = '';
+      return;
+    }
+    const reader = new FileReader();
+    reader.onload = () => {
+      const dataUrl = reader.result as string;
+      // strip "data:<type>;base64," prefix
+      const base64 = dataUrl.split(',')[1];
+      setAttachment({ naam: file.name, data: base64, type: file.type });
+    };
+    reader.readAsDataURL(file);
+  }
 
   async function submit() {
     setError('');
@@ -29,7 +54,7 @@ export default function VraagPopup() {
     const res = await fetch('/api/vraag', {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ email, question }),
+      body: JSON.stringify({ email, question, bijlage: attachment }),
     });
     setLoading(false);
     if (res.ok) setStep('success');
@@ -98,6 +123,30 @@ export default function VraagPopup() {
                   className="w-full bg-white/10 border border-[#00FA61]/30 focus:border-[#00FA61] rounded-xl px-4 py-3 text-white placeholder-white/30 text-sm mb-4 outline-none transition resize-none"
                   style={{ fontFamily: 'Montserrat, sans-serif' }}
                 />
+
+                <label className="block text-[#00FA61] text-xs font-bold uppercase tracking-wide mb-1.5">
+                  Screenshot toevoegen (optioneel)
+                </label>
+                <label
+                  className="flex items-center gap-3 w-full bg-white/10 border border-[#00FA61]/30 rounded-xl px-4 py-3 text-sm mb-1 cursor-pointer hover:border-[#00FA61]/60 transition"
+                  style={{ fontFamily: 'Montserrat, sans-serif' }}
+                >
+                  <span className="text-[#00FA61] font-bold shrink-0">📎 Kies bestand</span>
+                  <span className="text-white/40 truncate text-xs">
+                    {attachment ? attachment.naam : 'Geen bestand gekozen'}
+                  </span>
+                  <input
+                    ref={fileRef}
+                    type="file"
+                    accept="image/*"
+                    className="hidden"
+                    onChange={handleFile}
+                  />
+                </label>
+                {fileError && (
+                  <p className="text-red-400 text-xs mb-2 font-semibold">{fileError}</p>
+                )}
+                <p className="text-white/25 text-xs mb-4">Max 5 MB · jpg, png, webp, gif</p>
 
                 {error && (
                   <p className="text-red-400 text-sm mb-3 font-semibold">{error}</p>

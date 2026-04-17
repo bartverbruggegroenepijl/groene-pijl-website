@@ -4,7 +4,7 @@ import { NextResponse } from 'next/server';
 const resend = new Resend(process.env.RESEND_API_KEY);
 
 export async function POST(req: Request) {
-  const { email, question } = await req.json();
+  const { email, question, bijlage } = await req.json();
 
   if (!email || !question) {
     return NextResponse.json({ error: 'Verplichte velden ontbreken' }, { status: 400 });
@@ -19,7 +19,12 @@ export async function POST(req: Request) {
       <p><strong>Van:</strong> ${email}</p>
       <p><strong>Vraag:</strong></p>
       <blockquote>${question}</blockquote>
+      ${bijlage ? `<p><em>Bijlage: ${bijlage.naam}</em></p>` : ''}
     `,
+    attachments: bijlage ? [{
+      filename: bijlage.naam,
+      content: bijlage.data,
+    }] : [],
   });
 
   return NextResponse.json({ success: true });
