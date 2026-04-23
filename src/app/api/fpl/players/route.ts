@@ -24,6 +24,7 @@ interface FplApiPlayer {
 
 interface FplApiTeam {
   id: number;
+  name: string;
   short_name: string;
 }
 
@@ -62,10 +63,12 @@ export async function GET() {
 
     const data = await res.json();
 
-    // Build team id → short name map
-    const teamMap: Record<number, string> = {};
+    // Build team id → short name and full name maps
+    const teamShortMap: Record<number, string> = {};
+    const teamNameMap:  Record<number, string> = {};
     (data.teams as FplApiTeam[]).forEach((t) => {
-      teamMap[t.id] = t.short_name;
+      teamShortMap[t.id] = t.short_name;
+      teamNameMap[t.id]  = t.name;
     });
 
     // Map players to our format
@@ -81,7 +84,8 @@ export async function GET() {
         code: p.code,
         name: p.web_name,
         fullName: `${p.first_name} ${p.second_name}`,
-        team: teamMap[p.team] ?? '',
+        team: teamShortMap[p.team] ?? '',
+        teamName: teamNameMap[p.team] ?? '',
         teamId: p.team,
         position: POSITION_MAP[p.element_type] ?? 'FWD',
         totalPoints: p.total_points,

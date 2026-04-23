@@ -17,6 +17,7 @@ interface FplPlayer {
   name: string;
   fullName: string;
   team: string;
+  teamName: string;
   teamId: number;
   position: Position;
   totalPoints: number;
@@ -742,7 +743,8 @@ export default function TeambouwerPage() {
         (p) =>
           p.name.toLowerCase().includes(q) ||
           p.fullName.toLowerCase().includes(q) ||
-          p.team.toLowerCase().includes(q),
+          p.team.toLowerCase().includes(q) ||
+          p.teamName.toLowerCase().includes(q),
       );
     }
     list = [...list].sort((a, b) => {
