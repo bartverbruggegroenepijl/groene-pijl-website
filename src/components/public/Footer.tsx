@@ -22,10 +22,10 @@ const dataLinks = [
 ];
 
 const managersLinks = [
-  { label: 'Bart Verbrugge',   href: '/managers/a805b851-bd39-4641-bce1-08b3af28d425' },
-  { label: 'Jeffrey Nederlof', href: '/managers/ea351304-7690-4563-a856-ab396d9296a9' },
-  { label: 'Kieran Walsh',     href: '/managers/591fa7b6-e27f-4e59-ace5-4006f8e4d64a' },
-  { label: 'Tom Verbrugge',    href: '/managers/1811c6f2-1e91-4535-873a-60e7d2ec2540' },
+  { label: 'Bart Verbrugge',   href: '/managers/bart-verbrugge' },
+  { label: 'Jeffrey Nederlof', href: '/managers/jeffrey-nederlof' },
+  { label: 'Kieran Walsh',     href: '/managers/kieran-walsh' },
+  { label: 'Tom Verbrugge',    href: '/managers/tom-verbrugge' },
 ];
 
 const linkStyle = {
