@@ -5,6 +5,7 @@ import { createClient } from '@/lib/supabase/client';
 
 interface Props {
   articleId: string;
+  compact?: boolean;
 }
 
 type ReactionType = 'thumbs_up' | 'fire';
@@ -23,7 +24,7 @@ function getFingerprint(): string {
   return fp;
 }
 
-export default function ArticleReactions({ articleId }: Props) {
+export default function ArticleReactions({ articleId, compact = false }: Props) {
   const [counts, setCounts]   = useState<Record<ReactionType, number>>({ thumbs_up: 0, fire: 0 });
   const [mine, setMine]       = useState<Record<ReactionType, boolean>>({ thumbs_up: false, fire: false });
   const [loading, setLoading] = useState(true);
@@ -73,6 +74,28 @@ export default function ArticleReactions({ articleId }: Props) {
   }
 
   if (loading) return null;
+
+  if (compact) {
+    return (
+      <div className="flex items-center gap-1.5">
+        {REACTIONS.map(({ type, emoji }) => (
+          <button
+            key={type}
+            onClick={() => toggle(type)}
+            style={{
+              background: mine[type] ? 'rgba(0,250,97,0.15)' : 'rgba(255,255,255,0.06)',
+              border: `1px solid ${mine[type] ? '#00FA61' : 'rgba(255,255,255,0.12)'}`,
+              color: mine[type] ? '#00FA61' : 'rgba(255,255,255,0.5)',
+            }}
+            className="inline-flex items-center gap-1 px-2 py-0.5 rounded-lg text-xs font-semibold transition-all hover:scale-105 active:scale-95"
+          >
+            <span>{emoji}</span>
+            <span>{counts[type]}</span>
+          </button>
+        ))}
+      </div>
+    );
+  }
 
   return (
     <div

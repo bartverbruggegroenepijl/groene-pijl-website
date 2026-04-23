@@ -117,6 +117,7 @@ export default async function ArtikelDetailPage({ params }: Props) {
               {formatDate(article.published_at)}
             </div>
           )}
+          <ArticleReactions articleId={article.id} compact={true} />
         </div>
 
         {/* Content */}
@@ -133,8 +134,7 @@ export default async function ArtikelDetailPage({ params }: Props) {
         )}
       </div>
 
-      {/* Reactions + Comments */}
-      <ArticleReactions articleId={article.id} />
+      {/* Comments */}
       <ArticleComments articleId={article.id} />
 
       {/* Related articles */}
