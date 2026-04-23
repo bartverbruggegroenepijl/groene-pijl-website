@@ -55,6 +55,18 @@ export default function ArticleComments({ articleId }: Props) {
     const saved = localStorage.getItem('gp_username');
     if (saved) setUsername(saved);
     loadComments();
+
+    const supabase = createClient();
+    const channel = supabase
+      .channel(`comments:${articleId}`)
+      .on(
+        'postgres_changes',
+        { event: '*', schema: 'public', table: 'comments' },
+        () => { loadComments(); },
+      )
+      .subscribe();
+
+    return () => { supabase.removeChannel(channel); };
   }, [articleId]); // eslint-disable-line react-hooks/exhaustive-deps
 
   async function loadComments() {
