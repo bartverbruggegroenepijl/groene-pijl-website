@@ -56,17 +56,8 @@ export default function ArticleComments({ articleId }: Props) {
     if (saved) setUsername(saved);
     loadComments();
 
-    const supabase = createClient();
-    const channel = supabase
-      .channel(`comments:${articleId}`)
-      .on(
-        'postgres_changes',
-        { event: '*', schema: 'public', table: 'comments' },
-        () => { loadComments(); },
-      )
-      .subscribe();
-
-    return () => { supabase.removeChannel(channel); };
+    const interval = setInterval(() => { loadComments(); }, 10000);
+    return () => clearInterval(interval);
   }, [articleId]); // eslint-disable-line react-hooks/exhaustive-deps
 
   async function loadComments() {
