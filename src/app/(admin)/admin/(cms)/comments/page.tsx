@@ -6,11 +6,12 @@ export default async function CommentsPage() {
 
   const { data: comments } = await supabase
     .from('comments')
-    .select('id, username, content, created_at, parent_id, articles(title, slug)')
+    .select('id, article_id, username, content, created_at, parent_id, articles(title, slug)')
     .order('created_at', { ascending: false });
 
   const rows = (comments ?? []) as unknown as {
     id: string;
+    article_id: string;
     username: string;
     content: string;
     created_at: string;
