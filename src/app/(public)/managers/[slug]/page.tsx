@@ -1,4 +1,5 @@
 import { createClient } from '@/lib/supabase/server';
+import { createClient as createAnonClient } from '@supabase/supabase-js';
 import Image from 'next/image';
 import Link from 'next/link';
 import { notFound } from 'next/navigation';
@@ -20,7 +21,10 @@ async function markdownToHtml(markdown: string): Promise<string> {
 }
 
 export async function generateStaticParams() {
-  const supabase = createClient();
+  const supabase = createAnonClient(
+    process.env.NEXT_PUBLIC_SUPABASE_URL!,
+    process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!,
+  );
   const { data: managers } = await supabase.from('managers').select('slug');
   return managers?.filter((m) => m.slug).map((m) => ({ slug: m.slug })) ?? [];
 }
