@@ -17,7 +17,7 @@ export default async function CommentsPage() {
     .select('id, username, body, created_at, articles(title, slug)')
     .order('created_at', { ascending: false });
 
-  const rows = (comments ?? []) as {
+  const rows = (comments ?? []) as unknown as {
     id: string;
     username: string;
     body: string;
