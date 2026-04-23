@@ -1122,6 +1122,26 @@ export default function TeambouwerPage() {
       <div className="relative" style={{ zIndex: 1 }}>
         <div className="max-w-8xl mx-auto px-4 sm:px-6 lg:px-8 pt-24 pb-20">
 
+          {/* DEBUG: alleen zichtbaar in development */}
+          {process.env.NODE_ENV === 'development' && players.length > 0 && (
+            <div style={{ background: '#1a1a00', border: '1px solid #ffff00', borderRadius: 8, padding: 12, marginBottom: 16, fontSize: 11, fontFamily: 'monospace', color: '#ffff88' }}>
+              <strong style={{ color: '#ffff00' }}>DEBUG — eerste 5 spelers (team/teamName check):</strong>
+              <pre style={{ marginTop: 6, whiteSpace: 'pre-wrap', wordBreak: 'break-all' }}>
+                {JSON.stringify(
+                  players.slice(0, 5).map((p) => ({
+                    id: p.id,
+                    name: p.name,
+                    fullName: p.fullName,
+                    team: p.team,
+                    teamName: p.teamName,
+                    teamId: p.teamId,
+                  })),
+                  null, 2
+                )}
+              </pre>
+            </div>
+          )}
+
           {/* Header */}
           <div className="mb-8">
             <span className="text-[11px] font-semibold uppercase tracking-[0.15em] mb-2 block" style={{ color: '#00FA61' }}>
