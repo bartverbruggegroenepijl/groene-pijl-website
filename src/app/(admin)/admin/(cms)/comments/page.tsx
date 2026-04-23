@@ -14,16 +14,21 @@ export default async function CommentsPage() {
 
   const { data: comments } = await supabase
     .from('comments')
-    .select('id, username, body, created_at, articles(title, slug)')
+    .select('id, username, content, created_at, parent_id, articles(title, slug)')
     .order('created_at', { ascending: false });
 
   const rows = (comments ?? []) as unknown as {
     id: string;
     username: string;
-    body: string;
+    content: string;
     created_at: string;
+    parent_id: string | null;
     articles: { title: string; slug: string } | null;
   }[];
+
+  // Build a map of id → username for reply labels
+  const usernameById: Record<string, string> = {};
+  for (const r of rows) usernameById[r.id] = r.username;
 
   function formatDate(iso: string) {
     return new Date(iso).toLocaleDateString('nl-NL', {
@@ -71,13 +76,25 @@ export default async function CommentsPage() {
             </thead>
             <tbody className="divide-y divide-white/5">
               {rows.map((comment) => (
-                <tr key={comment.id} className="hover:bg-white/3 transition-colors group">
+                <tr
+                  key={comment.id}
+                  className="hover:bg-white/3 transition-colors group"
+                  style={comment.parent_id ? { background: 'rgba(0,250,97,0.02)' } : undefined}
+                >
                   <td className="px-5 py-4 max-w-[180px]">
-                    <p className="text-white text-sm font-medium line-clamp-1">
-                      {comment.articles?.title ?? <span className="text-gray-600 italic">Onbekend</span>}
-                    </p>
-                    {comment.articles?.slug && (
-                      <p className="text-gray-600 text-xs mt-0.5 font-mono">/artikelen/{comment.articles.slug}</p>
+                    {comment.parent_id ? (
+                      <span className="text-[#00FA61]/60 text-xs font-semibold">
+                        ↳ Reply
+                      </span>
+                    ) : (
+                      <>
+                        <p className="text-white text-sm font-medium line-clamp-1">
+                          {comment.articles?.title ?? <span className="text-gray-600 italic">Onbekend</span>}
+                        </p>
+                        {comment.articles?.slug && (
+                          <p className="text-gray-600 text-xs mt-0.5 font-mono">/artikelen/{comment.articles.slug}</p>
+                        )}
+                      </>
                     )}
                   </td>
                   <td className="px-5 py-4">
@@ -89,7 +106,7 @@ export default async function CommentsPage() {
                     </span>
                   </td>
                   <td className="px-5 py-4 max-w-xs">
-                    <p className="text-gray-300 text-sm line-clamp-2">{comment.body}</p>
+                    <p className="text-gray-300 text-sm line-clamp-2">{comment.content}</p>
                   </td>
                   <td className="px-5 py-4 hidden lg:table-cell">
                     <span className="text-gray-500 text-xs">{formatDate(comment.created_at)}</span>

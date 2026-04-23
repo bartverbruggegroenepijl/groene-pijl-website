@@ -10,8 +10,13 @@ interface Props {
 interface Comment {
   id: string;
   username: string;
-  body: string;
+  content: string;
   created_at: string;
+  parent_id: string | null;
+}
+
+interface CommentWithReplies extends Comment {
+  replies: Comment[];
 }
 
 function formatDate(iso: string) {
@@ -20,12 +25,24 @@ function formatDate(iso: string) {
   });
 }
 
+function buildTree(flat: Comment[]): CommentWithReplies[] {
+  const top = flat.filter((c) => !c.parent_id) as CommentWithReplies[];
+  for (const c of top) {
+    c.replies = flat.filter((r) => r.parent_id === c.id);
+  }
+  return top;
+}
+
 export default function ArticleComments({ articleId }: Props) {
-  const [comments,  setComments]  = useState<Comment[]>([]);
-  const [username,  setUsername]  = useState('');
-  const [body,      setBody]      = useState('');
-  const [error,     setError]     = useState('');
-  const [submitting, setSubmitting] = useState(false);
+  const [comments,    setComments]    = useState<CommentWithReplies[]>([]);
+  const [username,    setUsername]    = useState('');
+  const [body,        setBody]        = useState('');
+  const [error,       setError]       = useState('');
+  const [submitting,  setSubmitting]  = useState(false);
+  const [replyTo,     setReplyTo]     = useState<{ id: string; username: string } | null>(null);
+  const [replyBody,   setReplyBody]   = useState('');
+  const [replyError,  setReplyError]  = useState('');
+  const [replySubmitting, setReplySubmitting] = useState(false);
 
   useEffect(() => {
     const saved = localStorage.getItem('gp_username');
@@ -37,10 +54,10 @@ export default function ArticleComments({ articleId }: Props) {
     const supabase = createClient();
     const { data } = await supabase
       .from('comments')
-      .select('id, username, body, created_at')
+      .select('id, username, content, created_at, parent_id')
       .eq('article_id', articleId)
       .order('created_at', { ascending: true });
-    setComments((data as Comment[]) ?? []);
+    setComments(buildTree((data as Comment[]) ?? []));
   }
 
   async function handleSubmit(e: React.FormEvent) {
@@ -55,7 +72,7 @@ export default function ArticleComments({ articleId }: Props) {
     const supabase = createClient();
     const { error: err } = await supabase
       .from('comments')
-      .insert({ article_id: articleId, username: username.trim(), body: body.trim() });
+      .insert({ article_id: articleId, username: username.trim(), content: body.trim(), parent_id: null });
 
     setSubmitting(false);
     if (err) {
@@ -66,13 +83,39 @@ export default function ArticleComments({ articleId }: Props) {
     }
   }
 
+  async function handleReplySubmit(e: React.FormEvent, parentId: string) {
+    e.preventDefault();
+    setReplyError('');
+    if (!username.trim()) return setReplyError('Vul een gebruikersnaam in.');
+    if (!replyBody.trim()) return setReplyError('Schrijf eerst een reactie.');
+
+    setReplySubmitting(true);
+    localStorage.setItem('gp_username', username.trim());
+
+    const supabase = createClient();
+    const { error: err } = await supabase
+      .from('comments')
+      .insert({ article_id: articleId, username: username.trim(), content: replyBody.trim(), parent_id: parentId });
+
+    setReplySubmitting(false);
+    if (err) {
+      setReplyError('Er ging iets mis, probeer het opnieuw.');
+    } else {
+      setReplyBody('');
+      setReplyTo(null);
+      await loadComments();
+    }
+  }
+
+  const totalCount = comments.reduce((sum, c) => sum + 1 + c.replies.length, 0);
+
   return (
     <div
       style={{ fontFamily: 'Montserrat, sans-serif' }}
       className="mt-10 border-t border-white/8 pt-10"
     >
       <h2 className="text-xl font-bold text-white mb-6">
-        Reacties {comments.length > 0 && <span className="text-white/30 font-normal text-base ml-1">({comments.length})</span>}
+        Reacties {totalCount > 0 && <span className="text-white/30 font-normal text-base ml-1">({totalCount})</span>}
       </h2>
 
       {/* Comment lijst */}
@@ -81,27 +124,113 @@ export default function ArticleComments({ articleId }: Props) {
       ) : (
         <div className="flex flex-col gap-4 mb-8">
           {comments.map((c) => (
-            <div
-              key={c.id}
-              className="rounded-xl p-4"
-              style={{ background: 'rgba(255,255,255,0.04)', border: '1px solid rgba(255,255,255,0.08)' }}
-            >
-              <div className="flex items-center gap-2 mb-2">
-                <span
-                  className="text-xs font-bold px-2 py-0.5 rounded-full"
-                  style={{ background: 'rgba(0,250,97,0.12)', color: '#00FA61' }}
+            <div key={c.id}>
+              {/* Top-level comment */}
+              <div
+                className="rounded-xl p-4"
+                style={{ background: 'rgba(255,255,255,0.04)', border: '1px solid rgba(255,255,255,0.08)' }}
+              >
+                <div className="flex items-center gap-2 mb-2">
+                  <span
+                    className="text-xs font-bold px-2 py-0.5 rounded-full"
+                    style={{ background: 'rgba(0,250,97,0.12)', color: '#00FA61' }}
+                  >
+                    {c.username}
+                  </span>
+                  <span className="text-white/25 text-xs">{formatDate(c.created_at)}</span>
+                </div>
+                <p className="text-white/70 text-sm leading-relaxed">{c.content}</p>
+                <button
+                  onClick={() => {
+                    if (replyTo?.id === c.id) {
+                      setReplyTo(null);
+                    } else {
+                      setReplyTo({ id: c.id, username: c.username });
+                      setReplyBody('');
+                      setReplyError('');
+                    }
+                  }}
+                  className="mt-3 text-xs font-semibold transition-colors"
+                  style={{ color: replyTo?.id === c.id ? 'rgba(255,255,255,0.3)' : 'rgba(0,250,97,0.6)' }}
                 >
-                  {c.username}
-                </span>
-                <span className="text-white/25 text-xs">{formatDate(c.created_at)}</span>
+                  {replyTo?.id === c.id ? 'Annuleer' : 'Reageer'}
+                </button>
               </div>
-              <p className="text-white/70 text-sm leading-relaxed">{c.body}</p>
+
+              {/* Reply formulier */}
+              {replyTo?.id === c.id && (
+                <div
+                  className="ml-6 mt-2 rounded-xl p-4"
+                  style={{ background: 'rgba(26,19,97,0.4)', border: '1.5px solid rgba(0,250,97,0.15)' }}
+                >
+                  <p className="text-xs text-white/40 mb-3">
+                    Reageer op <span style={{ color: '#00FA61' }}>{replyTo.username}</span>
+                  </p>
+                  <form onSubmit={(e) => handleReplySubmit(e, c.id)} className="flex flex-col gap-2">
+                    <input
+                      type="text"
+                      placeholder="Gebruikersnaam"
+                      value={username}
+                      onChange={(e) => setUsername(e.target.value)}
+                      maxLength={60}
+                      className="w-full rounded-lg px-3 py-2 text-sm text-white placeholder-white/30 outline-none"
+                      style={{ background: 'rgba(255,255,255,0.08)', border: '1px solid rgba(0,250,97,0.2)', fontFamily: 'Montserrat, sans-serif' }}
+                    />
+                    <textarea
+                      placeholder="Schrijf je reactie..."
+                      value={replyBody}
+                      onChange={(e) => setReplyBody(e.target.value)}
+                      rows={3}
+                      maxLength={1000}
+                      className="w-full rounded-lg px-3 py-2 text-sm text-white placeholder-white/30 outline-none resize-none"
+                      style={{ background: 'rgba(255,255,255,0.08)', border: '1px solid rgba(0,250,97,0.2)', fontFamily: 'Montserrat, sans-serif' }}
+                    />
+                    {replyError && <p className="text-red-400 text-xs font-semibold">{replyError}</p>}
+                    <button
+                      type="submit"
+                      disabled={replySubmitting}
+                      className="self-start px-4 py-2 rounded-lg text-xs font-bold transition-all hover:opacity-90 disabled:opacity-50"
+                      style={{ background: '#00FA61', color: '#1a1361', fontFamily: 'Montserrat, sans-serif' }}
+                    >
+                      {replySubmitting ? 'Plaatsen...' : 'Reactie plaatsen'}
+                    </button>
+                  </form>
+                </div>
+              )}
+
+              {/* Replies */}
+              {c.replies.length > 0 && (
+                <div className="ml-6 mt-2 flex flex-col gap-2">
+                  {c.replies.map((r) => (
+                    <div
+                      key={r.id}
+                      className="rounded-xl p-4"
+                      style={{
+                        background: 'rgba(255,255,255,0.02)',
+                        border: '1px solid rgba(255,255,255,0.06)',
+                        borderLeft: '2px solid rgba(0,250,97,0.25)',
+                      }}
+                    >
+                      <div className="flex items-center gap-2 mb-2">
+                        <span
+                          className="text-xs font-bold px-2 py-0.5 rounded-full"
+                          style={{ background: 'rgba(0,250,97,0.08)', color: '#00FA61' }}
+                        >
+                          {r.username}
+                        </span>
+                        <span className="text-white/25 text-xs">{formatDate(r.created_at)}</span>
+                      </div>
+                      <p className="text-white/60 text-sm leading-relaxed">{r.content}</p>
+                    </div>
+                  ))}
+                </div>
+              )}
             </div>
           ))}
         </div>
       )}
 
-      {/* Formulier */}
+      {/* Nieuw comment formulier */}
       <div
         className="rounded-2xl p-6"
         style={{ background: 'rgba(26,19,97,0.6)', border: '1.5px solid rgba(0,250,97,0.2)' }}
