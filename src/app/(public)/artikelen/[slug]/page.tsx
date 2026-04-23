@@ -31,7 +31,7 @@ export default async function ArtikelDetailPage({ params }: Props) {
   const [{ data: article }, { data: related }] = await Promise.all([
     supabase
       .from('articles')
-      .select('id, title, slug, excerpt, content, cover_image, published_at, category, managers(id, name, avatar_url)')
+      .select('id, title, slug, excerpt, content, cover_image, published_at, category, managers(id, name, slug, avatar_url)')
       .eq('slug', params.slug)
       .eq('published', true)
       .single(),

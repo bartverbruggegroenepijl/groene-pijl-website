@@ -345,7 +345,7 @@ export default async function HomePage() {
     try {
       return await supabase
         .from('articles')
-        .select('id, title, slug, excerpt, cover_image, published_at, category, managers(name)')
+        .select('id, title, slug, excerpt, cover_image, published_at, category, managers(name, slug)')
         .eq('published', true)
         .order('published_at', { ascending: false })
         .limit(3);
