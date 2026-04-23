@@ -433,6 +433,7 @@ function saveGwPlanNow(
 
 export default function TeambouwerPage() {
   const [players,        setPlayers]        = useState<FplPlayer[]>([]);
+  const [teams,          setTeams]          = useState<TeamFDR[]>([]);
   const [fdrMap,         setFdrMap]         = useState<Record<number, FixtureCell[]>>({});
   const [gameweeks,      setGameweeks]      = useState<number[]>([]);
   const [eventDeadlines, setEventDeadlines] = useState<Record<number, string>>({});
@@ -491,10 +492,12 @@ export default function TeambouwerPage() {
         const pData = await pRes.json();
         const fData = await fRes.json();
         setPlayers(pData.players ?? []);
+        const fplTeams = (fData.teams ?? []) as TeamFDR[];
+        setTeams(fplTeams);
         setGameweeks(fData.gameweeks ?? []);
         setEventDeadlines(fData.eventDeadlines ?? {});
         const map: Record<number, FixtureCell[]> = {};
-        for (const t of (fData.teams ?? []) as TeamFDR[]) {
+        for (const t of fplTeams) {
           map[t.id] = t.fixtures;
         }
         setFdrMap(map);
@@ -742,8 +745,9 @@ export default function TeambouwerPage() {
       const q     = search.toLowerCase();
       const qNorm = normalize(search);
       list = list.filter((p) => {
-        const clubKort = (p.team     ?? '').toLowerCase();
-        const clubNaam = (p.teamName ?? '').toLowerCase();
+        const teamObj  = teams.find((t) => t.id === p.teamId);
+        const clubNaam = (teamObj?.name      ?? p.teamName ?? '').toLowerCase();
+        const clubKort = (teamObj?.shortName ?? p.team     ?? '').toLowerCase();
         const clubMatch =
           clubNaam.includes(q) ||
           clubKort.includes(q) ||
@@ -751,9 +755,9 @@ export default function TeambouwerPage() {
           normalize(clubKort).includes(qNorm);
         return (
           (p.name     ?? '').toLowerCase().includes(q) ||
-          normalize(p.name).includes(qNorm) ||
+          normalize(p.name     ?? '').includes(qNorm) ||
           (p.fullName ?? '').toLowerCase().includes(q) ||
-          normalize(p.fullName).includes(qNorm) ||
+          normalize(p.fullName ?? '').includes(qNorm) ||
           clubMatch
         );
       });
