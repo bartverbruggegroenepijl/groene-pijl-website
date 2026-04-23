@@ -19,14 +19,30 @@ async function markdownToHtml(markdown: string): Promise<string> {
   return result.toString();
 }
 
+export async function generateStaticParams() {
+  const supabase = createClient();
+  const { data: managers } = await supabase.from('managers').select('slug');
+  return managers?.filter((m) => m.slug).map((m) => ({ slug: m.slug })) ?? [];
+}
+
 export default async function ManagerProfilePage({ params }: Props) {
   const supabase = createClient();
 
-  const { data: manager } = await supabase
+  // Probeer eerst op slug, dan UUID fallback voor oude links
+  let { data: manager } = await supabase
     .from('managers')
     .select('id, name, slug, role, bio, rank_geschiedenis, avatar_url, instagram_url')
     .eq('slug', params.slug)
     .single();
+
+  if (!manager) {
+    const { data } = await supabase
+      .from('managers')
+      .select('id, name, slug, role, bio, rank_geschiedenis, avatar_url, instagram_url')
+      .eq('id', params.slug)
+      .single();
+    manager = data;
+  }
 
   if (!manager) notFound();
 

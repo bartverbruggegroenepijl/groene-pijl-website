@@ -56,7 +56,7 @@ export default async function ManagersPage() {
             {(managers ?? []).map((m) => (
               <Link
                 key={m.id}
-                href={`/managers/${m.slug ?? m.id}`}
+                href={`/managers/${m.slug}`}
                 className="group flex flex-col items-center text-center gap-4 rounded-2xl p-6 border border-white/8 hover:border-primary/40 transition-all duration-300 card-lift"
                 style={{
                   textDecoration: 'none',

@@ -861,7 +861,7 @@ export default async function HomePage() {
           {managers.length > 0 ? (
             <div className="mt-10 grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6">
               {managers.map((m) => (
-                <Link key={m.id} href={`/managers/${m.slug ?? m.id}`} className="card-lift bg-white border border-gray-100 hover:border-primary/30 hover:shadow-lg rounded-2xl p-6 flex flex-col items-center text-center gap-3 transition-all duration-300 group">
+                <Link key={m.id} href={`/managers/${m.slug}`} className="card-lift bg-white border border-gray-100 hover:border-primary/30 hover:shadow-lg rounded-2xl p-6 flex flex-col items-center text-center gap-3 transition-all duration-300 group">
                   {m.avatar_url ? (
                     <div className="relative w-20 h-20 rounded-full overflow-hidden ring-2 ring-gray-200 group-hover:ring-primary/40 transition-all duration-300">
                       <Image src={m.avatar_url} alt={m.name} fill className="object-cover" />
