@@ -738,14 +738,25 @@ export default function TeambouwerPage() {
     if (posFilter !== 'ALL') list = list.filter((p) => p.position === posFilter);
     if (budgetFilter !== null) list = list.filter((p) => p.price <= budgetFilter);
     if (search.trim()) {
-      const q = search.toLowerCase();
-      list = list.filter(
-        (p) =>
+      const normalize = (s: string) => s.toLowerCase().replace(/[^a-z0-9]/g, '');
+      const q     = search.toLowerCase();
+      const qNorm = normalize(search);
+      list = list.filter((p) => {
+        const clubKort = p.team.toLowerCase();
+        const clubNaam = p.teamName.toLowerCase();
+        const clubMatch =
+          clubNaam.includes(q) ||
+          clubKort.includes(q) ||
+          normalize(clubNaam).includes(qNorm) ||
+          normalize(clubKort).includes(qNorm);
+        return (
           p.name.toLowerCase().includes(q) ||
+          normalize(p.name).includes(qNorm) ||
           p.fullName.toLowerCase().includes(q) ||
-          p.team.toLowerCase().includes(q) ||
-          p.teamName.toLowerCase().includes(q),
-      );
+          normalize(p.fullName).includes(qNorm) ||
+          clubMatch
+        );
+      });
     }
     list = [...list].sort((a, b) => {
       const diff = a[sortField] - b[sortField];
