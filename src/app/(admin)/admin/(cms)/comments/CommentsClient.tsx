@@ -167,12 +167,7 @@ function CommentRow({
           >
             {comment.username}
           </span>
-          <span className="text-gray-600 text-xs">
-            {new Date(comment.created_at).toLocaleDateString('nl-NL', {
-              day: 'numeric', month: 'short', year: 'numeric',
-              hour: '2-digit', minute: '2-digit',
-            })}
-          </span>
+          <span className="text-gray-600 text-xs">{formatDate(comment.created_at)}</span>
         </div>
         <p className="text-gray-300 text-sm leading-relaxed line-clamp-3">{comment.content}</p>
       </div>
