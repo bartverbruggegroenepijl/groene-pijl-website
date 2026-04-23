@@ -17,6 +17,7 @@ import {
   Medal,
   Settings,
   KeyRound,
+  MessageSquare,
 } from 'lucide-react';
 
 const navItems = [
@@ -28,6 +29,7 @@ const navItems = [
   { href: '/admin/kooptips',           label: 'Transfertips',   icon: TrendingUp,      exact: false },
   { href: '/admin/captain-keuze',      label: 'Captain Keuze',  icon: Star,            exact: false },
   { href: '/admin/managers',           label: 'Managers',       icon: Users,           exact: false },
+  { href: '/admin/comments',           label: 'Comments',       icon: MessageSquare,   exact: false },
   { href: '/admin/clubs',                      label: 'Clubs',                icon: Shield,    exact: false },
   { href: '/admin/instellingen',               label: 'Instellingen',         icon: Settings,  exact: true  },
   { href: '/admin/instellingen/wachtwoord',    label: 'Wachtwoord wijzigen',  icon: KeyRound,  exact: false },

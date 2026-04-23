@@ -3,6 +3,8 @@ import Image from 'next/image';
 import Link from 'next/link';
 import { notFound } from 'next/navigation';
 import { ArrowLeft, Calendar, User } from 'lucide-react';
+import ArticleReactions from '@/components/ArticleReactions';
+import ArticleComments from '@/components/ArticleComments';
 import { remark } from 'remark';
 import remarkGfm from 'remark-gfm';
 import remarkHtml from 'remark-html';
@@ -130,6 +132,10 @@ export default async function ArtikelDetailPage({ params }: Props) {
           <p className="text-white/40">Geen inhoud beschikbaar.</p>
         )}
       </div>
+
+      {/* Reactions + Comments */}
+      <ArticleReactions articleId={article.id} />
+      <ArticleComments articleId={article.id} />
 
       {/* Related articles */}
       {related && related.length > 0 && (
