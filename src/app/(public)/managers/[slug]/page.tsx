@@ -7,7 +7,7 @@ import { remark } from 'remark';
 import remarkHtml from 'remark-html';
 
 interface Props {
-  params: { id: string };
+  params: { slug: string };
 }
 
 function formatDate(iso: string) {
@@ -22,22 +22,21 @@ async function markdownToHtml(markdown: string): Promise<string> {
 export default async function ManagerProfilePage({ params }: Props) {
   const supabase = createClient();
 
-  const [{ data: manager }, { data: articles }] = await Promise.all([
-    supabase
-      .from('managers')
-      .select('id, name, role, bio, rank_geschiedenis, avatar_url, instagram_url')
-      .eq('id', params.id)
-      .single(),
-    supabase
-      .from('articles')
-      .select('id, title, slug, excerpt, cover_image, published_at, category')
-      .eq('author_id', params.id)
-      .eq('published', true)
-      .order('published_at', { ascending: false })
-      .limit(6),
-  ]);
+  const { data: manager } = await supabase
+    .from('managers')
+    .select('id, name, slug, role, bio, rank_geschiedenis, avatar_url, instagram_url')
+    .eq('slug', params.slug)
+    .single();
 
   if (!manager) notFound();
+
+  const { data: articles } = await supabase
+    .from('articles')
+    .select('id, title, slug, excerpt, cover_image, published_at, category')
+    .eq('author_id', manager.id)
+    .eq('published', true)
+    .order('published_at', { ascending: false })
+    .limit(6);
 
   const bioHtml = manager.bio ? await markdownToHtml(manager.bio) : '';
 
@@ -122,46 +121,53 @@ export default async function ManagerProfilePage({ params }: Props) {
         </h2>
 
         {articles && articles.length > 0 ? (
-          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-            {articles.map((a) => (
-              <Link key={a.id} href={`/artikelen/${a.slug}`} className="card-lift bg-surface-2 border border-white/8 hover:border-primary/20 rounded-2xl overflow-hidden group transition-all duration-200 hover:shadow-lg hover:shadow-black/30 cursor-pointer">
-                <div className="relative h-44 bg-surface-3">
-                  {a.cover_image ? (
-                    <Image src={a.cover_image} alt={a.title} fill className="object-cover group-hover:scale-105 transition-transform duration-300" />
-                  ) : (
-                    <div className="absolute inset-0 flex items-center justify-center" style={{ background: 'linear-gradient(135deg, rgba(0,250,97,0.08) 0%, rgba(123,47,255,0.12) 100%)' }}>
-                      <span className="font-bold text-5xl text-primary/20">GP</span>
-                    </div>
-                  )}
-                  {a.category && (
-                    <span className="absolute top-3 left-3 bg-primary text-black text-[10px] font-bold px-2.5 py-1 rounded-full uppercase tracking-wide">{a.category}</span>
-                  )}
-                  {/* Excerpt overlay — fade-in op hover, alleen desktop */}
-                  {a.excerpt && (
-                    <div
-                      className="hidden md:block absolute bottom-0 left-0 right-0 p-4 opacity-0 group-hover:opacity-100 transition-opacity duration-[250ms] ease-in-out"
-                      style={{ background: 'linear-gradient(to top, rgba(31,14,132,0.95) 0%, rgba(31,14,132,0.7) 70%, transparent 100%)' }}
-                    >
-                      <p
-                        className="text-white italic line-clamp-3"
-                        style={{ fontFamily: 'Montserrat, sans-serif', fontSize: '14px' }}
+          <>
+            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+              {articles.map((a) => (
+                <Link key={a.id} href={`/artikelen/${a.slug}`} className="card-lift bg-surface-2 border border-white/8 hover:border-primary/20 rounded-2xl overflow-hidden group transition-all duration-200 hover:shadow-lg hover:shadow-black/30 cursor-pointer">
+                  <div className="relative h-44 bg-surface-3">
+                    {a.cover_image ? (
+                      <Image src={a.cover_image} alt={a.title} fill className="object-cover group-hover:scale-105 transition-transform duration-300" />
+                    ) : (
+                      <div className="absolute inset-0 flex items-center justify-center" style={{ background: 'linear-gradient(135deg, rgba(0,250,97,0.08) 0%, rgba(123,47,255,0.12) 100%)' }}>
+                        <span className="font-bold text-5xl text-primary/20">GP</span>
+                      </div>
+                    )}
+                    {a.category && (
+                      <span className="absolute top-3 left-3 bg-primary text-black text-[10px] font-bold px-2.5 py-1 rounded-full uppercase tracking-wide">{a.category}</span>
+                    )}
+                    {a.excerpt && (
+                      <div
+                        className="hidden md:block absolute bottom-0 left-0 right-0 p-4 opacity-0 group-hover:opacity-100 transition-opacity duration-[250ms] ease-in-out"
+                        style={{ background: 'linear-gradient(to top, rgba(31,14,132,0.95) 0%, rgba(31,14,132,0.7) 70%, transparent 100%)' }}
                       >
-                        {a.excerpt}
-                      </p>
-                    </div>
-                  )}
-                </div>
-                <div className="p-5">
-                  {a.published_at && <p className="text-xs text-white/30 mb-2">{formatDate(a.published_at)}</p>}
-                  <h3 className="font-bold text-lg text-white mb-2 leading-snug group-hover:text-primary transition-colors line-clamp-2">{a.title}</h3>
-                  {a.excerpt && <p className="text-sm text-white/50 leading-relaxed line-clamp-2 mb-4">{a.excerpt}</p>}
-                  <span className="inline-flex items-center gap-1 text-primary text-sm font-semibold">
-                    Lees meer <ArrowRight size={12} />
-                  </span>
-                </div>
+                        <p className="text-white italic line-clamp-3" style={{ fontFamily: 'Montserrat, sans-serif', fontSize: '14px' }}>
+                          {a.excerpt}
+                        </p>
+                      </div>
+                    )}
+                  </div>
+                  <div className="p-5">
+                    {a.published_at && <p className="text-xs text-white/30 mb-2">{formatDate(a.published_at)}</p>}
+                    <h3 className="font-bold text-lg text-white mb-2 leading-snug group-hover:text-primary transition-colors line-clamp-2">{a.title}</h3>
+                    {a.excerpt && <p className="text-sm text-white/50 leading-relaxed line-clamp-2 mb-4">{a.excerpt}</p>}
+                    <span className="inline-flex items-center gap-1 text-primary text-sm font-semibold">
+                      Lees meer <ArrowRight size={12} />
+                    </span>
+                  </div>
+                </Link>
+              ))}
+            </div>
+
+            <div className="mt-8">
+              <Link
+                href={`/artikelen?manager=${manager.slug}`}
+                className="inline-block px-6 py-3 bg-[#00FA61] text-[#1a1361] font-bold rounded-lg hover:opacity-90 transition"
+              >
+                Bekijk alle artikelen →
               </Link>
-            ))}
-          </div>
+            </div>
+          </>
         ) : (
           <div className="py-16 text-center border border-dashed border-white/10 rounded-2xl">
             <p className="text-white/30 text-sm">{manager.name} heeft nog geen artikelen gepubliceerd.</p>

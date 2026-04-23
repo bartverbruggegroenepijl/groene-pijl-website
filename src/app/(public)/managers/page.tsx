@@ -8,7 +8,7 @@ export default async function ManagersPage() {
 
   const { data: managers } = await supabase
     .from('managers')
-    .select('id, name, role, bio, avatar_url, instagram_url')
+    .select('id, name, slug, role, bio, avatar_url, instagram_url')
     .order('name', { ascending: true });
 
   return (
@@ -56,7 +56,7 @@ export default async function ManagersPage() {
             {(managers ?? []).map((m) => (
               <Link
                 key={m.id}
-                href={`/managers/${m.id}`}
+                href={`/managers/${m.slug ?? m.id}`}
                 className="group flex flex-col items-center text-center gap-4 rounded-2xl p-6 border border-white/8 hover:border-primary/40 transition-all duration-300 card-lift"
                 style={{
                   textDecoration: 'none',

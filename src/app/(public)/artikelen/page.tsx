@@ -3,8 +3,9 @@
 import { createClient } from '@/lib/supabase/client';
 import Image from 'next/image';
 import Link from 'next/link';
-import { ArrowRight } from 'lucide-react';
+import { ArrowRight, X } from 'lucide-react';
 import { useEffect, useState } from 'react';
+import { useSearchParams, useRouter } from 'next/navigation';
 
 const CATEGORIES = ['Alle', 'Transfers', 'Captain', 'Wildcard', 'Differentials', 'GW Preview', 'GW Review'];
 
@@ -16,7 +17,7 @@ interface Article {
   cover_image: string | null;
   published_at: string | null;
   category: string | null;
-  managers: { name: string } | null;
+  managers: { name: string; slug: string | null } | null;
 }
 
 function formatDate(iso: string) {
@@ -28,11 +29,15 @@ export default function ArtikelenPage() {
   const [activeCategory, setActiveCategory] = useState('Alle');
   const [loading, setLoading] = useState(true);
 
+  const searchParams = useSearchParams();
+  const router = useRouter();
+  const managerSlug = searchParams.get('manager');
+
   useEffect(() => {
     const supabase = createClient();
     supabase
       .from('articles')
-      .select('id, title, slug, excerpt, cover_image, published_at, category, managers(name)')
+      .select('id, title, slug, excerpt, cover_image, published_at, category, managers(name, slug)')
       .eq('published', true)
       .order('published_at', { ascending: false })
       .then(({ data }) => {
@@ -41,9 +46,17 @@ export default function ArtikelenPage() {
       });
   }, []);
 
-  const filtered = activeCategory === 'Alle'
-    ? articles
-    : articles.filter((a) => a.category === activeCategory);
+  // Filter op categorie én optioneel op manager slug
+  const filtered = articles.filter((a) => {
+    const categoryMatch = activeCategory === 'Alle' || a.category === activeCategory;
+    const managerMatch = !managerSlug || a.managers?.slug === managerSlug;
+    return categoryMatch && managerMatch;
+  });
+
+  // Naam van de gefilterde manager (voor banner)
+  const activeManagerName = managerSlug
+    ? articles.find((a) => a.managers?.slug === managerSlug)?.managers?.name ?? managerSlug
+    : null;
 
   return (
     <main className="min-h-screen bg-background-dark text-white">
@@ -62,6 +75,22 @@ export default function ArtikelenPage() {
       </div>
 
       <div className="max-w-8xl mx-auto px-4 sm:px-6 lg:px-8 pb-20">
+
+        {/* Manager filter banner */}
+        {activeManagerName && (
+          <div className="flex items-center justify-between mb-6 px-4 py-3 rounded-xl" style={{ background: 'rgba(0,250,97,0.1)', border: '1px solid rgba(0,250,97,0.25)' }}>
+            <span className="text-sm font-semibold" style={{ color: '#00FA61' }}>
+              Artikelen van {activeManagerName}
+            </span>
+            <button
+              onClick={() => router.push('/artikelen')}
+              className="flex items-center gap-1.5 text-xs text-white/50 hover:text-white transition"
+            >
+              <X size={13} /> Filter verwijderen
+            </button>
+          </div>
+        )}
+
         {/* Category filter */}
         <div className="flex flex-wrap gap-2 mb-10 -mt-2">
           {CATEGORIES.map((cat) => (
@@ -136,7 +165,11 @@ export default function ArtikelenPage() {
         ) : (
           <div className="py-20 text-center border border-dashed border-white/10 rounded-2xl">
             <p className="text-white/30 text-sm">
-              {activeCategory === 'Alle' ? 'Nog geen artikelen gepubliceerd.' : `Geen artikelen in categorie "${activeCategory}".`}
+              {activeManagerName
+                ? `Geen artikelen gevonden van ${activeManagerName}.`
+                : activeCategory === 'Alle'
+                  ? 'Nog geen artikelen gepubliceerd.'
+                  : `Geen artikelen in categorie "${activeCategory}".`}
             </p>
           </div>
         )}

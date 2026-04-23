@@ -27,6 +27,10 @@ CREATE TABLE IF NOT EXISTS managers (
 -- Migration: add rank_geschiedenis column if it doesn't exist yet
 ALTER TABLE managers ADD COLUMN IF NOT EXISTS rank_geschiedenis text;
 
+-- Migration: add slug column for pretty URLs
+ALTER TABLE managers ADD COLUMN IF NOT EXISTS slug text UNIQUE;
+UPDATE managers SET slug = lower(regexp_replace(name, '\s+', '-', 'g')) WHERE slug IS NULL;
+
 -- ============================================================
 -- TABLE: articles
 -- ============================================================
