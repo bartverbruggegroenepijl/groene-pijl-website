@@ -4,7 +4,7 @@ import { createClient } from '@/lib/supabase/client';
 import Image from 'next/image';
 import Link from 'next/link';
 import { ArrowRight, X } from 'lucide-react';
-import { useEffect, useState } from 'react';
+import { useEffect, useState, Suspense } from 'react';
 import { useSearchParams, useRouter } from 'next/navigation';
 
 const CATEGORIES = ['Alle', 'Transfers', 'Captain', 'Wildcard', 'Differentials', 'GW Preview', 'GW Review'];
@@ -24,7 +24,7 @@ function formatDate(iso: string) {
   return new Date(iso).toLocaleDateString('nl-NL', { day: 'numeric', month: 'long', year: 'numeric' });
 }
 
-export default function ArtikelenPage() {
+function ArtikelenContent() {
   const [articles, setArticles] = useState<Article[]>([]);
   const [activeCategory, setActiveCategory] = useState('Alle');
   const [loading, setLoading] = useState(true);
@@ -175,5 +175,13 @@ export default function ArtikelenPage() {
         )}
       </div>
     </main>
+  );
+}
+
+export default function ArtikelenPage() {
+  return (
+    <Suspense fallback={<div className="min-h-screen bg-background-dark" />}>
+      <ArtikelenContent />
+    </Suspense>
   );
 }
