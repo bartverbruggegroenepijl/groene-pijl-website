@@ -738,21 +738,21 @@ export default function TeambouwerPage() {
     if (posFilter !== 'ALL') list = list.filter((p) => p.position === posFilter);
     if (budgetFilter !== null) list = list.filter((p) => p.price <= budgetFilter);
     if (search.trim()) {
-      const normalize = (s: string) => s.toLowerCase().replace(/[^a-z0-9]/g, '');
+      const normalize = (s: string) => (s ?? '').toLowerCase().replace(/[^a-z0-9]/g, '');
       const q     = search.toLowerCase();
       const qNorm = normalize(search);
       list = list.filter((p) => {
-        const clubKort = p.team.toLowerCase();
-        const clubNaam = p.teamName.toLowerCase();
+        const clubKort = (p.team     ?? '').toLowerCase();
+        const clubNaam = (p.teamName ?? '').toLowerCase();
         const clubMatch =
           clubNaam.includes(q) ||
           clubKort.includes(q) ||
           normalize(clubNaam).includes(qNorm) ||
           normalize(clubKort).includes(qNorm);
         return (
-          p.name.toLowerCase().includes(q) ||
+          (p.name     ?? '').toLowerCase().includes(q) ||
           normalize(p.name).includes(qNorm) ||
-          p.fullName.toLowerCase().includes(q) ||
+          (p.fullName ?? '').toLowerCase().includes(q) ||
           normalize(p.fullName).includes(qNorm) ||
           clubMatch
         );
@@ -1121,26 +1121,6 @@ export default function TeambouwerPage() {
       {/* Pagina content */}
       <div className="relative" style={{ zIndex: 1 }}>
         <div className="max-w-8xl mx-auto px-4 sm:px-6 lg:px-8 pt-24 pb-20">
-
-          {/* DEBUG: alleen zichtbaar in development */}
-          {process.env.NODE_ENV === 'development' && players.length > 0 && (
-            <div style={{ background: '#1a1a00', border: '1px solid #ffff00', borderRadius: 8, padding: 12, marginBottom: 16, fontSize: 11, fontFamily: 'monospace', color: '#ffff88' }}>
-              <strong style={{ color: '#ffff00' }}>DEBUG — eerste 5 spelers (team/teamName check):</strong>
-              <pre style={{ marginTop: 6, whiteSpace: 'pre-wrap', wordBreak: 'break-all' }}>
-                {JSON.stringify(
-                  players.slice(0, 5).map((p) => ({
-                    id: p.id,
-                    name: p.name,
-                    fullName: p.fullName,
-                    team: p.team,
-                    teamName: p.teamName,
-                    teamId: p.teamId,
-                  })),
-                  null, 2
-                )}
-              </pre>
-            </div>
-          )}
 
           {/* Header */}
           <div className="mb-8">
