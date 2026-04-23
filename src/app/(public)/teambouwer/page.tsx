@@ -433,7 +433,6 @@ function saveGwPlanNow(
 
 export default function TeambouwerPage() {
   const [players,        setPlayers]        = useState<FplPlayer[]>([]);
-  const [teams,          setTeams]          = useState<TeamFDR[]>([]);
   const [fdrMap,         setFdrMap]         = useState<Record<number, FixtureCell[]>>({});
   const [gameweeks,      setGameweeks]      = useState<number[]>([]);
   const [eventDeadlines, setEventDeadlines] = useState<Record<number, string>>({});
@@ -492,12 +491,10 @@ export default function TeambouwerPage() {
         const pData = await pRes.json();
         const fData = await fRes.json();
         setPlayers(pData.players ?? []);
-        const fplTeams = (fData.teams ?? []) as TeamFDR[];
-        setTeams(fplTeams);
         setGameweeks(fData.gameweeks ?? []);
         setEventDeadlines(fData.eventDeadlines ?? {});
         const map: Record<number, FixtureCell[]> = {};
-        for (const t of fplTeams) {
+        for (const t of (fData.teams ?? []) as TeamFDR[]) {
           map[t.id] = t.fixtures;
         }
         setFdrMap(map);
@@ -741,26 +738,11 @@ export default function TeambouwerPage() {
     if (posFilter !== 'ALL') list = list.filter((p) => p.position === posFilter);
     if (budgetFilter !== null) list = list.filter((p) => p.price <= budgetFilter);
     if (search.trim()) {
-      const normalize = (s: string) => (s ?? '').toLowerCase().replace(/[^a-z0-9]/g, '');
-      const q     = search.toLowerCase();
-      const qNorm = normalize(search);
-      list = list.filter((p) => {
-        const teamObj  = teams.find((t) => t.id === p.teamId);
-        const clubNaam = (teamObj?.name      ?? p.teamName ?? '').toLowerCase();
-        const clubKort = (teamObj?.shortName ?? p.team     ?? '').toLowerCase();
-        const clubMatch =
-          clubNaam.includes(q) ||
-          clubKort.includes(q) ||
-          normalize(clubNaam).includes(qNorm) ||
-          normalize(clubKort).includes(qNorm);
-        return (
-          (p.name     ?? '').toLowerCase().includes(q) ||
-          normalize(p.name     ?? '').includes(qNorm) ||
-          (p.fullName ?? '').toLowerCase().includes(q) ||
-          normalize(p.fullName ?? '').includes(qNorm) ||
-          clubMatch
-        );
-      });
+      const q = search.toLowerCase();
+      list = list.filter((p) =>
+        p.name.toLowerCase().includes(q) ||
+        p.fullName.toLowerCase().includes(q)
+      );
     }
     list = [...list].sort((a, b) => {
       const diff = a[sortField] - b[sortField];
@@ -1159,7 +1141,7 @@ export default function TeambouwerPage() {
                   <Search size={14} className="absolute left-3 top-1/2 -translate-y-1/2 text-white/30" />
                   <input
                     type="text"
-                    placeholder="Zoek speler of club…"
+                    placeholder="Zoek speler…"
                     value={search}
                     onChange={(e) => setSearch(e.target.value)}
                     className="w-full pl-9 pr-4 py-2.5 rounded-xl text-sm font-medium text-white placeholder-white/30 outline-none border border-white/10 focus:border-primary/40 transition-colors"
