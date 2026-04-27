@@ -6,7 +6,7 @@ export async function GET() {
   return NextResponse.json(info, {
     headers: {
       // 5 minuten cache zodat de counter na een deadline snel de volgende GW oppikt
-      'Cache-Control': 'public, s-maxage=300, stale-while-revalidate=600',
+      'Cache-Control': 'public, s-maxage=60, stale-while-revalidate=120',
     },
   });
 }

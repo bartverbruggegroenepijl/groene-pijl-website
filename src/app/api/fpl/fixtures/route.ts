@@ -51,7 +51,7 @@ export async function GET() {
   try {
     const [bootstrapRes, fixturesRes] = await Promise.all([
       fetch('https://fantasy.premierleague.com/api/bootstrap-static/', {
-        next: { revalidate: 3600 },
+        next: { revalidate: 300 },
         headers: FPL_HEADERS,
       }),
       fetch('https://fantasy.premierleague.com/api/fixtures/', {
