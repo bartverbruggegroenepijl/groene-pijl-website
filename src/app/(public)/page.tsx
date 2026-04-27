@@ -327,6 +327,7 @@ export default async function HomePage() {
         .from('captain_picks')
         .select('id, gameweek, captain_pick_players(rank, player_name, player_club, position, motivation, image_url, fpl_player_id)')
         .eq('published', true)
+        .order('gameweek', { ascending: false })
         .order('created_at', { ascending: false })
         .limit(1);
     } catch { return fallback; }
@@ -338,6 +339,7 @@ export default async function HomePage() {
         .from('buy_tips')
         .select('id, gameweek, buy_tip_players(player_name, player_club, position, price, motivation, image_url, fpl_player_id)')
         .eq('published', true)
+        .order('gameweek', { ascending: false })
         .order('created_at', { ascending: false })
         .limit(1);
     } catch { return fallback; }
