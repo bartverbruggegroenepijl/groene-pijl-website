@@ -107,6 +107,30 @@ export default async function RankingsPage() {
           initialError={error ?? undefined}
         />
 
+        {/* Kampioenen CTA */}
+        <Link
+          href="/kampioenen"
+          className="mt-10 rounded-2xl p-5 flex flex-col sm:flex-row items-center justify-between gap-4 transition-all hover:opacity-90 block"
+          style={{
+            background: 'linear-gradient(135deg, rgba(255,215,0,0.08) 0%, rgba(26,16,96,0.6) 100%)',
+            border: '1px solid rgba(255,215,0,0.25)',
+            boxShadow: '0 0 30px rgba(255,215,0,0.06)',
+          }}
+        >
+          <div>
+            <p className="text-white font-bold text-sm">🏆 Bekijk de Kampioenen</p>
+            <p className="text-white/40 text-xs mt-0.5">
+              Serge van &apos;t Westeinde is de eerste kampioen van de Groene Pijl League
+            </p>
+          </div>
+          <span
+            className="flex-shrink-0 text-xs font-bold px-4 py-2 rounded-lg"
+            style={{ background: 'rgba(255,215,0,0.15)', color: '#FFD700', border: '1px solid rgba(255,215,0,0.3)', whiteSpace: 'nowrap' }}
+          >
+            Bekijk winnaars →
+          </span>
+        </Link>
+
         {/* Join league CTA */}
         <div
           className="mt-10 rounded-2xl p-6 flex flex-col sm:flex-row items-center justify-between gap-4"
