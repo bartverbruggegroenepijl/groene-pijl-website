@@ -949,6 +949,44 @@ export default async function HomePage() {
         </section>
       )}
 
+      {/* ── KAMPIOEN CTA ─────────────────────────────────────────────── */}
+      <section className="py-12 px-4" style={{ background: '#0D0B2A' }}>
+        <div
+          className="max-w-3xl mx-auto rounded-2xl p-8 sm:p-10 text-center"
+          style={{
+            background: 'linear-gradient(135deg, rgba(31,14,132,0.95) 0%, rgba(26,19,97,0.95) 100%)',
+            border: '2px solid rgba(255,215,0,0.45)',
+            boxShadow: '0 0 40px rgba(255,215,0,0.15)',
+            fontFamily: 'Montserrat, sans-serif',
+          }}
+        >
+          <div style={{ fontSize: 48, lineHeight: 1, marginBottom: 12 }}>🏆</div>
+          <h2
+            className="text-2xl sm:text-3xl font-black mb-2"
+            style={{ color: '#FFD700', fontFamily: 'Bebas Neue, sans-serif', letterSpacing: '0.05em' }}
+          >
+            Eerste Kampioen Bekend!
+          </h2>
+          <p className="text-white/90 text-sm sm:text-base mb-1">
+            Serge van &apos;t Westeinde (FC the Westend) kroont zich tot eerste kampioen van de Groene Pijl League.
+          </p>
+          <p className="text-white/40 text-xs mb-6 uppercase tracking-widest font-semibold">
+            Seizoen 2025-26
+          </p>
+          <Link
+            href="/kampioenen"
+            className="inline-flex items-center gap-2 font-bold text-sm sm:text-base px-7 py-3.5 rounded-xl transition-all hover:opacity-90"
+            style={{
+              background: '#00FA61',
+              color: '#1F0E84',
+              boxShadow: '0 0 20px rgba(0,250,97,0.3)',
+            }}
+          >
+            🏆 Bekijk de Kampioenspagina
+          </Link>
+        </div>
+      </section>
+
       {/* ── MINI-LEAGUE CTA (gradient) ───────────────────────────────── */}
       <section className="py-20 px-4" style={{ backgroundImage: "url('/gradient-bg.png')", backgroundSize: 'cover', backgroundPosition: 'center' }}>
         <div className="max-w-8xl mx-auto">

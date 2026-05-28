@@ -27,6 +27,19 @@ export default function KampioenenPage() {
         .star-pulse  { animation: starPulse 2s ease-in-out infinite; }
       `}</style>
 
+      {/* ── GOUDEN BANNER ────────────────────────────────────────── */}
+      <div
+        className="text-center text-sm sm:text-base font-extrabold px-4 py-4"
+        style={{
+          background: 'linear-gradient(135deg, #FFD700 0%, #FFA500 100%)',
+          color: '#1F0E84',
+          fontFamily: 'Montserrat, sans-serif',
+          letterSpacing: '0.01em',
+        }}
+      >
+        🏆 De Groene Pijl League heeft zijn eerste kampioen — Serge van &apos;t Westeinde (FC the Westend)
+      </div>
+
       {/* ── HERO ─────────────────────────────────────────────────── */}
       <section
         className="relative pt-32 pb-24 px-4 text-center"
@@ -126,7 +139,7 @@ export default function KampioenenPage() {
                 className="text-center text-sm font-semibold uppercase tracking-widest mb-6"
                 style={{ color: 'rgba(255,215,0,0.6)' }}
               >
-                Seizoen 2024-25
+                Seizoen 2025-26
               </p>
 
               {/* Trophy icon */}
@@ -219,7 +232,7 @@ export default function KampioenenPage() {
               Volgende editie
             </p>
             <h3 className="text-xl font-bold text-white mb-3">
-              Wie kroont zich tot kampioen in 2025-26?
+              Wie kroont zich tot kampioen in 2026-27?
             </h3>
             <p className="text-white/50 text-sm mb-6 max-w-md mx-auto">
               Doe mee aan de Groene Pijl League en schrijf jouw naam in de geschiedenis.
