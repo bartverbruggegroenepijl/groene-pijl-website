@@ -211,6 +211,17 @@ body {
   }
 }
 
+/* Glow animatie op kampioens-beker emoji */
+@keyframes trophyGlow {
+  0%   { filter: drop-shadow(0 0 4px #FFD700) drop-shadow(0 0 8px #FFD700); }
+  50%  { filter: drop-shadow(0 0 16px #FFD700) drop-shadow(0 0 32px #FFA500) drop-shadow(0 0 48px #FF6B00); }
+  100% { filter: drop-shadow(0 0 4px #FFD700) drop-shadow(0 0 8px #FFD700); }
+}
+.trophy-glow {
+  display: inline-block;
+  animation: trophyGlow 2s ease-in-out infinite;
+}
+
 /* xG/xA info panel op TransferTipCard */
 @keyframes xgFadeIn {
   from { opacity: 0; }
