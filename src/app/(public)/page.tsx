@@ -945,6 +945,22 @@ export default async function HomePage() {
                 Bekijk volledige stand <ArrowRight size={14} />
               </Link>
             </div>
+
+            {/* Kampioens-CTA */}
+            <div className="text-center mt-8">
+              <Link
+                href="/kampioenen"
+                className="inline-flex items-center gap-2 font-bold text-sm px-5 py-2.5 rounded-xl transition-all hover:opacity-90"
+                style={{
+                  background: '#00FA61',
+                  color: '#1F0E84',
+                  fontFamily: 'Montserrat, sans-serif',
+                  boxShadow: '0 0 16px rgba(0,250,97,0.25)',
+                }}
+              >
+                🏆 Bekijk de Kampioenspagina
+              </Link>
+            </div>
           </div>
         </section>
       )}
