@@ -958,7 +958,7 @@ export default async function HomePage() {
                   boxShadow: '0 0 16px rgba(0,250,97,0.25)',
                 }}
               >
-                <span className="trophy-glow">🏆</span> Bekijk de Kampioenspagina
+                🏆 Bekijk de Kampioenspagina
               </Link>
             </div>
           </div>
