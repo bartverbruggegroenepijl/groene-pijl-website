@@ -213,13 +213,24 @@ body {
 
 /* Glow animatie op kampioens-beker emoji */
 @keyframes trophyGlow {
-  0%   { filter: drop-shadow(0 0 4px #FFD700) drop-shadow(0 0 8px #FFD700); }
-  50%  { filter: drop-shadow(0 0 16px #FFD700) drop-shadow(0 0 32px #FFA500) drop-shadow(0 0 48px #FF6B00); }
-  100% { filter: drop-shadow(0 0 4px #FFD700) drop-shadow(0 0 8px #FFD700); }
+  0%   { filter: drop-shadow(0 0 8px #FFD700) drop-shadow(0 0 16px #FFD700); transform: scale(1); }
+  50%  { filter: drop-shadow(0 0 24px #FFD700) drop-shadow(0 0 48px #FFA500) drop-shadow(0 0 72px #FF8C00); transform: scale(1.08); }
+  100% { filter: drop-shadow(0 0 8px #FFD700) drop-shadow(0 0 16px #FFD700); transform: scale(1); }
 }
 .trophy-glow {
   display: inline-block;
-  animation: trophyGlow 2s ease-in-out infinite;
+  animation: trophyGlow 2.5s ease-in-out infinite;
+  font-size: 64px;
+}
+
+/* Pulserende gouden glow op kampioenkaart */
+@keyframes cardGlow {
+  0%   { box-shadow: 0 0 20px rgba(255,215,0,0.2), 0 0 40px rgba(255,215,0,0.1); }
+  50%  { box-shadow: 0 0 40px rgba(255,215,0,0.5), 0 0 80px rgba(255,215,0,0.3); }
+  100% { box-shadow: 0 0 20px rgba(255,215,0,0.2), 0 0 40px rgba(255,215,0,0.1); }
+}
+.champion-card {
+  animation: cardGlow 2.5s ease-in-out infinite;
 }
 
 /* xG/xA info panel op TransferTipCard */

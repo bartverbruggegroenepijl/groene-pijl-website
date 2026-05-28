@@ -14,17 +14,11 @@ export default function KampioenenPage() {
       style={{ background: '#0D0B2A', fontFamily: 'Montserrat, sans-serif' }}
     >
       <style>{`
-        @keyframes goldShimmer {
-          0%   { box-shadow: 0 0 30px rgba(255,215,0,0.2), 0 0 60px rgba(255,215,0,0.05); }
-          50%  { box-shadow: 0 0 50px rgba(255,215,0,0.4), 0 0 100px rgba(255,215,0,0.15); }
-          100% { box-shadow: 0 0 30px rgba(255,215,0,0.2), 0 0 60px rgba(255,215,0,0.05); }
-        }
         @keyframes starPulse {
           0%, 100% { opacity: 0.7; transform: scale(1); }
           50%       { opacity: 1;   transform: scale(1.15); }
         }
-        .gold-card   { animation: goldShimmer 3s ease-in-out infinite; }
-        .star-pulse  { animation: starPulse 2s ease-in-out infinite; }
+        .star-pulse { animation: starPulse 2s ease-in-out infinite; }
       `}</style>
 
       {/* ── GOUDEN BANNER ────────────────────────────────────────── */}
@@ -86,7 +80,7 @@ export default function KampioenenPage() {
 
           {/* ── KAMPIOENKAART ──────────────────────────────────────── */}
           <div
-            className="gold-card rounded-3xl p-8 sm:p-10 relative overflow-hidden"
+            className="champion-card rounded-3xl p-8 sm:p-10 relative overflow-hidden"
             style={{
               background: 'linear-gradient(135deg, #0f0a3a 0%, #1a1060 50%, #0f0a3a 100%)',
               border: '1.5px solid rgba(255,215,0,0.4)',
@@ -144,15 +138,7 @@ export default function KampioenenPage() {
 
               {/* Trophy icon */}
               <div className="flex justify-center mb-6">
-                <div
-                  className="w-20 h-20 rounded-full flex items-center justify-center"
-                  style={{
-                    background: 'rgba(255,215,0,0.12)',
-                    border: '2px solid rgba(255,215,0,0.4)',
-                  }}
-                >
-                  <Trophy size={36} style={{ color: '#FFD700' }} />
-                </div>
+                <span className="trophy-glow">🏆</span>
               </div>
 
               {/* Naam & team */}
