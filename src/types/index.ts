@@ -48,7 +48,10 @@ export type ArticleCategory =
   | 'GW Review'
   | 'FPL Legacy'
   | 'Interview'
-  | 'Deepdive';
+  | 'Deepdive'
+  | 'FPL update'
+  | 'Speler van de week'
+  | 'Nieuws update';
 
 export const ARTICLE_CATEGORIES: ArticleCategory[] = [
   'Transfers',
@@ -60,6 +63,9 @@ export const ARTICLE_CATEGORIES: ArticleCategory[] = [
   'FPL Legacy',
   'Interview',
   'Deepdive',
+  'FPL update',
+  'Speler van de week',
+  'Nieuws update',
 ];
 
 export interface Article {

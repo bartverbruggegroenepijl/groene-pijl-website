@@ -7,7 +7,7 @@ import { ArrowRight, X } from 'lucide-react';
 import { useEffect, useState, Suspense } from 'react';
 import { useSearchParams, useRouter } from 'next/navigation';
 
-const CATEGORIES = ['Alle', 'Transfers', 'Captain', 'Wildcard', 'Differentials', 'GW Preview', 'GW Review'];
+const CATEGORIES = ['Alle', 'Transfers', 'Captain', 'Wildcard', 'Differentials', 'GW Preview', 'GW Review', 'FPL Legacy', 'Interview', 'Deepdive', 'FPL update', 'Speler van de week', 'Nieuws update'];
 
 interface Article {
   id: string;
