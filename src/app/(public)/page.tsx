@@ -186,14 +186,6 @@ function SectionTitleLight({ children }: { children: React.ReactNode }) {
   );
 }
 
-function EmptyPlaceholderDark({ message }: { message: string }) {
-  return (
-    <div className="mt-8 rounded-2xl border border-dashed border-white/10 py-16 text-center">
-      <p className="text-white/30 text-sm">{message}</p>
-    </div>
-  );
-}
-
 function EmptyPlaceholderLight({ message }: { message: string }) {
   return (
     <div className="mt-8 rounded-2xl border border-dashed border-gray-200 py-16 text-center">
@@ -565,14 +557,14 @@ export default async function HomePage() {
       </section>
 
       {/* ── 3. CAPTAIN PICK VAN DE WEEK (gradient) ─────────────────── */}
+      {captainPlayers.length > 0 && (
       <section id="captain-pick" className="py-20 px-4" style={{ position: 'relative', backgroundImage: "url('/gradient-bg.png')", backgroundSize: 'cover', backgroundPosition: 'center', borderTop: '2px solid rgba(0,250,97,0.18)' }}>
         <div style={{ position: 'absolute', inset: 0, background: 'radial-gradient(ellipse at 80% 50%, rgba(0,250,97,0.12) 0%, rgba(200,33,195,0.1) 40%, transparent 65%)', pointerEvents: 'none' }} />
         <div className="max-w-8xl mx-auto" style={{ position: 'relative', zIndex: 1 }}>
-          <SectionLabel>{captain ? `Gameweek ${captain.gameweek}` : 'Captain Pick'}</SectionLabel>
+          <SectionLabel>Gameweek {captain!.gameweek}</SectionLabel>
           <SectionTitleDark>Captain Pick van de Week</SectionTitleDark>
 
-          {captainPlayers.length > 0 ? (
-            <div className="mt-10 grid grid-cols-1 md:grid-cols-3 gap-5">
+          <div className="mt-10 grid grid-cols-1 md:grid-cols-3 gap-5">
               {captainPlayers.slice(0, 3).map((p) => {
                 const cfg = CAPTAIN_RANKS.find((r) => r.rank === p.rank) ?? CAPTAIN_RANKS[2];
                 return (
@@ -645,13 +637,12 @@ export default async function HomePage() {
                 );
               })}
             </div>
-          ) : (
-            <EmptyPlaceholderDark message="Nog geen captain pick beschikbaar voor deze gameweek." />
-          )}
         </div>
       </section>
+      )}
 
       {/* ── 4. KOOPTIPS VAN DE WEEK (wit blok) ──────────────────────── */}
+      {kooptips && kooptips.buy_tip_players.length > 0 && (
       <section
         id="kooptips"
         className="py-20 px-4"
@@ -659,14 +650,13 @@ export default async function HomePage() {
       >
         <div className="max-w-8xl mx-auto">
           <span style={{ display: 'inline-block', color: '#00FA61', fontSize: 12, fontWeight: 700, textTransform: 'uppercase', letterSpacing: '0.2em', marginBottom: 8, fontFamily: 'Montserrat, sans-serif' }}>
-            {kooptips ? `Gameweek ${kooptips.gameweek}` : 'Transfertips'}
+            Gameweek {kooptips!.gameweek}
           </span>
           <h2 style={{ color: '#1F0E84', fontSize: 'clamp(28px, 4vw, 48px)', fontWeight: 800, lineHeight: 1.1, fontFamily: 'Montserrat, sans-serif', margin: 0 }}>
             Transfertips van de Week
           </h2>
 
-          {kooptips && kooptips.buy_tip_players.length > 0 ? (
-            <TransferTipsSlider count={kooptips.buy_tip_players.length}>
+          <TransferTipsSlider count={kooptips!.buy_tip_players.length}>
               {kooptips.buy_tip_players.map((p, i) => {
                 const stats = lookupFplStats(p.fpl_player_id, p.player_name, p.player_club, fplTransferStatsById, fplTransferStatsByNameTeam);
                 const captainStats = lookupCaptainStats(p.fpl_player_id, p.player_name, p.player_club, fplCaptainStatsById, fplCaptainStatsByNameTeam);
@@ -687,23 +677,21 @@ export default async function HomePage() {
                 );
               })}
             </TransferTipsSlider>
-          ) : (
-            <EmptyPlaceholderDark message="Nog geen transfertips beschikbaar voor deze gameweek." />
-          )}
         </div>
       </section>
+      )}
 
       {/* ── 5. TEAM VAN DE WEEK (gradient) ─────────────────────────── */}
       <TeamVanDeWeekSection team={team} />
 
       {/* ── 5b. SPELER VAN DE WEEK (white) ──────────────────────────── */}
+      {playerOfWeek && (
       <section id="speler-van-de-week" className="py-20 px-4 bg-white">
         <div className="max-w-8xl mx-auto">
-          <SectionLabel>{playerOfWeek ? `Gameweek ${playerOfWeek.gameweek}` : 'Uitblinker'}</SectionLabel>
+          <SectionLabel>Gameweek {playerOfWeek.gameweek}</SectionLabel>
           <SectionTitleLight>Speler van de Week</SectionTitleLight>
 
-          {playerOfWeek ? (
-            <div className="mt-10 grid grid-cols-1 lg:grid-cols-2 gap-8 items-center max-w-4xl mx-auto">
+          <div className="mt-10 grid grid-cols-1 lg:grid-cols-2 gap-8 items-center max-w-4xl mx-auto">
               {/* Player photo */}
               <div className="flex justify-center">
                 <div className="relative">
@@ -778,11 +766,9 @@ export default async function HomePage() {
                 )}
               </div>
             </div>
-          ) : (
-            <EmptyPlaceholderLight message="Nog geen Speler van de Week beschikbaar." />
-          )}
         </div>
       </section>
+      )}
 
       {/* ── 6. ARTIKELEN & ANALYSE (gradient) ───────────────────────── */}
       <section id="artikelen" className="py-20 px-4" style={{ backgroundImage: "url('/gradient-bg.png')", backgroundSize: 'cover', backgroundPosition: 'center', borderTop: '2px solid rgba(0,250,97,0.18)' }}>

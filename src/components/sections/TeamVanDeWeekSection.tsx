@@ -504,31 +504,9 @@ export default function TeamVanDeWeekSection({ team }: Props) {
     setPitchOpacity(1)
   }
 
-  // ── Lege staat ──────────────────────────────────────────────────────────
+  // ── Lege staat — sectie volledig verbergen tot content beschikbaar is ──
   if (!currentTeam || currentTeam.team_players.length === 0) {
-    return (
-      <section
-        id="team"
-        style={{
-          padding: '80px 16px',
-          background: 'radial-gradient(ellipse at 50% 0%, #1a1a6c 0%, #0a0628 60%)',
-          borderTop: '2px solid rgba(0,250,97,0.18)',
-          fontFamily: 'Montserrat, sans-serif',
-        }}
-      >
-        <div
-          style={{
-            maxWidth: 700,
-            margin: '0 auto',
-            textAlign: 'center',
-            color: 'rgba(255,255,255,0.35)',
-            fontSize: 15,
-          }}
-        >
-          Nog geen team van de week beschikbaar.
-        </div>
-      </section>
-    )
+    return null
   }
 
   const gk = currentTeam.team_players.filter((p) => p.position === 'GK')
