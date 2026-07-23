@@ -3,11 +3,14 @@
 import { useState } from 'react'
 
 interface HeroSectionProps {
-  currentGameweek?: number
+  currentGameweek?: number | null
+  nextGameweek?: number | null
   latestEpisodeUrl?: string
 }
 
-export default function HeroSection({ currentGameweek, latestEpisodeUrl }: HeroSectionProps) {
+export default function HeroSection({ currentGameweek, nextGameweek, latestEpisodeUrl }: HeroSectionProps) {
+  // Beste beschikbare GW-nummer: huidig seizoen > volgend GW > verberg
+  const displayGW = currentGameweek ?? nextGameweek ?? null
   const [teamBtnHovered, setTeamBtnHovered] = useState(false)
 
   return (
@@ -159,12 +162,14 @@ export default function HeroSection({ currentGameweek, latestEpisodeUrl }: HeroS
             marginTop: 8,
           }}
         >
-          <div>
-            <div style={{ color: '#00FA61', fontWeight: 700, fontSize: 17, fontFamily: 'Montserrat, sans-serif' }}>
-              GW{currentGameweek || 29}
+          {displayGW !== null && (
+            <div>
+              <div style={{ color: '#00FA61', fontWeight: 700, fontSize: 17, fontFamily: 'Montserrat, sans-serif' }}>
+                GW{displayGW}
+              </div>
+              <div style={{ color: 'rgba(255,255,255,0.5)', fontSize: 12 }}>Gameweek {displayGW}</div>
             </div>
-            <div style={{ color: 'rgba(255,255,255,0.5)', fontSize: 12 }}>Gameweek {currentGameweek || 29}</div>
-          </div>
+          )}
           <div>
             <div style={{ color: 'white', fontWeight: 700, fontSize: 17 }}>4</div>
             <div style={{ color: 'rgba(255,255,255,0.5)', fontSize: 12 }}>Managers</div>

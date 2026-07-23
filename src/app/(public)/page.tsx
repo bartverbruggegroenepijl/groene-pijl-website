@@ -473,7 +473,8 @@ export default async function HomePage() {
 
       {/* ── 1. HERO ──────────────────────────────────────────────────── */}
       <HeroSection
-        currentGameweek={currentGameweek ?? undefined}
+        currentGameweek={currentGameweek}
+        nextGameweek={gwInfo.nextGW}
         latestEpisodeUrl={episode?.spotify_url ?? undefined}
       />
 
