@@ -156,14 +156,17 @@ export async function GET() {
     players.forEach((p) => {
       const t = teamAgg[p.teamId];
       if (!t) return;
+      // xG: optelling alle veldspelers geeft een goede teamschatting
       t.xG += p.expected_goals;
       t.goals_scored += p.goals_scored;
-      // xGC and clean sheets: use GK data only
       if (p.position === 'GK') {
+        // xGC: optelling alle GKs is verdedigbaar (elk speelt een deel minuten)
         t.xGC += p.expected_goals_conceded;
-        t.goals_conceded += p.goals_conceded;
+        // goals_conceded en clean_sheets: alleen de primaire keeper
+        // (meeste minuten) — anders worden keepers uit vorige clubs opgeteld
         if (p.minutes > t.gkMinutes) {
           t.gkMinutes = p.minutes;
+          t.goals_conceded = p.goals_conceded;
           t.clean_sheets = p.clean_sheets;
         }
       }

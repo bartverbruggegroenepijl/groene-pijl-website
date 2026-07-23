@@ -1,9 +1,10 @@
 'use client';
 
 import { useEffect, useState, useMemo, useCallback, useRef } from 'react';
-import Image from 'next/image';
 import { Search, X, ChevronUp, ChevronDown, ChevronLeft, ChevronRight, Star } from 'lucide-react';
+import PlayerAvatar from '@/components/ui/PlayerAvatar';
 import { batchedAll } from '@/lib/utils/batch';
+import { TOON_VORIG_SEIZOEN_STATS, ACTIEF_SEIZOEN } from '@/lib/constants';
 
 /* ─────────────────────── types ─────────────────────────── */
 
@@ -312,6 +313,18 @@ export default function StatistiekenPage() {
   // Modal
   const [modalPlayer, setModalPlayer] = useState<StatsPlayer | null>(null);
 
+  // Seizoen gestart? (bepaald via events API)
+  const [seizoenGestart, setSeizoenGestart] = useState<boolean | null>(null);
+
+  useEffect(() => {
+    fetch('/api/fpl/events', { cache: 'no-store' })
+      .then((r) => r.json())
+      .then((d: { currentGW: number | null }) => {
+        setSeizoenGestart(d.currentGW !== null);
+      })
+      .catch(() => setSeizoenGestart(null));
+  }, []);
+
   // Laatste 5 GW history cache (lazy-loaded per zichtbare speler)
   const [historyData, setHistoryData] = useState<Record<number, HistoryEntry[]>>({});
   const fetchingRef = useRef(new Set<number>());
@@ -555,6 +568,49 @@ export default function StatistiekenPage() {
           </p>
         </div>
 
+        {/* ── Pre-season modus ── */}
+        {!seizoenGestart && seizoenGestart !== null && !TOON_VORIG_SEIZOEN_STATS && (
+          <div style={{ textAlign: 'center', padding: '80px 24px' }}>
+            <div style={{ fontSize: 48, marginBottom: 16 }}>⏳</div>
+            <h2 style={{ color: '#00FA61', fontWeight: 800, fontSize: 24, marginBottom: 8 }}>
+              Seizoen {ACTIEF_SEIZOEN} begint binnenkort
+            </h2>
+            <p style={{ color: 'rgba(255,255,255,0.5)', fontSize: 15 }}>
+              Statistieken zijn beschikbaar zodra GW1 is afgespeeld.
+            </p>
+          </div>
+        )}
+
+        {/* ── Pre-season banner (vorig-seizoen-data-waarschuwing) ── */}
+        {!seizoenGestart && seizoenGestart !== null && TOON_VORIG_SEIZOEN_STATS && (
+          <div
+            style={{
+              background: 'linear-gradient(135deg, rgba(255,165,0,0.12) 0%, rgba(255,100,0,0.08) 100%)',
+              border: '1px solid rgba(255,165,0,0.35)',
+              borderRadius: 12,
+              padding: '14px 18px',
+              marginBottom: 24,
+              display: 'flex',
+              alignItems: 'flex-start',
+              gap: 12,
+            }}
+          >
+            <span style={{ fontSize: 20, flexShrink: 0 }}>⚠️</span>
+            <div>
+              <p style={{ color: '#FFA500', fontWeight: 700, fontSize: 13, margin: '0 0 4px' }}>
+                Seizoen {ACTIEF_SEIZOEN} begint op 21 augustus
+              </p>
+              <p style={{ color: 'rgba(255,255,255,0.55)', fontSize: 12, margin: 0 }}>
+                Onderstaande cijfers zijn van seizoen 2025-26 en kunnen afwijken door transfers.
+              </p>
+            </div>
+          </div>
+        )}
+
+        {/* Verberg de rest als pre-season en TOON_VORIG_SEIZOEN_STATS = false */}
+        {(seizoenGestart || TOON_VORIG_SEIZOEN_STATS) && (
+        <>
+
         {/* ── Tab navigation ── */}
         <div style={{ overflowX: 'auto', marginBottom: 24 }}>
           <div style={{ display: 'flex', gap: 4, minWidth: 'max-content', padding: '0 2px 8px' }}>
@@ -768,22 +824,11 @@ export default function StatistiekenPage() {
                         )}
 
                         {/* Player photo */}
-                        {player.imageUrl ? (
-                          <div style={{ position: 'absolute', top: 0, left: 0, right: 0, height: '65%', overflow: 'hidden' }}>
-                            <Image
-                              src={player.imageUrl}
-                              alt={player.name}
-                              fill
-                              className="object-cover"
-                              style={{ objectPosition: '50% 10%' }}
-                              unoptimized
-                            />
-                          </div>
-                        ) : (
-                          <div style={{ position: 'absolute', top: 0, left: 0, right: 0, height: '65%', display: 'flex', alignItems: 'center', justifyContent: 'center', background: 'rgba(0,250,97,0.05)' }}>
-                            <span style={{ color: rs.border, fontSize: 28, fontWeight: 800 }}>{player.name.charAt(0)}</span>
-                          </div>
-                        )}
+                        <PlayerAvatar
+                          imageUrl={player.imageUrl}
+                          name={player.name}
+                          style={{ position: 'absolute', top: 0, left: 0, right: 0, height: '65%' }}
+                        />
 
                         {/* Content below photo */}
                         <div style={{ position: 'relative', zIndex: 3, width: '100%', textAlign: 'center' }}>
@@ -955,15 +1000,13 @@ export default function StatistiekenPage() {
                             {/* Player */}
                             <td style={{ padding: '9px 12px', minWidth: 160 }}>
                               <div style={{ display: 'flex', alignItems: 'center', gap: 9 }}>
-                                <div style={{ width: 30, height: 30, borderRadius: '50%', overflow: 'hidden', flexShrink: 0, background: 'rgba(0,0,0,0.3)', border: '1px solid rgba(255,255,255,0.1)' }}>
-                                  {player.imageUrl ? (
-                                    <Image src={player.imageUrl} alt={player.name} width={30} height={30} style={{ objectFit: 'cover', objectPosition: '50% 10%', width: '100%', height: '100%' }} unoptimized />
-                                  ) : (
-                                    <div style={{ width: '100%', height: '100%', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
-                                      <span style={{ color: '#00FA61', fontSize: 11, fontWeight: 800 }}>{player.name.charAt(0)}</span>
-                                    </div>
-                                  )}
-                                </div>
+                                <PlayerAvatar
+                                  imageUrl={player.imageUrl}
+                                  name={player.name}
+                                  width={30}
+                                  height={30}
+                                  style={{ borderRadius: '50%', flexShrink: 0, border: '1px solid rgba(255,255,255,0.1)' }}
+                                />
                                 <span style={{ color: '#fff', fontWeight: 600, fontSize: 12, whiteSpace: 'nowrap' as const }}>{player.name}</span>
                               </div>
                             </td>
@@ -1088,6 +1131,8 @@ export default function StatistiekenPage() {
             </div>
           </>
         )}
+      </>
+      )} {/* einde (seizoenGestart || TOON_VORIG_SEIZOEN_STATS) */}
       </div>
 
       {/* ── Player detail modal ── */}
@@ -1120,15 +1165,13 @@ export default function StatistiekenPage() {
             {/* Modal header */}
             <div style={{ display: 'flex', alignItems: 'flex-start', gap: 16, padding: '20px 20px 16px', borderBottom: '1px solid rgba(255,255,255,0.08)', position: 'relative' }}>
               {/* Photo */}
-              <div style={{ width: 80, height: 100, borderRadius: 12, overflow: 'hidden', flexShrink: 0, background: 'rgba(0,250,97,0.08)', border: '1px solid rgba(0,250,97,0.15)' }}>
-                {modalPlayer.imageUrl ? (
-                  <Image src={modalPlayer.imageUrl} alt={modalPlayer.name} width={80} height={100} style={{ objectFit: 'cover', objectPosition: '50% 10%', width: '100%', height: '100%' }} unoptimized />
-                ) : (
-                  <div style={{ width: '100%', height: '100%', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
-                    <span style={{ color: '#00FA61', fontSize: 32, fontWeight: 800 }}>{modalPlayer.name.charAt(0)}</span>
-                  </div>
-                )}
-              </div>
+              <PlayerAvatar
+                imageUrl={modalPlayer.imageUrl}
+                name={modalPlayer.name}
+                width={80}
+                height={100}
+                style={{ borderRadius: 12, flexShrink: 0, border: '1px solid rgba(0,250,97,0.15)' }}
+              />
 
               {/* Info */}
               <div style={{ flex: 1, paddingTop: 4 }}>

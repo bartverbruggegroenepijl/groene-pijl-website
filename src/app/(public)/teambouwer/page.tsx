@@ -1,7 +1,7 @@
 'use client';
 
 import { useEffect, useState, useMemo, useCallback } from 'react';
-import Image from 'next/image';
+import PlayerAvatar from '@/components/ui/PlayerAvatar';
 import {
   Search, X, ChevronLeft, ChevronRight, ChevronDown, RotateCcw, Save,
   ArrowUpDown, ArrowUp, ArrowDown, Plus, Minus, Users, ArrowLeftRight,
@@ -257,37 +257,7 @@ function PitchCard({
             position: 'relative',
           }}
         >
-          {player.imageUrl ? (
-            // eslint-disable-next-line @next/next/no-img-element
-            <img
-              src={player.imageUrl}
-              alt={player.name}
-              style={{ width: '100%', height: '100%', objectFit: 'cover', objectPosition: '50% 10%' }}
-            />
-          ) : (
-            <div
-              style={{
-                width: '100%',
-                height: '100%',
-                display: 'flex',
-                alignItems: 'center',
-                justifyContent: 'center',
-                background: 'linear-gradient(135deg, rgba(0,250,97,0.22) 0%, rgba(123,47,255,0.32) 100%)',
-              }}
-            >
-              <span
-                style={{
-                  color: '#00FA61',
-                  fontWeight: 800,
-                  fontSize: 16,
-                  fontFamily: 'Montserrat, sans-serif',
-                  userSelect: 'none',
-                }}
-              >
-                {player.name.charAt(0)}
-              </span>
-            </div>
-          )}
+          <PlayerAvatar imageUrl={player.imageUrl} name={player.name} />
         </div>
         {(() => {
           const color = injuryDotColor(player.chanceOfPlayingNextRound, player.news);
@@ -1278,12 +1248,13 @@ export default function TeambouwerPage() {
                       >
                         {/* Naam + foto */}
                         <div className="flex items-center gap-2 min-w-0">
-                          <div
-                            className="relative w-7 h-7 rounded-full overflow-hidden shrink-0 border border-white/10"
-                            style={{ background: 'rgba(0,0,0,0.3)' }}
-                          >
-                            <Image src={p.imageUrl} alt={p.name} fill className="object-cover" style={{ objectPosition: '50% 10%' }} unoptimized />
-                          </div>
+                          <PlayerAvatar
+                            imageUrl={p.imageUrl}
+                            name={p.name}
+                            width={28}
+                            height={28}
+                            style={{ borderRadius: '50%', flexShrink: 0, border: '1px solid rgba(255,255,255,0.1)' }}
+                          />
                           <span className="text-white text-xs font-medium truncate">{p.name}</span>
                           {(() => {
                             const color = injuryDotColor(p.chanceOfPlayingNextRound, p.news);

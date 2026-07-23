@@ -129,21 +129,25 @@ export default function DeadlineCountdown() {
   // Deadline net voorbij en aan het herladen — toon tijdelijk niets (max. enkele seconden)
   if (!timeLeft || timeLeft.totalMs <= 0) return null;
 
+  // ── Pre-season vs actief seizoen ────────────────────────────────────────────
+  // currentGW is null vóór GW1 — toon dan een duidelijke "start over X dagen"
+  // formulering zodat de dagenteller niet verward wordt met een gameweeknummer.
+  const isPreSeason = info.currentGW === null;
+
   // ── Urgentie kleuren ────────────────────────────────────────────────────────
   const urgent = timeLeft.totalMs < 3_600_000;   // < 1u  → rood
   const warn   = timeLeft.totalMs < 86_400_000;  // < 24u → oranje
-  const color  = urgent ? '#ef4444' : warn ? '#f97316' : 'rgba(255,255,255,0.85)';
+  // Pre-season: altijd groen (neutraal), geen urgentie
+  const color  = isPreSeason
+    ? 'rgba(255,255,255,0.85)'
+    : urgent ? '#ef4444' : warn ? '#f97316' : 'rgba(255,255,255,0.85)';
 
-  const borderColor = urgent
-    ? 'rgba(239,68,68,0.6)'
-    : warn
-    ? 'rgba(249,115,22,0.6)'
-    : 'rgba(0,250,97,0.5)';
-  const glowColor = urgent
-    ? 'rgba(239,68,68,0.25)'
-    : warn
-    ? 'rgba(249,115,22,0.25)'
-    : 'rgba(0,250,97,0.25)';
+  const borderColor = isPreSeason
+    ? 'rgba(0,250,97,0.5)'
+    : urgent ? 'rgba(239,68,68,0.6)' : warn ? 'rgba(249,115,22,0.6)' : 'rgba(0,250,97,0.5)';
+  const glowColor = isPreSeason
+    ? 'rgba(0,250,97,0.25)'
+    : urgent ? 'rgba(239,68,68,0.25)' : warn ? 'rgba(249,115,22,0.25)' : 'rgba(0,250,97,0.25)';
 
   // ── Countdown string ────────────────────────────────────────────────────────
   const parts: string[] = [];
@@ -160,26 +164,38 @@ export default function DeadlineCountdown() {
         border:       `1.5px solid ${borderColor}`,
         borderRadius: '8px',
         padding:      '5px 10px',
-        background:   urgent
-          ? 'rgba(239,68,68,0.08)'
-          : warn
-          ? 'rgba(249,115,22,0.08)'
-          : 'rgba(0,250,97,0.08)',
+        background:   isPreSeason
+          ? 'rgba(0,250,97,0.08)'
+          : urgent ? 'rgba(239,68,68,0.08)' : warn ? 'rgba(249,115,22,0.08)' : 'rgba(0,250,97,0.08)',
         boxShadow: `0 0 8px ${glowColor}`,
       }}
     >
-      <Timer size={12} style={{ color, flexShrink: 0 }} />
+      <Timer size={12} style={{ color: isPreSeason ? 'rgba(0,250,97,0.7)' : color, flexShrink: 0 }} />
 
-      {/* GW label */}
-      <span className="text-[10px] font-medium text-white/45">
-        GW{info.nextGW}
-      </span>
-      <span className="text-white/20 text-[10px]">·</span>
-
-      {/* Countdown */}
-      <span className="text-xs font-bold tabular-nums" style={{ color }}>
-        {parts.join(' ')}
-      </span>
+      {isPreSeason ? (
+        // Pre-season: "GW1 start" label + countdown als aparte woorden zodat
+        // de dagenteller niet verward wordt met het gameweeknummer
+        <>
+          <span className="text-[10px] font-bold" style={{ color: '#00FA61' }}>
+            GW{info.nextGW} start
+          </span>
+          <span className="text-white/20 text-[10px]">·</span>
+          <span className="text-xs font-bold tabular-nums" style={{ color: 'rgba(255,255,255,0.85)' }}>
+            {parts.join(' ')}
+          </span>
+        </>
+      ) : (
+        // Actief seizoen: toon huidige GW + countdown naar volgende deadline
+        <>
+          <span className="text-[10px] font-medium text-white/45">
+            GW{info.currentGW ?? info.nextGW}
+          </span>
+          <span className="text-white/20 text-[10px]">·</span>
+          <span className="text-xs font-bold tabular-nums" style={{ color }}>
+            {parts.join(' ')}
+          </span>
+        </>
+      )}
     </div>
   );
 }
