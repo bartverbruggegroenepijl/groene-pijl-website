@@ -1,3 +1,5 @@
+export const dynamic = 'force-dynamic';
+
 import { NextResponse } from 'next/server';
 
 // ─── FPL API types ────────────────────────────────────────────────────────────
@@ -50,7 +52,7 @@ export async function GET() {
       'https://fantasy.premierleague.com/api/bootstrap-static/',
       {
         // Cache for 30 minutes — player news changes infrequently
-        next: { revalidate: 1800 },
+        next: { revalidate: 1800 }, // overrulet force-dynamic segment default
         headers: FPL_HEADERS,
       }
     );
@@ -95,7 +97,8 @@ export async function GET() {
       { players },
       {
         headers: {
-          'Cache-Control': 'public, s-maxage=1800, stale-while-revalidate=3600',
+          // verlaagd tijdens seizoensstart; kan later terug naar s-maxage=1800, swr=3600
+          'Cache-Control': 'public, s-maxage=120, stale-while-revalidate=300',
         },
       }
     );

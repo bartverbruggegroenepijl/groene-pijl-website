@@ -1,3 +1,5 @@
+export const dynamic = 'force-dynamic';
+
 import { NextResponse } from 'next/server';
 
 const FPL_HEADERS = {
@@ -51,11 +53,11 @@ export async function GET() {
   try {
     const [bootstrapRes, fixturesRes] = await Promise.all([
       fetch('https://fantasy.premierleague.com/api/bootstrap-static/', {
-        next: { revalidate: 300 },
+        next: { revalidate: 300 }, // overrulet force-dynamic segment default
         headers: FPL_HEADERS,
       }),
       fetch('https://fantasy.premierleague.com/api/fixtures/', {
-        next: { revalidate: 3600 },
+        next: { revalidate: 300 }, // overrulet force-dynamic segment default
         headers: FPL_HEADERS,
       }),
     ]);
@@ -129,7 +131,8 @@ export async function GET() {
       { teams: result, gameweeks: gwRange, eventDeadlines },
       {
         headers: {
-          'Cache-Control': 'public, s-maxage=3600, stale-while-revalidate=7200',
+          // verlaagd tijdens seizoensstart; kan later terug naar s-maxage=3600, swr=7200
+          'Cache-Control': 'public, s-maxage=300, stale-while-revalidate=600',
         },
       }
     );

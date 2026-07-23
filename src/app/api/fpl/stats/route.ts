@@ -1,4 +1,16 @@
+export const dynamic = 'force-dynamic';
+
 import { NextResponse } from 'next/server';
+
+const FPL_HEADERS = {
+  'User-Agent':
+    'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 ' +
+    '(KHTML, like Gecko) Chrome/120.0.0.0 Safari/537.36',
+  Accept: 'application/json, text/plain, */*',
+  'Accept-Language': 'en-US,en;q=0.9',
+  'Accept-Encoding': 'gzip, deflate, br',
+  Referer: 'https://fantasy.premierleague.com/',
+};
 
 interface FplApiPlayer {
   id: number;
@@ -51,15 +63,8 @@ const POSITION_MAP: Record<number, 'GK' | 'DEF' | 'MID' | 'FWD'> = {
 export async function GET() {
   try {
     const res = await fetch('https://fantasy.premierleague.com/api/bootstrap-static/', {
-      next: { revalidate: 300 },
-      headers: {
-        'User-Agent':
-          'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 ' +
-          '(KHTML, like Gecko) Chrome/120.0.0.0 Safari/537.36',
-        Accept: 'application/json, text/plain, */*',
-        'Accept-Language': 'en-US,en;q=0.9',
-        Referer: 'https://fantasy.premierleague.com/',
-      },
+      next: { revalidate: 300 }, // 5 min FPL cache; overrulet force-dynamic segment default
+      headers: FPL_HEADERS,
     });
 
     if (!res.ok) {

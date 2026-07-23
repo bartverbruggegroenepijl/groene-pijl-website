@@ -328,6 +328,7 @@ export default async function HomePage() {
         .from('captain_picks')
         .select('id, gameweek, captain_pick_players(rank, player_name, player_club, position, motivation, image_url, fpl_player_id)')
         .eq('published', true)
+        .eq('season', ACTIEF_SEIZOEN)
         .order('gameweek', { ascending: false })
         .order('created_at', { ascending: false })
         .limit(1);
@@ -340,6 +341,7 @@ export default async function HomePage() {
         .from('buy_tips')
         .select('id, gameweek, buy_tip_players(player_name, player_club, position, price, motivation, image_url, fpl_player_id)')
         .eq('published', true)
+        .eq('season', ACTIEF_SEIZOEN)
         .order('gameweek', { ascending: false })
         .order('created_at', { ascending: false })
         .limit(1);
@@ -384,6 +386,7 @@ export default async function HomePage() {
         .from('player_of_the_week')
         .select('id, gameweek, player_name, player_club, position, points, goals, assists, bonus, motivatie, image_url')
         .eq('published', true)
+        .eq('season', ACTIEF_SEIZOEN)
         .order('created_at', { ascending: false })
         .limit(1);
     } catch { return fallback; }
