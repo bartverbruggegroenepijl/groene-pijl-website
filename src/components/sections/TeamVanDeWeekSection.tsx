@@ -3,6 +3,7 @@
 import { useState, useEffect } from 'react'
 import { createClient } from '@/lib/supabase/client'
 import { batchedAll } from '@/lib/utils/batch'
+import { ACTIEF_SEIZOEN } from '@/lib/constants'
 
 // ─── Types ─────────────────────────────────────────────────────────────────
 
@@ -344,9 +345,7 @@ function PitchPlayer({ player, stats }: { player: TeamPlayer; stats: PlayerStats
   )
 }
 
-// ─── Actief seizoen — verander dit bij seizoenswissel ──────────────────────
-
-const ACTIEF_SEIZOEN = '2025-26'
+// ACTIEF_SEIZOEN wordt geïmporteerd uit @/lib/constants
 
 // ─── Main Component ────────────────────────────────────────────────────────
 

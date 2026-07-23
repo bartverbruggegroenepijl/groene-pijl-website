@@ -23,6 +23,7 @@ import TeamVanDeWeekSection from '@/components/sections/TeamVanDeWeekSection';
 import TransferTipCard from '@/components/sections/TransferTipCard';
 import TransferTipsSlider from '@/components/sections/TransferTipsSlider';
 import ErrorHashRedirect from '@/components/ErrorHashRedirect';
+import { ACTIEF_SEIZOEN } from '@/lib/constants';
 
 // ─── Types ────────────────────────────────────────────────────────────────────
 
@@ -362,7 +363,7 @@ export default async function HomePage() {
         .from('team_of_the_week')
         .select('id, week_number, formation, sectie_naam, team_players(player_name, player_club, position, points, is_captain, is_star_player, player_image_url)')
         .eq('published', true)
-        .eq('season', '2025-26')
+        .eq('season', ACTIEF_SEIZOEN)
         .order('created_at', { ascending: false })
         .limit(1);
     } catch { return fallback; }

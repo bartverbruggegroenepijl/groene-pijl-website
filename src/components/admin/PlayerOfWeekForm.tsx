@@ -6,6 +6,7 @@ import { ArrowLeft, Save, Loader2, AlertCircle, User } from 'lucide-react';
 import PlayerSelector from '@/components/admin/PlayerSelector';
 import PlayerImageUpload from '@/components/admin/PlayerImageUpload';
 import type { FplPlayer } from '@/types';
+import { ACTIEF_SEIZOEN } from '@/lib/constants';
 
 // ─── Input helpers ────────────────────────────────────────────
 
@@ -30,7 +31,7 @@ export default function PlayerOfWeekForm({ action }: PlayerOfWeekFormProps) {
   const [fplError, setFplError]      = useState('');
 
   const [gameweek,    setGameweek]   = useState('');
-  const [season,      setSeason]     = useState('2025-26');
+  const [season,      setSeason]     = useState(ACTIEF_SEIZOEN);
   const [player,      setPlayer]     = useState<FplPlayer | null>(null);
   const [playerName,  setPlayerName] = useState('');
   const [playerClub,  setPlayerClub] = useState('');
@@ -306,7 +307,7 @@ export default function PlayerOfWeekForm({ action }: PlayerOfWeekFormProps) {
                 type="text"
                 value={season}
                 onChange={(e) => setSeason(e.target.value)}
-                placeholder="2025-26"
+                placeholder={ACTIEF_SEIZOEN}
                 className={inputClass}
               />
             </div>

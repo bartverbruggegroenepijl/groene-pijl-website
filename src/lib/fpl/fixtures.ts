@@ -53,11 +53,11 @@ export async function fetchNextFixturesMap(): Promise<Map<string, NextFixture[]>
   try {
     const [bootstrapRes, fixturesRes] = await Promise.all([
       fetch('https://fantasy.premierleague.com/api/bootstrap-static/', {
-        next: { revalidate: 3600 },
+        next: { revalidate: 300 }, // 300s tijdens seizoensstart; kan later terug naar 3600
         headers: FPL_HEADERS,
       }),
       fetch('https://fantasy.premierleague.com/api/fixtures/', {
-        next: { revalidate: 3600 },
+        next: { revalidate: 300 }, // 300s tijdens seizoensstart; kan later terug naar 3600
         headers: FPL_HEADERS,
       }),
     ]);
